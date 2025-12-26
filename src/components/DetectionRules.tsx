@@ -29,6 +29,7 @@ import { Lightning, Plus, PencilSimple, Trash, Copy } from '@phosphor-icons/reac
 import type { DetectionRule, MetricType, RuleCondition, RuleSeverity, RuleAction } from '@/lib/types'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { RuleTemplates } from '@/components/RuleTemplates'
 
 interface DetectionRulesProps {
   rules: DetectionRule[]
@@ -197,6 +198,12 @@ export function DetectionRules({ rules, onToggleRule, onAddRule, onEditRule, onD
     setter({ ...currentRule, actions: newActions })
   }
 
+  const handleTemplateSelect = (rule: Omit<DetectionRule, 'id'>) => {
+    setNewRule(rule)
+    setIsCreateDialogOpen(true)
+    toast.success('Template loaded - customize and save')
+  }
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -210,7 +217,10 @@ export function DetectionRules({ rules, onToggleRule, onAddRule, onEditRule, onD
           </Badge>
         </div>
         
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <div className="flex items-center gap-2">
+          <RuleTemplates onSelectTemplate={handleTemplateSelect} />
+          
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">
               <Plus size={16} weight="bold" />
@@ -353,8 +363,10 @@ export function DetectionRules({ rules, onToggleRule, onAddRule, onEditRule, onD
             </Button>
           </DialogContent>
         </Dialog>
+        </div>
+      </div>
         
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Detection Rule</DialogTitle>
@@ -491,7 +503,6 @@ export function DetectionRules({ rules, onToggleRule, onAddRule, onEditRule, onD
             </Button>
           </DialogContent>
         </Dialog>
-      </div>
       
       {rules.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
