@@ -1,35 +1,43 @@
 import type { TelemetryMetric, MetricsSummary, MetricType } from './types'
 
+export interface TimeSeriesPoint {
+  timestamp: number
   value: number
+  trend?: number
 }
+
+export interface TrendAnalysis {
+  metric: MetricType
   direction: 'up' | 'down' | 'stable'
   changePercent: number
   significance: 'high' | 'medium' | 'low'
   prediction: number
-  significance: 'hig
- 
-
-  previous: MetricsSummary
-  percentChanges: Record<M
-  regressions: MetricType
-
-  timestamp: number
-  value: number
+  confidence: number
+  volatility?: number
 }
 
+export interface HistoricalComparison {
+  current: MetricsSummary
+  previous: MetricsSummary
+  percentChanges: Record<MetricType, number>
+  improvements: MetricType[]
+  regressions: MetricType[]
+}
+
+export interface ForecastPoint {
+  timestamp: number
+  predictedValue: number
+  value: number
+  confidence: number
+}
+
+export function analyzeTrend(
+  data: Array<{ timestamp: number; value: number }>,
   metricType: MetricType
-  return analyzeTre
-
-  data: Array<{ time
-)
-
-      direction: 'stable',
-      significance: 'low',
-      confidence: 0
-  }
-  const values = data.ma
-
-  let sumY = 0
+): TrendAnalysis {
+  if (data.length < 2) {
+    return {
+      metric: metricType,
       direction: 'stable',
       changePercent: 0,
       significance: 'low',
@@ -87,7 +95,7 @@ import type { TelemetryMetric, MetricsSummary, MetricType } from './types'
     prediction,
     confidence
   }
- 
+}
 
 export function compareHistoricalPeriods(
   current: MetricsSummary,
@@ -208,6 +216,7 @@ export function forecastMetric(
     forecasts.push({
       timestamp: lastTimestamp + avgInterval * i,
       predictedValue: Math.max(0, predictedValue),
+      value: Math.max(0, predictedValue),
       confidence: Math.max(0, 1 - (i * 0.15))
     })
   }
@@ -215,36 +224,81 @@ export function forecastMetric(
   return forecasts
 }
 
+export function calculateMovingAverage(
+  points: TimeSeriesPoint[],
+  window: number = 5
+): TimeSeriesPoint[] {
+  if (points.length < window) return points
+
+  return points.map((point, index) => {
+    const start = Math.max(0, index - Math.floor(window / 2))
+    const end = Math.min(points.length, index + Math.ceil(window / 2))
+    const slice = points.slice(start, end)
+    const average = slice.reduce((sum, p) => sum + p.value, 0) / slice.length
+
+    return {
+      ...point,
+      trend: average
+    }
+  })
+}
+
+export function calculateVolatility(points: TimeSeriesPoint[]): number {
+  if (points.length < 2) return 0
+
+  const values = points.map(p => p.value)
+  const mean = values.reduce((a, b) => a + b, 0) / values.length
+  const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length
+  const stdDev = Math.sqrt(variance)
+
+  return (stdDev / mean) * 100
+}
+
+export function analyzeMetricTrend(
+  points: TimeSeriesPoint[],
+  metricType: MetricType
+): TrendAnalysis {
+  const data = points.map(p => ({ timestamp: p.timestamp, value: p.value }))
+  const trendAnalysis = analyzeTrend(data, metricType)
+  const volatility = calculateVolatility(points)
+
+  return {
+    ...trendAnalysis,
+    volatility
+  }
+}
+
 function formatMetricName(metric: MetricType): string {
   const names: Record<string, string> = {
     avgLatency: 'Average Latency',
     p95Latency: 'P95 Latency',
-): number {
-
+    p99Latency: 'P99 Latency',
+    totalCost: 'Total Cost',
     totalRequests: 'Request Volume',
-    errorRate: 'Error Rate'
+    errorRate: 'Error Rate',
+    totalTokens: 'Total Tokens'
   }
   return names[metric] || metric
 }
 
 export function bucketMetricsByHour(
-function formatMetricName(met
+  metrics: TelemetryMetric[],
   timeRange: number
-    p95Latency: 'P95 Latency',
+): Map<number, TelemetryMetric[]> {
   const buckets = new Map<number, TelemetryMetric[]>()
   const cutoff = Date.now() - timeRange
 
-  return names[metric] || met
+  metrics.forEach(metric => {
     if (metric.timestamp >= cutoff) {
       const hourBucket = Math.floor(metric.timestamp / (60 * 60 * 1000)) * (60 * 60 * 1000)
       if (!buckets.has(hourBucket)) {
         buckets.set(hourBucket, [])
       }
       buckets.get(hourBucket)!.push(metric)
+    }
+  })
 
-    
-
-        buckets.
+  return buckets
 }
 
 export function detectAnomalies(
