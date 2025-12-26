@@ -80,6 +80,21 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
 - **Progression**: User selects report type → Configures options (metrics, AI suggestions, alerts) → Generates PDF → Downloads automatically
 - **Success criteria**: PDF reports include all relevant data with professional formatting, sponsor branding, timestamps, severity classifications, and AI recommendations
 
+### Historical Metrics Analysis with Trend Visualization
+- **Functionality**: Advanced trend detection, anomaly identification, forecasting, and comparative analysis of metrics over time
+- **Purpose**: Enable data-driven decisions through historical pattern recognition, predict future system behavior, and identify performance regressions
+- **Trigger**: Automatic analysis as metrics accumulate, visible in dashboard tab
+- **Progression**: System collects metrics → Calculates moving averages → Detects anomalies → Generates trend forecasts → Compares periods → Produces AI insights
+- **Success criteria**: 
+  - Automatic trend detection with confidence levels (high/medium/low)
+  - Moving average overlays on charts for smoothed visualization
+  - Statistical anomaly detection highlighting outliers
+  - 5-8 period forecasting using linear regression
+  - Period-over-period comparison showing improvements and regressions
+  - Volatility calculations for stability assessment
+  - AI-generated actionable insights based on trend analysis
+  - Visual indicators for trend direction (up/down/stable) with percentage changes
+
 ## Edge Case Handling
 
 - **First-Time Users**: Welcoming onboarding dialog with clear Demo vs Production mode choice

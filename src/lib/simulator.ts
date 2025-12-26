@@ -2,14 +2,10 @@ import type { TelemetryMetric } from './types'
 
 export class TelemetrySimulator {
   private intervalId: NodeJS.Timeout | null = null
-  private metrics: TelemetryMetric[] = []
-  private callback: (metric: TelemetryMetric) => void
+  private callback: ((metric: TelemetryMetric) => void) | null = null
   
-  constructor(callback: (metric: TelemetryMetric) => void) {
+  start(callback: (metric: TelemetryMetric) => void) {
     this.callback = callback
-  }
-  
-  start() {
     let requestCount = 0
     
     this.intervalId = setInterval(() => {
@@ -92,37 +88,39 @@ export class TelemetrySimulator {
       metadata: baseMetadata
     }
     
-    this.callback(requestMetric)
-    this.callback(latencyMetric)
-    
-    if (hasError) {
-      const errorMetric: TelemetryMetric = {
-        id: `err_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp,
-        type: 'error',
-        value: 1,
-        metadata: { ...baseMetadata, errorType }
-      }
-      this.callback(errorMetric)
-    } else {
-      const tokenMetric: TelemetryMetric = {
-        id: `tok_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp,
-        type: 'tokens',
-        value: tokens,
-        metadata: baseMetadata
-      }
+    if (this.callback) {
+      this.callback(requestMetric)
+      this.callback(latencyMetric)
       
-      const costMetric: TelemetryMetric = {
-        id: `cost_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp,
-        type: 'cost',
-        value: cost,
-        metadata: baseMetadata
+      if (hasError) {
+        const errorMetric: TelemetryMetric = {
+          id: `err_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+          timestamp,
+          type: 'error',
+          value: 1,
+          metadata: { ...baseMetadata, errorType }
+        }
+        this.callback(errorMetric)
+      } else {
+        const tokenMetric: TelemetryMetric = {
+          id: `tok_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+          timestamp,
+          type: 'tokens',
+          value: tokens,
+          metadata: baseMetadata
+        }
+        
+        const costMetric: TelemetryMetric = {
+          id: `cost_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+          timestamp,
+          type: 'cost',
+          value: cost,
+          metadata: baseMetadata
+        }
+        
+        this.callback(tokenMetric)
+        this.callback(costMetric)
       }
-      
-      this.callback(tokenMetric)
-      this.callback(costMetric)
     }
   }
   
