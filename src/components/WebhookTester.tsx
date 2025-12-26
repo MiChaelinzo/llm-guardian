@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/pro
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -12,11 +12,11 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
 interface TestResult {
   success: boolean
   statusCode?: number
-  responseTime: number
+  webhook: WebhookConf
   error?: string
-  payload?: any
+export function
   timestamp: number
-}
+ 
 
 interface WebhookTesterProps {
   webhook: WebhookConfig
@@ -29,38 +29,38 @@ export function WebhookTester({ webhook }: WebhookTesterProps) {
   const [testSeverity, setTestSeverity] = useState<RuleSeverity>('info')
 
   const runSingleTest = async () => {
-    setIsTesting(true)
-    setProgress(0)
 
-    try {
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => Math.min(prev + 10, 90))
-      }, 100)
+    setIsTesting(t
 
-      const result = await testWebhookWithDetails(webhook, testSeverity)
+    const
+      try {
+        const result = await testWebhookWithDetails(we
+        
+
+      } catch (error) {
       
-      clearInterval(progressInterval)
-      setProgress(100)
+          error: error instanceof Err
+        })
 
-      setTestResults((prev) => [result, ...prev].slice(0, 10))
-    } catch (error) {
-      const errorResult: TestResult = {
-        success: false,
-        responseTime: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: Date.now()
-      }
-      setTestResults((prev) => [errorResult, ...prev].slice(0, 10))
-    } finally {
-      setIsTesting(false)
-      setTimeout(() => setProgress(0), 1000)
-    }
+    setTestResults((prev) => [...results, ...prev].slice(0, 20
+    setTimeout(() => 
+
+    if (testResults.len
+    const successCount =
+    const successRate = (successCount / totalCount) * 100
+    const successfulTests = t
+      ?
+
+      total: to
+      failCount: totalCou
+      avgResponseTime
   }
+  c
 
-  const runBurstTest = async () => {
-    setIsTesting(true)
-    setProgress(0)
-    const burstSize = 5
+      <CardHeader>
+          <Flask size=
+        </CardTitl
+      <CardContent clas
 
     const results: TestResult[] = []
     for (let i = 0; i < burstSize; i++) {
@@ -87,7 +87,7 @@ export function WebhookTester({ webhook }: WebhookTesterProps) {
     setTimeout(() => setProgress(0), 1000)
   }
 
-  const calculateStats = () => {
+                variant="outline
     if (testResults.length === 0) return null
 
     const successCount = testResults.filter(r => r.success).length
@@ -104,21 +104,21 @@ export function WebhookTester({ webhook }: WebhookTesterProps) {
       successCount,
       failCount: totalCount - successCount,
       successRate,
-      avgResponseTime
+              </div>
     }
-  }
+   
 
   const stats = calculateStats()
 
-  return (
+          
     <Card>
-      <CardHeader>
+              <div
         <CardTitle className="flex items-center gap-2">
           <Flask size={24} weight="bold" />
           Connectivity Testing
         </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+          </h4>
+          {testResults.length === 0 ? (
         <div className="space-y-4">
           <div className="flex gap-4 items-end">
             <div className="flex-1">
@@ -126,7 +126,7 @@ export function WebhookTester({ webhook }: WebhookTesterProps) {
               <Select value={testSeverity} onValueChange={(v) => setTestSeverity(v as RuleSeverity)}>
                 <SelectTrigger>
                   <SelectValue />
-                </SelectTrigger>
+                    result.succe
                 <SelectContent>
                   <SelectItem value="info">Info</SelectItem>
                   <SelectItem value="warning">Warning</SelectItem>
@@ -136,22 +136,22 @@ export function WebhookTester({ webhook }: WebhookTesterProps) {
             </div>
 
             <div className="flex gap-2">
-              <Button
+                     
                 onClick={runSingleTest}
-                disabled={isTesting}
+                            <Badge v
               >
                 <Flask size={18} />
-                Single Test
+                           
               </Button>
-              <Button
+                     
                 onClick={runBurstTest}
-                disabled={isTesting}
+                          </p>
                 variant="outline"
               >
                 <Flask size={18} />
                 Burst Test (5x)
-              </Button>
-            </div>
+                  </div
+
           </div>
 
           {isTesting && (
@@ -162,20 +162,20 @@ export function WebhookTester({ webhook }: WebhookTesterProps) {
               </p>
             </div>
           )}
-        </div>
+}
 
-        {stats && (
+
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-muted/30 rounded-lg p-4">
                 <p className="text-sm text-muted-foreground mb-1">Total Tests</p>
                 <div className="text-2xl font-bold">{stats.total}</div>
-              </div>
+
 
               <div className="bg-success/10 rounded-lg p-4">
                 <p className="text-sm text-muted-foreground mb-1">Success Rate</p>
                 <div className="text-2xl font-bold text-success">{stats.successRate.toFixed(0)}%</div>
-              </div>
+
 
               <div className="bg-primary/10 rounded-lg p-4">
                 <p className="text-sm text-muted-foreground mb-1">Avg Response</p>
@@ -187,12 +187,12 @@ export function WebhookTester({ webhook }: WebhookTesterProps) {
                 <div className="text-2xl font-bold text-accent">{stats.failCount}</div>
               </div>
             </div>
-          </>
+
         )}
 
         <div className="space-y-3">
           <h4 className="font-semibold text-sm flex items-center gap-2">
-            Test History
+
           </h4>
 
           {testResults.length === 0 ? (
@@ -201,17 +201,17 @@ export function WebhookTester({ webhook }: WebhookTesterProps) {
                 No tests run yet. Click "Single Test" or "Burst Test" to begin testing this webhook endpoint.
               </AlertDescription>
             </Alert>
-          ) : (
+
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {testResults.map((result, index) => (
+
                 <div
-                  key={`${result.timestamp}-${index}`}
+
                   className={`border rounded-lg p-3 ${
-                    result.success
+
                       ? 'bg-success/5 border-success/20'
-                      : 'bg-destructive/5 border-destructive/20'
+
                   }`}
-                >
+
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-2 flex-1">
                       {result.success ? (
@@ -242,23 +242,23 @@ export function WebhookTester({ webhook }: WebhookTesterProps) {
                           {new Date(result.timestamp).toLocaleTimeString()}
                         </p>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {testResults.some(r => !r.success) && (
-          <Alert className="border-warning">
-            <Warning size={18} />
-            <AlertDescription>
-              Some tests failed. Check your webhook URL, ensure the endpoint is accessible, and verify your credentials are correct.
-            </AlertDescription>
-          </Alert>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
