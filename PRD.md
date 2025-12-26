@@ -45,11 +45,19 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
 - **Success criteria**: Dashboard reflects current state with <1 second lag, handles 100+ data points smoothly
 
 ### Intelligent Detection Rules
-- **Functionality**: AI-defined and user-configurable rules for monitoring thresholds (latency spikes, error rates, cost overruns)
-- **Purpose**: Proactive alerting before issues impact users
-- **Trigger**: Metric threshold crossed or anomaly detected
+- **Functionality**: AI-defined and user-configurable custom threshold alerts for monitoring metrics (latency spikes, error rates, cost overruns, token usage, request volume)
+- **Purpose**: Proactive alerting before issues impact users with complete control over thresholds and conditions
+- **Trigger**: Metric threshold crossed, anomaly detected, or user creates new rule
 - **Progression**: Rule triggered → Alert generated → Voice notification → Dashboard highlights issue → Action item created
-- **Success criteria**: Alerts fire within 5 seconds of threshold breach with zero false positives for demo scenarios
+- **Success criteria**: 
+  - Users can create, edit, duplicate, and delete custom detection rules
+  - Support for 7 metric types (avg/p95/p99 latency, error rate, cost, tokens, requests)
+  - Support for 5 condition types (>, ≥, <, ≤, =)
+  - Configurable severity levels (critical, warning, info)
+  - Configurable actions (create alert, create incident, send notification)
+  - Alerts fire within 5 seconds of threshold breach
+  - Visual rule status indicators showing enabled/disabled state
+  - Comprehensive rule cards showing metric, condition, threshold, and description
 
 ### Conversational Alert Triage
 - **Functionality**: Voice-guided investigation of triggered alerts with AI-suggested remediation

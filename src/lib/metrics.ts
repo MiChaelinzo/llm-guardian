@@ -78,6 +78,14 @@ export function checkDetectionRules(
         metricValue = summary.totalCost
         metricName = 'Total Cost'
         break
+      case 'totalTokens':
+        metricValue = summary.totalTokens
+        metricName = 'Total Tokens'
+        break
+      case 'totalRequests':
+        metricValue = summary.totalRequests
+        metricName = 'Total Requests'
+        break
       default:
         continue
     }
@@ -89,8 +97,14 @@ export function checkDetectionRules(
       case 'gt':
         triggered = metricValue > rule.threshold
         break
+      case 'gte':
+        triggered = metricValue >= rule.threshold
+        break
       case 'lt':
         triggered = metricValue < rule.threshold
+        break
+      case 'lte':
+        triggered = metricValue <= rule.threshold
         break
       case 'eq':
         triggered = Math.abs(metricValue - rule.threshold) < 0.01

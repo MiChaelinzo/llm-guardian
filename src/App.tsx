@@ -217,6 +217,18 @@ function App() {
     setRules((current) => [...(current || []), newRule])
     toast.success('Detection rule created')
   }, [setRules])
+  
+  const handleEditRule = useCallback((ruleId: string, rule: Omit<DetectionRule, 'id'>) => {
+    setRules((current) =>
+      (current || []).map(r => r.id === ruleId ? { ...r, ...rule } : r)
+    )
+  }, [setRules])
+  
+  const handleDeleteRule = useCallback((ruleId: string) => {
+    setRules((current) =>
+      (current || []).filter(r => r.id !== ruleId)
+    )
+  }, [setRules])
 
   const handleAcknowledgeAlert = useCallback((alertId: string) => {
     setAlerts((current) =>
@@ -405,6 +417,8 @@ function App() {
                   rules={rules || []}
                   onToggleRule={handleToggleRule}
                   onAddRule={handleAddRule}
+                  onEditRule={handleEditRule}
+                  onDeleteRule={handleDeleteRule}
                 />
               </TabsContent>
 

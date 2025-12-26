@@ -92,11 +92,15 @@ VoiceWatch AI responds with both **spoken explanations** and **visual dashboards
 - **P95/P99 latency tracking** - Performance percentiles at a glance
 
 ### 3. Intelligent Detection Rules (Datadog)
-- **Configurable thresholds** - Average latency, P95/P99, error rates, costs
+- **Custom threshold alerts** - Create, edit, duplicate, and delete detection rules
+- **7 metric types** - Monitor avg/P95/P99 latency, error rate, cost, tokens, requests
+- **5 condition types** - Greater than, greater or equal, less than, less or equal, equals
 - **Multiple severity levels** - Critical, Warning, Info
+- **Configurable actions** - Create alerts, incidents, and notifications
 - **Automated alerting** - Real-time notifications with voice announcements
-- **Easy management** - Toggle rules on/off, add custom rules
-- **Actionable alerts** - Clear messages with metric values
+- **Easy management** - Toggle rules on/off with visual status indicators
+- **Rule duplication** - Clone existing rules for similar thresholds
+- **Actionable alerts** - Clear messages with metric values and context
 
 ### 4. AI-Powered Insights (Google Cloud Gemini)
 - **Real-time analysis** - Gemini AI evaluates metrics every 30 seconds

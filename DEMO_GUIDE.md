@@ -92,8 +92,15 @@ This project uniquely integrates **all four sponsor technologies** in a producti
 
 11. Navigate to **Detection Rules tab**:
     - Show "Datadog" badge
-    - Display 4 pre-configured rules
-    - Quickly add a new rule to show configurability
+    - Display pre-configured rules with custom thresholds
+    - Click **"Add Rule"** to show comprehensive rule creation:
+      - 7 metric types (avg/P95/P99 latency, error rate, cost, tokens, requests)
+      - 5 condition types (>, ≥, <, ≤, =)
+      - Severity levels and configurable actions
+    - Demonstrate **Edit** (pencil icon) to modify existing rule
+    - Show **Duplicate** (copy icon) to clone a rule
+    - Click **Delete** (trash icon) to remove a rule
+    - Toggle rules on/off with switches
 
 12. Return to **Dashboard**:
     - Show real-time charts updating (Confluent streaming)
@@ -145,11 +152,15 @@ This project uniquely integrates **all four sponsor technologies** in a producti
 - [ ] "Google Cloud" badge visible
 
 ### Datadog Integration ✅
-- [ ] Detection Rules tab with 4+ rules
+- [ ] Detection Rules tab with customizable rules
+- [ ] Custom threshold alerts with 7 metric types
+- [ ] 5 condition operators (>, ≥, <, ≤, =)
+- [ ] Edit, duplicate, and delete rule functionality
 - [ ] Rules toggleable and configurable
 - [ ] Alerts tab with real-time alerts
 - [ ] Incident creation from alerts
 - [ ] Incidents tab with status workflow
+- [ ] PDF report generation
 - [ ] "Datadog" badges on Rules/Alerts/Incidents
 
 ### Confluent Integration ✅
@@ -182,7 +193,7 @@ This project uniquely integrates **all four sponsor technologies** in a producti
 "Let me demonstrate the voice interface. [Click mic] 'What's the system health?' [Wait for response] The ElevenLabs voice agent, powered by Gemini AI, instantly analyzes our metrics and responds both verbally and visually. [Try another] 'Show me any critical alerts.' Notice how it understands context and navigates automatically."
 
 **Datadog Workflow (1:30-2:30)**
-"The Datadog integration provides complete observability. Detection rules monitor latency, errors, and costs. When thresholds are breached, alerts fire automatically. From any alert, we can create an incident which immediately gets an AI-generated recommendation from Gemini. The incident then flows through our Open-Investigating-Resolved workflow, giving engineers full context for resolution."
+"The Datadog integration provides complete observability with custom threshold alerts. You can create detection rules for any metric—latency, error rate, cost, tokens, or request volume—with flexible conditions like greater than, less than, or equals. Each rule is fully editable, can be duplicated for similar thresholds, or deleted when no longer needed. When thresholds are breached, alerts fire automatically. From any alert, we can create an incident which immediately gets an AI-generated recommendation from Gemini. The incident then flows through our Open-Investigating-Resolved workflow, giving engineers full context for resolution."
 
 **Technical Architecture (2:30-2:50)**
 "Under the hood, Confluent provides the event streaming backbone. Every metric flows through a real-time data pipeline. Gemini AI consumes this stream for analysis. Datadog's detection engine watches for anomalies. And ElevenLabs makes it all accessible through conversation."
