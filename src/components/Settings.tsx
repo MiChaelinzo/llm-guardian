@@ -1,27 +1,52 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
+import { toast } from 'sonner'
 import { 
   Cloud, 
-  ChartBar, 
   Database, 
-  Waveform, 
-  FloppyDisk,
-  Warning,
+  FloppyDisk, 
   CheckCircle,
+  EyeSlash,
   Eye,
-  EyeSlash
+  Warning,
+  Waveform,
+  ChartBar,
+  Info
 } from '@phosphor-icons/react'
-import type { APIConfig } from '@/lib/types'
-import { toast } from 'sonner'
+
+type APIConfig = {
+  googleCloud: {
+    projectId: string
+    apiKey: string
+    enabled: boolean
+  }
+  datadog: {
+    apiKey: string
+    appKey: string
+    site: string
+    enabled: boolean
+  }
+  confluent: {
+    apiKey: string
+    apiSecret: string
+    bootstrapServer: string
+    enabled: boolean
+  }
+  elevenLabs: {
+    apiKey: string
+    agentId: string
+    enabled: boolean
+  }
+}
 
 const DEFAULT_CONFIG: APIConfig = {
   googleCloud: {
@@ -92,7 +117,7 @@ export function Settings() {
     const currentConfig = config || DEFAULT_CONFIG
     const platformConfig = currentConfig[platform]
     const hasRequiredKeys = Object.entries(platformConfig).some(
-      ([key, value]) => key !== 'enabled' && typeof value === 'string' && value.length > 0
+      ([key, value]) => key !== 'enabled' && value && typeof value === 'string' && value.length > 0
     )
     
     if (platformConfig.enabled && hasRequiredKeys) {
@@ -102,8 +127,6 @@ export function Settings() {
     }
     return { status: 'not configured', color: 'bg-muted-foreground', icon: Warning }
   }
-  
-  const currentConfig = config || DEFAULT_CONFIG
 
   return (
     <div className="space-y-6">
@@ -119,12 +142,16 @@ export function Settings() {
       </div>
 
       <Alert>
-        <Warning size={16} weight="fill" />
-        <AlertDescription>
-          <div className="flex items-center justify-between">
-            <span>Demo Mode: {isDemoMode ? 'Enabled' : 'Disabled'} - {isDemoMode ? 'Using simulated data for demonstration' : 'Using real API integrations'}</span>
+        <Info size={16} weight="fill" />
+        <AlertDescription className="flex items-center justify-between">
+          <div>
+            <strong>Demo Mode:</strong> {isDemoMode ? 'Using simulated data for demonstration' : 'Using live API integrations'}
+          </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="demo-mode" className="text-sm">Demo Mode</Label>
             <Switch 
-              checked={isDemoMode} 
+              id="demo-mode"
+              checked={isDemoMode}
               onCheckedChange={(checked) => {
                 setIsDemoMode(checked)
                 toast.success(checked ? 'Demo mode enabled' : 'Demo mode disabled')
@@ -138,6 +165,7 @@ export function Settings() {
         {(['googleCloud', 'datadog', 'confluent', 'elevenLabs'] as const).map((platform) => {
           const status = getConnectionStatus(platform)
           const StatusIcon = status.icon
+          const currentConfig = config || DEFAULT_CONFIG
           
           const labels = {
             googleCloud: { name: 'Google Cloud', icon: Cloud },
@@ -208,7 +236,7 @@ export function Settings() {
                 <Label htmlFor="gc-project-id">Project ID</Label>
                 <Input
                   id="gc-project-id"
-                  value={currentConfig.googleCloud.projectId}
+                  value={(config || DEFAULT_CONFIG).googleCloud.projectId}
                   onChange={(e) => updateConfig('googleCloud', { projectId: e.target.value })}
                   placeholder="my-gcp-project"
                 />
@@ -220,7 +248,7 @@ export function Settings() {
                   <Input
                     id="gc-api-key"
                     type={showSecrets.googleCloud ? 'text' : 'password'}
-                    value={currentConfig.googleCloud.apiKey}
+                    value={(config || DEFAULT_CONFIG).googleCloud.apiKey}
                     onChange={(e) => updateConfig('googleCloud', { apiKey: e.target.value })}
                     placeholder="AIzaSy..."
                     className="font-mono"
@@ -278,7 +306,7 @@ export function Settings() {
                   <Input
                     id="dd-api-key"
                     type={showSecrets.datadog ? 'text' : 'password'}
-                    value={currentConfig.datadog.apiKey}
+                    value={(config || DEFAULT_CONFIG).datadog.apiKey}
                     onChange={(e) => updateConfig('datadog', { apiKey: e.target.value })}
                     placeholder="********************************"
                     className="font-mono"
@@ -298,7 +326,7 @@ export function Settings() {
                 <Input
                   id="dd-app-key"
                   type="password"
-                  value={currentConfig.datadog.appKey}
+                  value={(config || DEFAULT_CONFIG).datadog.appKey}
                   onChange={(e) => updateConfig('datadog', { appKey: e.target.value })}
                   placeholder="********************************"
                   className="font-mono"
@@ -309,7 +337,7 @@ export function Settings() {
                 <Label htmlFor="dd-site">Site</Label>
                 <Input
                   id="dd-site"
-                  value={currentConfig.datadog.site}
+                  value={(config || DEFAULT_CONFIG).datadog.site}
                   onChange={(e) => updateConfig('datadog', { site: e.target.value })}
                   placeholder="datadoghq.com"
                 />
@@ -358,7 +386,7 @@ export function Settings() {
                   <Input
                     id="cf-api-key"
                     type={showSecrets.confluent ? 'text' : 'password'}
-                    value={currentConfig.confluent.apiKey}
+                    value={(config || DEFAULT_CONFIG).confluent.apiKey}
                     onChange={(e) => updateConfig('confluent', { apiKey: e.target.value })}
                     placeholder="********************************"
                     className="font-mono"
@@ -378,7 +406,7 @@ export function Settings() {
                 <Input
                   id="cf-api-secret"
                   type="password"
-                  value={currentConfig.confluent.apiSecret}
+                  value={(config || DEFAULT_CONFIG).confluent.apiSecret}
                   onChange={(e) => updateConfig('confluent', { apiSecret: e.target.value })}
                   placeholder="********************************"
                   className="font-mono"
@@ -389,7 +417,7 @@ export function Settings() {
                 <Label htmlFor="cf-bootstrap">Bootstrap Server</Label>
                 <Input
                   id="cf-bootstrap"
-                  value={currentConfig.confluent.bootstrapServer}
+                  value={(config || DEFAULT_CONFIG).confluent.bootstrapServer}
                   onChange={(e) => updateConfig('confluent', { bootstrapServer: e.target.value })}
                   placeholder="pkc-xxxxx.us-east-1.aws.confluent.cloud:9092"
                 />
@@ -438,7 +466,7 @@ export function Settings() {
                   <Input
                     id="el-api-key"
                     type={showSecrets.elevenLabs ? 'text' : 'password'}
-                    value={currentConfig.elevenLabs.apiKey}
+                    value={(config || DEFAULT_CONFIG).elevenLabs.apiKey}
                     onChange={(e) => updateConfig('elevenLabs', { apiKey: e.target.value })}
                     placeholder="********************************"
                     className="font-mono"
@@ -457,7 +485,7 @@ export function Settings() {
                 <Label htmlFor="el-agent-id">Agent ID</Label>
                 <Input
                   id="el-agent-id"
-                  value={currentConfig.elevenLabs.agentId}
+                  value={(config || DEFAULT_CONFIG).elevenLabs.agentId}
                   onChange={(e) => updateConfig('elevenLabs', { agentId: e.target.value })}
                   placeholder="agent_xxxxxxxxxxxxxxxx"
                   className="font-mono"
