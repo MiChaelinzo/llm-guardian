@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,25 +10,24 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { testWebhook } from '@/lib/webhooks'
 import { Plus, Trash, Broadcast, CheckCircle, Warning } from '@phosphor-icons/react'
-  onWebhookAdded?: () => void
+import { useKV } from '@github/spark/hooks'
 import type { WebhookConfig, RuleSeverity } from '@/lib/types'
 
-  const [webhooks, setWeb
-    severityFilter: ['critica
+interface WebhooksProps {
+  onWebhookAdded?: () => void
+}
 
-
-      name: formData.name,
-      url: formData.url,
-      severityFilter: formData.severityFilter,
-    }
-  
-    setFormData({
-      provide
-      enabled: true,
-    })
-    toast.success(
-  }
-  co
+export function Webhooks({ onWebhookAdded }: WebhooksProps) {
+  const [webhooks, setWebhooks] = useKV<WebhookConfig[]>('webhooks', [])
+  const [showDialog, setShowDialog] = useState(false)
+  const [testing, setTesting] = useState<string | null>(null)
+  const [formData, setFormData] = useState({
+    name: '',
+    provider: 'slack' as 'slack' | 'pagerduty' | 'teams',
+    url: '',
+    enabled: true,
+    severityFilter: ['critical', 'warning', 'info'] as RuleSeverity[]
+  })
 
   const handleAddWebhook = () => {
     const newWebhook: WebhookConfig = {
@@ -45,7 +43,7 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
     setWebhooks((current) => [...(current || []), newWebhook])
     setShowDialog(false)
     setFormData({
-      toast.err
+      name: '',
       provider: 'slack',
       url: '',
       enabled: true,
@@ -54,7 +52,7 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
 
     toast.success('Webhook added successfully')
     onWebhookAdded?.()
-  c
+  }
 
   const handleDeleteWebhook = (webhookId: string) => {
     setWebhooks((current) => (current || []).filter(w => w.id !== webhookId))
@@ -62,12 +60,12 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
   }
 
   const handleToggleWebhook = (webhookId: string) => {
-
+    setWebhooks((current) =>
       (current || []).map(w =>
         w.id === webhookId ? { ...w, enabled: !w.enabled } : w
       )
-     
-   
+    )
+  }
 
   const handleTestWebhook = async (webhook: WebhookConfig) => {
     setTesting(webhook.id)
@@ -79,11 +77,11 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
       toast.error('Webhook test failed')
     }
     setTesting(null)
-   
+  }
 
   const toggleSeverityFilter = (severity: RuleSeverity) => {
     setFormData(prev => ({
-              
+      ...prev,
       severityFilter: prev.severityFilter.includes(severity)
         ? prev.severityFilter.filter(s => s !== severity)
         : [...prev.severityFilter, severity]
@@ -104,7 +102,7 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
   }
 
   return (
-          
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -112,9 +110,9 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
               <Broadcast size={24} weight="bold" />
               Webhook Integrations
             </CardTitle>
-                    <p classN
+            <CardDescription>
               Send alerts to Slack, PagerDuty, or Microsoft Teams
-                  )}
+            </CardDescription>
           </div>
           
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -122,21 +120,21 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
               <Button>
                 <Plus size={18} weight="bold" />
                 Add Webhook
-                      C
+              </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                      onClick={() => toggleSeverityFilter('warning
+                <DialogTitle>Add Webhook</DialogTitle>
                 <DialogDescription>
                   Configure a webhook to receive real-time alerts
                 </DialogDescription>
-                      size="s
+              </DialogHeader>
 
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="webhook-name">Name</Label>
                   <Input
-                <div className="flex 
+                    id="webhook-name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Production Alerts"
@@ -146,11 +144,11 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
                 <div className="space-y-2">
                   <Label htmlFor="webhook-provider">Provider</Label>
                   <Select
-                  onClick={handleAddWebhook}
+                    value={formData.provider}
                     onValueChange={(value: 'slack' | 'pagerduty' | 'teams') =>
                       setFormData({ ...formData, provider: value })
                     }
-            </Dialo
+                  >
                     <SelectTrigger id="webhook-provider">
                       <SelectValue />
                     </SelectTrigger>
@@ -160,17 +158,17 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
                       <SelectItem value="teams">Microsoft Teams</SelectItem>
                     </SelectContent>
                   </Select>
-              <div key
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="webhook-url">Webhook URL</Label>
                   <Input
                     id="webhook-url"
                     type="url"
+                    value={formData.url}
                     placeholder={getProviderPlaceholder()}
-                      )}
                     onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                    
+                  />
                   {formData.provider === 'slack' && (
                     <p className="text-xs text-muted-foreground">
                       Get your Slack webhook URL from: Slack → Workspace → Add apps → Incoming Webhooks
@@ -187,17 +185,17 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
                       variant={formData.severityFilter.includes('critical') ? 'default' : 'outline'}
                       onClick={() => toggleSeverityFilter('critical')}
                     >
-                    onClick={(
+                      Critical
                     </Button>
-                    {testin
+                    <Button
                       type="button"
                       size="sm"
                       variant={formData.severityFilter.includes('warning') ? 'default' : 'outline'}
                       onClick={() => toggleSeverityFilter('warning')}
                     >
-                  </Button>
+                      Warning
                     </Button>
-                    size="s
+                    <Button
                       type="button"
                       size="sm"
                       variant={formData.severityFilter.includes('info') ? 'default' : 'outline'}
@@ -205,51 +203,51 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
                     >
                       Info
                     </Button>
-      </CardContent>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <Label htmlFor="webhook-enabled">Enable immediately</Label>
                   <Switch
-
+                    id="webhook-enabled"
                     checked={formData.enabled}
                     onCheckedChange={(checked) => setFormData({ ...formData, enabled: checked })}
                   />
-
+                </div>
               </div>
 
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShowDialog(false)}>
                   Cancel
-
+                </Button>
                 <Button
                   onClick={handleAddWebhook}
                   disabled={!formData.name || !formData.url || formData.severityFilter.length === 0}
                 >
                   Add Webhook
                 </Button>
-
+              </DialogFooter>
             </DialogContent>
-
+          </Dialog>
         </div>
+      </CardHeader>
 
-
-
+      <CardContent>
         {!webhooks || webhooks.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Broadcast size={48} className="mx-auto mb-3 opacity-50" />
             <p>No webhooks configured</p>
             <p className="text-sm">Add a webhook to start sending alerts to your team</p>
-
+          </div>
         ) : (
-
+          <div className="space-y-4">
             {webhooks.map((webhook) => (
               <div key={webhook.id} className="border rounded-lg p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="font-semibold flex items-center gap-2">
                       {webhook.name}
-
+                      {webhook.enabled ? (
                         <Badge variant="outline" className="text-success">
                           <CheckCircle size={14} weight="fill" className="mr-1" />
                           Enabled
@@ -257,66 +255,60 @@ import type { WebhookConfig, RuleSeverity } from '@/lib/types'
                       ) : (
                         <Badge variant="outline" className="text-muted-foreground">
                           <Warning size={14} weight="fill" className="mr-1" />
-
+                          Disabled
                         </Badge>
-
+                      )}
                     </h3>
                     <p className="text-xs text-muted-foreground capitalize mt-1">
                       {webhook.provider}
-
+                    </p>
                     <p className="text-sm text-muted-foreground font-mono break-all mt-1">
+                      {webhook.url}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteWebhook(webhook.id)}
+                  >
+                    <Trash size={16} />
+                  </Button>
+                </div>
 
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm text-muted-foreground">Severity filter:</span>
+                  <div className="flex gap-1">
+                    {webhook.severityFilter.map(severity => (
+                      <Badge key={severity} variant="secondary" className="text-xs">
+                        {severity}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleToggleWebhook(webhook.id)}
+                  >
+                    <Switch checked={webhook.enabled} className="mr-2" />
+                    {webhook.enabled ? 'Disable' : 'Enable'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleTestWebhook(webhook)}
+                    disabled={testing === webhook.id}
+                  >
+                    {testing === webhook.id ? 'Testing...' : 'Test Webhook'}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
