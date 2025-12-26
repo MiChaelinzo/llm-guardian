@@ -14,457 +14,396 @@ import { IncidentsList } from '@/components/IncidentsList'
 import { OnboardingDialog } from '@/components/OnboardingDialog'
 import { SponsorBadges } from '@/components/SponsorBadges'
 import { VoiceButton } from '@/components/VoiceButton'
-import { TrendVisualization } from '@/components/Trend
+import { TrendVisualization } from '@/components/TrendVisualization'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
-import type { TelemetryMetric, DetectionRule, Alert, Incid
-function App() {
-  const [rules, setRules] = useKV<DetectionRule[
-  const [incidents, setIncidents] = useKV<Incid
-  const [aiInsights, setAiInsights] = useKV<
-  ])
+import { calculateMetrics } from '@/lib/metrics'
+import type { TelemetryMetric, DetectionRule, Alert, Incident } from '@/lib/types'
 
-  const [timeRan
+function App() {
+  const [metrics, setMetrics] = useKV<TelemetryMetric[]>('telemetry-metrics', [])
+  const [rules, setRules] = useKV<DetectionRule[]>('detection-rules', [])
+  const [alerts, setAlerts] = useKV<Alert[]>('alerts', [])
+  const [incidents, setIncidents] = useKV<Incident[]>('incidents', [])
+  const [aiInsights, setAiInsights] = useKV<string[]>('ai-insights', [])
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding', false)
+  const [hasEncryptedStorage, setHasEncryptedStorage] = useState(false)
+
+  const [timeRange, setTimeRange] = useState<number>(15 * 60 * 1000)
   const [lastVoiceResponse, setLastVoiceResponse] = useState<string>('')
 
+  useEffect(() => {
     const checkOnboarding = async () => {
       if (!hasSeenOnboarding) {
+        return
       }
+    }
     checkOnboarding()
-
-    
+  }, [hasSeenOnboarding])
 
   useEffect(() => {
-      const hasStorage = await window.spark.kv.get('encrypted
+    const checkEncryptedStorage = async () => {
+      const hasStorage = await window.spark.kv.get('encrypted-credentials')
+      setHasEncryptedStorage(!!hasStorage)
     }
+    checkEncryptedStorage()
     const interval = setInterval(checkEncryptedStorage, 2000)
+    return () => clearInterval(interval)
   }, [])
-  useEffect(() => {
 
-          id: 'rule
-          description: 'Triggers when ave
+  useEffect(() => {
+    if (!rules || rules.length === 0) {
+      const defaultRules: DetectionRule[] = [
+        {
+          id: 'rule_1',
+          name: 'High Latency Alert',
+          description: 'Triggers when average latency exceeds 2 seconds',
+          metric: 'avgLatency',
           condition: 'gt',
+          threshold: 2000,
           severity: 'warning',
-          actions: ['alert', 'n
-       
-     
-          metric: 'p9
-        
-
+          enabled: true,
+          actions: ['alert', 'notify']
         },
+        {
+          id: 'rule_2',
+          name: 'P99 Latency Spike',
+          description: 'Triggers when P99 latency exceeds 5 seconds',
+          metric: 'p99Latency',
+          condition: 'gt',
+          threshold: 5000,
+          severity: 'critical',
+          enabled: true,
+          actions: ['alert', 'incident', 'notify']
+        },
+        {
           id: 'rule_3',
-          description: 'Trig
-   
-
-          actions: 
-      ]
-    }
-
-    c
-      setMetrics((current) 
-        const cutoff = Date.now() - 5 * 60 * 1000
-      })
-
-
-  }, [setMetrics])
-  useEffect(() => {
-      if (!metrics || !rules || !alerts) retu
-      con
-      const newAlerts: 
-      enabledRules.forEach((rule) => 
-        let shouldAlert = false
-        switch (rule.condition)
-            shouldAlert = 
-          case 'lt':
-            break
-            shouldAlert 
-          case 'gte':
-          
-         
+          name: 'High Error Rate',
+          description: 'Triggers when error rate exceeds 5%',
+          metric: 'errorRate',
+          condition: 'gt',
+          threshold: 5,
+          severity: 'critical',
+          enabled: true,
+          actions: ['alert', 'incident']
         }
-        if (shouldAlert) {
-            a => a.ruleId === rule.id && !a.acknowledged && Date.now()
+      ]
+      setRules(defaultRules)
+    }
+  }, [rules, setRules])
 
-            const alert: A
-              ruleId: rule
-              message: `${rule.
-              timestamp:
-              metadata: {
-          
-         
+  useEffect(() => {
+    const simulator = new TelemetrySimulator()
+    simulator.start((metric) => {
+      setMetrics((current) => {
+        const updated = [...(current || []), metric]
+        const cutoff = Date.now() - 5 * 60 * 1000
+        return updated.filter(m => m.timestamp > cutoff)
+      })
+    })
+
+    return () => simulator.stop()
+  }, [setMetrics])
+
+  useEffect(() => {
+    if (!metrics || !rules || !alerts) return
+
+    const enabledRules = (rules || []).filter(r => r.enabled)
+    const summary = calculateMetrics(metrics, timeRange)
+    const newAlerts: Alert[] = []
+
+    enabledRules.forEach((rule) => {
+      const currentValue = summary[rule.metric]
+      let shouldAlert = false
+
+      switch (rule.condition) {
+        case 'gt':
+          shouldAlert = currentValue > rule.threshold
+          break
+        case 'lt':
+          shouldAlert = currentValue < rule.threshold
+          break
+        case 'gte':
+          shouldAlert = currentValue >= rule.threshold
+          break
+        case 'lte':
+          shouldAlert = currentValue <= rule.threshold
+          break
+        case 'eq':
+          shouldAlert = currentValue === rule.threshold
+          break
+      }
+
+      if (shouldAlert) {
+        const existingAlert = (alerts || []).find(
+          a => a.ruleId === rule.id && !a.acknowledged && Date.now() - a.timestamp < 60000
+        )
+
+        if (!existingAlert) {
+          const alert: Alert = {
+            id: `alert_${Date.now()}_${Math.random()}`,
+            ruleId: rule.id,
+            ruleName: rule.name,
+            message: `${rule.name}: ${rule.description}`,
+            severity: rule.severity,
+            timestamp: Date.now(),
+            value: currentValue,
+            acknowledged: false,
+            metadata: {
+              metric: rule.metric,
+              threshold: rule.threshold,
+              condition: rule.condition
             }
           }
-      })
-      if (newAlerts.length > 0
-        
-          toast.error(ale
-            duration: 5000
-
-            const utterance = new SpeechSynthesisU
-         
-       
-          }
-     
-            for (const 
-
-                  c
-                  console.warn(`Webhook filter
-              } catch (error) {
-              }
-          }
+          newAlerts.push(alert)
+        }
       }
+    })
 
-  }, [me
-  cons
+    if (newAlerts.length > 0) {
+      setAlerts((current) => [...(current || []), ...newAlerts])
+      newAlerts.forEach(alert => {
+        toast.error(alert.message, {
+          duration: 5000
+        })
 
-    toast.success(
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(alert.message)
+          window.speechSynthesis.speak(utterance)
+        }
+      })
+    }
+  }, [metrics, rules, alerts, setAlerts])
 
-    c
-      id: `rule_${
-
+  const handleAddRule = useCallback((rule: DetectionRule) => {
+    setRules((current) => [...(current || []), rule])
+    toast.success('Detection rule created')
   }, [setRules])
-  const handleEditRule = useCallback((ru
-      (current || []).map(r => r.id === ruleId 
-    to
 
+  const handleEditRule = useCallback((ruleId: string, updates: Partial<DetectionRule>) => {
     setRules((current) =>
+      (current || []).map(r => r.id === ruleId ? { ...r, ...updates } : r)
     )
+    toast.success('Rule updated')
+  }, [setRules])
 
-  const handleAcknowledgeAlert = useCa
-      (current || []).map(a => a.id === alertId 
-    toast.success('Alert acknow
+  const handleToggleRule = useCallback((ruleId: string) => {
+    setRules((current) =>
+      (current || []).map(r => r.id === ruleId ? { ...r, enabled: !r.enabled } : r)
+    )
+  }, [setRules])
+
+  const handleDeleteRule = useCallback((ruleId: string) => {
+    setRules((current) => (current || []).filter(r => r.id !== ruleId))
+    toast.success('Rule deleted')
+  }, [setRules])
+
+  const handleAcknowledgeAlert = useCallback((alertId: string) => {
+    setAlerts((current) =>
+      (current || []).map(a => a.id === alertId ? { ...a, acknowledged: true } : a)
+    )
+    toast.success('Alert acknowledged')
+  }, [setAlerts])
+
+  const handleCreateIncident = useCallback((alertId: string) => {
+    const alert = (alerts || []).find(a => a.id === alertId)
+    if (!alert) return
 
     const incident: Incident = {
-      title: alert.r
+      id: `incident_${Date.now()}`,
+      title: alert.ruleName,
+      description: alert.message,
       severity: alert.severity,
-      createdAt: 
+      status: 'open',
+      createdAt: Date.now(),
+      alerts: [alert]
     }
-    setIncidents((current) => [...(current || []), inc
-    toast.success
+    setIncidents((current) => [...(current || []), incident])
+    toast.success('Incident created')
+  }, [alerts, setIncidents])
 
+  const handleUpdateIncident = useCallback((incidentId: string, updates: Partial<Incident>) => {
     setIncidents((current) =>
-        i.id === 
-          : i
+      (current || []).map(i =>
+        i.id === incidentId ? { ...i, ...updates } : i
+      )
     )
-  }, [setIncident
-  const handleVoiceTr
+  }, [setIncidents])
+
+  const handleVoiceTranscript = useCallback(async (transcript: string) => {
     try {
-        transcrip
-        a
+      const summary = calculateMetrics(metrics || [], timeRange)
+      const response = await processVoiceQuery(
+        transcript,
+        summary,
+        alerts || []
+      )
+      setLastVoiceResponse(response.text)
 
-      if ('speechSynthesis
-        window.speechSynthesis.speak(utteran
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(response.text)
+        window.speechSynthesis.speak(utterance)
+      }
     } catch (error) {
-      toast
+      toast.error('Voice query failed')
+    }
+  }, [metrics, alerts, timeRange])
 
-  }, [metrics, alerts, timeRang
-  const summary = calculateMetrics
+  const summary = calculateMetrics(metrics || [], timeRange)
+
   return (
-      <OnboardingDialog 
-      />
+    <>
+      {!hasSeenOnboarding && (
+        <OnboardingDialog
+          onComplete={() => setHasSeenOnboarding(true)}
+        />
+      )}
       <div className="container mx-auto p-4 md:p-6 max-w-7xl">
-          <header className="flex flex
-              <div className="w-10 h
-              </div>
-                <h1 class
-              </div>
+        <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <Waveform size={24} weight="bold" className="text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">VoiceWatch AI</h1>
+              <p className="text-sm text-muted-foreground">Conversational LLM Observability</p>
+            </div>
+          </div>
 
-              <EncryptionStatus hasEncryp
-                
+          <div className="flex items-center gap-3">
+            <EncryptionStatus hasEncryptedCredentials={hasEncryptedStorage} />
+            <VoiceButton onTranscript={handleVoiceTranscript} />
+          </div>
+        </header>
+
+        <SponsorBadges />
+
+        {lastVoiceResponse && (
+          <div className="mb-6 p-4 bg-accent/10 border border-accent rounded-lg">
+            <p className="text-sm">{lastVoiceResponse}</p>
+          </div>
+        )}
+
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="dashboard" className="gap-2">
+              <ChartLine size={18} />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="gap-2">
+              <Bell size={18} />
+              Alerts
+            </TabsTrigger>
+            <TabsTrigger value="rules" className="gap-2">
+              <Lightning size={18} />
+              Rules
+            </TabsTrigger>
+            <TabsTrigger value="incidents" className="gap-2">
+              <Bug size={18} />
+              Incidents
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2">
+              <Waveform size={18} />
+              Settings
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dashboard" className="space-y-6">
+            <MetricCards summary={summary} />
+
+            <TrendVisualization
+              metrics={metrics || []}
+              timeRange={timeRange}
+              type="latency"
+              title="Latency Trend with Forecast"
+              color="oklch(0.65 0.19 245)"
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <MetricChart
+                metrics={metrics || []}
+                title="Latency Trend"
+                type="latency"
+                timeRange={timeRange}
+                color="oklch(0.65 0.19 245)"
               />
-          </h
-          <SponsorBadges />
-          {
-         
-        
+              <MetricChart
+                metrics={metrics || []}
+                title="Error Rate"
+                type="error"
+                timeRange={timeRange}
+                color="oklch(0.65 0.22 25)"
+              />
+              <MetricChart
+                metrics={metrics || []}
+                title="Cost Over Time"
+                type="cost"
+                timeRange={timeRange}
+                color="oklch(0.68 0.18 305)"
+              />
+              <MetricChart
+                metrics={metrics || []}
+                title="Request Volume"
+                type="request"
+                timeRange={timeRange}
+                color="oklch(0.70 0.17 145)"
+              />
+            </div>
 
-              <TabsTrigger value=
-                Dashboard
-        
-                Alerts
-              <TabsTrigger value="rule
-                Rules
-              <TabsTrigger
-            
+            <AIInsights
+              summary={summary}
+              insights={aiInsights || []}
+            />
+          </TabsContent>
 
-                Settings
-            </TabsList>
-            <TabsContent value="dashboard" classN
-             
-              </div>
-              <MetricCards summ
-              <WebhookStatus />
-           
+          <TabsContent value="alerts" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Active Alerts</h2>
+              <p className="text-muted-foreground">Real-time monitoring alerts from detection rules</p>
+            </div>
+            <AlertsList
+              alerts={alerts || []}
+              onAcknowledge={handleAcknowledgeAlert}
+              onCreateIncident={(alert) => handleCreateIncident(alert.id)}
+            />
+          </TabsContent>
 
-                  metrics={metrics || []}
-                  title="Latency Trend with Forecast"
-                  timeRange={timeRange}
+          <TabsContent value="rules" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Detection Rules</h2>
+              <p className="text-muted-foreground">Configure threshold alerts and monitoring conditions</p>
+            </div>
+            <DetectionRules
+              rules={rules || []}
+              onAddRule={handleAddRule}
+              onToggleRule={handleToggleRule}
+              onEditRule={handleEditRule}
+              onDeleteRule={handleDeleteRule}
+            />
+          </TabsContent>
 
-                  metrics={metrics || []}
-                  title="Error
-                  timeRange={timeRange}
+          <TabsContent value="incidents" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Incident Management</h2>
+              <p className="text-muted-foreground">Track and resolve critical issues</p>
+            </div>
+            <IncidentsList
+              incidents={incidents || []}
+              onResolve={(incidentId) => handleUpdateIncident(incidentId, { status: 'resolved', resolvedAt: Date.now() })}
+            />
+          </TabsContent>
 
-                  <MetricChart
-                 
-                    color="oklc
-                  />
-               
-             
-           
-          
-       
-            
-
-              <div>
-                <p className="text-muted-foreground">Real-time
-
-                alerts={alerts || []}
-                onCreateI
-            </TabsContent>
-     
-                <h2 className="te
-              </
-
-                onToggleRule={handleToggleRule}
-                onEditRule={handleEd
-              
-
-     
-                <p className="text-muted-foreground">Tra
-
-                
-
-
-              <Settings /
-          </Tabs>
-     
+          <TabsContent value="settings" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Settings</h2>
+              <p className="text-muted-foreground">Configure API integrations and platform credentials</p>
+            </div>
+            <Settings />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </>
   )
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export default App
