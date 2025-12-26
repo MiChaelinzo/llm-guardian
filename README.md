@@ -98,6 +98,7 @@ VoiceWatch AI responds with both **spoken explanations** and **visual dashboards
 - **Multiple severity levels** - Critical, Warning, Info
 - **Configurable actions** - Create alerts, incidents, and notifications
 - **Automated alerting** - Real-time notifications with voice announcements
+- **Webhook integrations** - Send alerts to Slack and PagerDuty
 - **Easy management** - Toggle rules on/off with visual status indicators
 - **Rule duplication** - Clone existing rules for similar thresholds
 - **Actionable alerts** - Clear messages with metric values and context
@@ -248,6 +249,43 @@ See [SECURITY.md](./SECURITY.md) for complete security documentation.
 3. Select your `.enc` backup file
 4. Enter the decryption password
 5. Credentials are automatically decrypted and stored
+
+#### Webhook Integrations
+
+**Send alerts to Slack or PagerDuty automatically:**
+
+VoiceWatch AI can send real-time alerts to your team communication and incident management tools.
+
+**Slack Setup:**
+1. Navigate to Settings → Webhook Integrations
+2. Click "Add Webhook"
+3. Enter a name (e.g., "Production Alerts")
+4. Select "Slack" as the provider
+5. Get your webhook URL from [Slack Incoming Webhooks](https://api.slack.com/messaging/webhooks)
+6. Paste the webhook URL (format: `https://hooks.slack.com/services/...`)
+7. Select which severity levels to send (critical, warning, info)
+8. Click "Test" to verify the integration
+9. Enable the webhook
+
+**PagerDuty Setup:**
+1. Navigate to Settings → Webhook Integrations
+2. Click "Add Webhook"
+3. Enter a name (e.g., "On-Call Alerts")
+4. Select "PagerDuty" as the provider
+5. Get your routing key from [PagerDuty Integrations](https://support.pagerduty.com/docs/services-and-integrations)
+6. Enter the PagerDuty Events API URL with routing key: `https://events.pagerduty.com/v2/enqueue?routing_key=YOUR_KEY`
+7. Select which severity levels to send (typically only critical)
+8. Click "Test" to verify the integration
+9. Enable the webhook
+
+**Webhook Features:**
+- ✅ **Multiple webhooks** - Configure multiple destinations simultaneously
+- ✅ **Severity filtering** - Send only critical, warning, or info alerts
+- ✅ **Rich formatting** - Slack messages include colors, fields, and emojis
+- ✅ **PagerDuty incidents** - Automatically create incidents with full context
+- ✅ **Enable/disable** - Toggle webhooks without deletion
+- ✅ **Test functionality** - Send test alerts to verify configuration
+- ✅ **Automatic delivery** - Webhooks fire immediately when rules are triggered
 
 ### 1. Voice Interaction
 Click the **large microphone button** in the header and speak your query:

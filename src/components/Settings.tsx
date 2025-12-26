@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { useSecureStorage } from '@/hooks/use-secure-storage'
 import { validateKey } from '@/lib/encryption'
 import { CredentialBackup } from '@/components/CredentialBackup'
+import { Webhooks } from '@/components/Webhooks'
 
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -494,7 +495,9 @@ export function Settings() {
 
       </Tabs>
 
-      <CredentialBackup 
+      <Webhooks />
+
+      <CredentialBackup
         onExport={handleExportCredentials}
         onImport={handleImportCredentials}
       />

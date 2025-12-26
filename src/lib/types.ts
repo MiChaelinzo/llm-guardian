@@ -70,6 +70,18 @@ export interface Incident {
   aiSuggestion?: string
 }
 
+export type WebhookProvider = 'slack' | 'pagerduty'
+
+export interface WebhookConfig {
+  id: string
+  name: string
+  provider: WebhookProvider
+  enabled: boolean
+  url: string
+  severityFilter: RuleSeverity[]
+  createdAt: number
+}
+
 export interface APIConfig {
   googleCloud: {
     projectId: string

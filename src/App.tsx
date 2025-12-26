@@ -17,16 +17,19 @@ import { ConfluentStream } from '@/components/ConfluentStream'
 import { VoiceButton } from '@/components/VoiceButton'
 import { HistoricalAnalysis } from '@/components/HistoricalAnalysis'
 import { TrendVisualization } from '@/components/TrendVisualization'
+import { WebhookStatus } from '@/components/WebhookStatus'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { calculateMetrics } from '@/lib/metrics'
 import { processVoiceQuery } from '@/lib/voice'
-import type { TelemetryMetric, DetectionRule, Alert, Incident } from '@/lib/types'
+import { sendWebhook } from '@/lib/webhooks'
+import type { TelemetryMetric, DetectionRule, Alert, Incident, WebhookConfig } from '@/lib/types'
 
 function App() {
   const [metrics, setMetrics] = useKV<TelemetryMetric[]>('telemetry-metrics', [])
   const [rules, setRules] = useKV<DetectionRule[]>('detection-rules', [])
   const [alerts, setAlerts] = useKV<Alert[]>('alerts', [])
   const [incidents, setIncidents] = useKV<Incident[]>('incidents', [])
+  const [webhooks, setWebhooks] = useKV<WebhookConfig[]>('webhooks', [])
   const [aiInsights, setAiInsights] = useKV<string[]>('ai-insights', [
     'System performance is stable with normal latency patterns'
   ])
@@ -178,7 +181,7 @@ function App() {
       if (newAlerts.length > 0) {
         setAlerts((current) => [...(current || []), ...newAlerts])
         
-        newAlerts.forEach((alert) => {
+        newAlerts.forEach(async (alert) => {
           toast.error(alert.message, {
             description: `Rule: ${alert.ruleName}`,
             duration: 5000
@@ -192,12 +195,28 @@ function App() {
             utterance.pitch = 1
             window.speechSynthesis.speak(utterance)
           }
+
+          if (webhooks && webhooks.length > 0) {
+            const enabledWebhooks = webhooks.filter(w => w.enabled)
+            for (const webhook of enabledWebhooks) {
+              try {
+                const success = await sendWebhook(webhook, alert)
+                if (success) {
+                  console.log(`Webhook sent successfully: ${webhook.name}`)
+                } else {
+                  console.warn(`Webhook filtered or failed: ${webhook.name}`)
+                }
+              } catch (error) {
+                console.error(`Error sending webhook to ${webhook.name}:`, error)
+              }
+            }
+          }
         })
       }
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [metrics, rules, alerts, setAlerts, timeRange])
+  }, [metrics, rules, alerts, webhooks, setAlerts, timeRange])
 
   const handleToggleRule = useCallback((ruleId: string) => {
     setRules((current) =>
@@ -354,6 +373,8 @@ function App() {
               </div>
 
               <MetricCards summary={summary} />
+
+              <WebhookStatus />
 
               <HistoricalAnalysis metrics={metrics || []} timeRange={timeRange} />
 
