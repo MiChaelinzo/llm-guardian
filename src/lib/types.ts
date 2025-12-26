@@ -70,7 +70,7 @@ export interface Incident {
   aiSuggestion?: string
 }
 
-export type WebhookProvider = 'slack' | 'pagerduty'
+export type WebhookProvider = 'slack' | 'pagerduty' | 'teams'
 
 export interface WebhookConfig {
   id: string

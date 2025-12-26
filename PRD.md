@@ -45,7 +45,7 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
 - **Success criteria**: Dashboard reflects current state with <1 second lag, handles 100+ data points smoothly
 
 ### Intelligent Detection Rules
-- **Functionality**: AI-defined and user-configurable custom threshold alerts for monitoring metrics (latency spikes, error rates, cost overruns, token usage, request volume) with webhook integrations to Slack and PagerDuty
+- **Functionality**: AI-defined and user-configurable custom threshold alerts for monitoring metrics (latency spikes, error rates, cost overruns, token usage, request volume) with webhook integrations to Slack, PagerDuty, and Microsoft Teams
 - **Purpose**: Proactive alerting before issues impact users with complete control over thresholds and conditions, plus instant notifications to team collaboration tools
 - **Trigger**: Metric threshold crossed, anomaly detected, or user creates new rule
 - **Progression**: Rule triggered → Alert generated → Webhooks sent → Voice notification → Dashboard highlights issue → Action item created
@@ -58,18 +58,19 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
   - Alerts fire within 5 seconds of threshold breach
   - Visual rule status indicators showing enabled/disabled state
   - Comprehensive rule cards showing metric, condition, threshold, and description
-  - Webhook integrations for Slack and PagerDuty with configurable severity filters
+  - Webhook integrations for Slack, PagerDuty, and Microsoft Teams with configurable severity filters
   - Test webhook functionality to verify integration setup
   - Multiple webhooks can be configured simultaneously
 
 ### Webhook Integrations
-- **Functionality**: Send real-time alerts to Slack channels or PagerDuty incidents when detection rules are triggered
+- **Functionality**: Send real-time alerts to Slack channels, PagerDuty incidents, or Microsoft Teams channels when detection rules are triggered
 - **Purpose**: Enable team-wide awareness of critical issues and integrate with existing incident management workflows
 - **Trigger**: Alert fires that matches webhook severity filter
 - **Progression**: Alert created → Webhook payload formatted → HTTP POST sent → Delivery confirmed → Team notified
 - **Success criteria**:
   - Support for Slack incoming webhooks with rich message formatting
   - Support for PagerDuty Events API v2 with proper severity mapping
+  - Support for Microsoft Teams incoming webhooks with MessageCard format
   - Configurable per-webhook severity filters (critical, warning, info)
   - Enable/disable webhooks without deletion
   - Test webhook functionality with sample alerts

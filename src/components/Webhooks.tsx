@@ -25,7 +25,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
   
   const [formData, setFormData] = useState({
     name: '',
-    provider: 'slack' as 'slack' | 'pagerduty',
+    provider: 'slack' as 'slack' | 'pagerduty' | 'teams',
     url: '',
     enabled: true,
     severityFilter: ['critical', 'warning', 'info'] as RuleSeverity[]
@@ -109,7 +109,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
               Webhook Integrations
             </CardTitle>
             <CardDescription>
-              Send alerts to Slack or PagerDuty when rules are triggered
+              Send alerts to Slack, PagerDuty, or Microsoft Teams when rules are triggered
             </CardDescription>
           </div>
           
@@ -143,7 +143,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
                   <Label htmlFor="webhook-provider">Provider</Label>
                   <Select
                     value={formData.provider}
-                    onValueChange={(value: 'slack' | 'pagerduty') =>
+                    onValueChange={(value: 'slack' | 'pagerduty' | 'teams') =>
                       setFormData({ ...formData, provider: value })
                     }
                   >
@@ -153,6 +153,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
                     <SelectContent>
                       <SelectItem value="slack">Slack</SelectItem>
                       <SelectItem value="pagerduty">PagerDuty</SelectItem>
+                      <SelectItem value="teams">Microsoft Teams</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -165,7 +166,9 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
                     placeholder={
                       formData.provider === 'slack'
                         ? 'https://hooks.slack.com/services/...'
-                        : 'https://events.pagerduty.com/v2/enqueue'
+                        : formData.provider === 'pagerduty'
+                        ? 'https://events.pagerduty.com/v2/enqueue'
+                        : 'https://outlook.office.com/webhook/...'
                     }
                     value={formData.url}
                     onChange={(e) => setFormData({ ...formData, url: e.target.value })}
@@ -173,6 +176,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
                   <p className="text-xs text-muted-foreground">
                     {formData.provider === 'slack' && 'Get your webhook URL from Slack App settings'}
                     {formData.provider === 'pagerduty' && 'Include routing_key as query parameter'}
+                    {formData.provider === 'teams' && 'Get your webhook URL from Teams channel connectors'}
                   </p>
                 </div>
 
@@ -236,7 +240,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
             <Broadcast size={48} weight="thin" className="mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No webhooks configured</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Add a webhook to start sending alerts to Slack or PagerDuty
+              Add a webhook to start sending alerts to Slack, PagerDuty, or Microsoft Teams
             </p>
           </div>
         ) : (

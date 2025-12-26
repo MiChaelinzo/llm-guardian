@@ -30,6 +30,23 @@ interface PagerDutyPayload {
   }
 }
 
+interface TeamsPayload {
+  '@type': 'MessageCard'
+  '@context': 'https://schema.org/extensions'
+  summary: string
+  themeColor: string
+  title: string
+  sections: Array<{
+    activityTitle?: string
+    activitySubtitle?: string
+    facts: Array<{
+      name: string
+      value: string
+    }>
+    text?: string
+  }>
+}
+
 function getSeverityColor(severity: string): string {
   switch (severity) {
     case 'critical':
@@ -109,6 +126,54 @@ function formatPagerDutyPayload(alert: Alert, routingKey: string): PagerDutyPayl
   }
 }
 
+function formatTeamsPayload(alert: Alert): TeamsPayload {
+  const emoji = alert.severity === 'critical' ? '🚨' : alert.severity === 'warning' ? '⚠️' : 'ℹ️'
+  
+  const facts: Array<{ name: string; value: string }> = [
+    {
+      name: 'Severity',
+      value: alert.severity.toUpperCase()
+    },
+    {
+      name: 'Current Value',
+      value: alert.value.toFixed(2)
+    }
+  ]
+
+  if (alert.metadata) {
+    facts.push(
+      {
+        name: 'Metric',
+        value: alert.metadata.metric
+      },
+      {
+        name: 'Threshold',
+        value: `${alert.metadata.condition} ${alert.metadata.threshold}`
+      }
+    )
+  }
+
+  facts.push({
+    name: 'Timestamp',
+    value: new Date(alert.timestamp).toLocaleString()
+  })
+
+  return {
+    '@type': 'MessageCard',
+    '@context': 'https://schema.org/extensions',
+    summary: `VoiceWatch AI Alert: ${alert.ruleName}`,
+    themeColor: getSeverityColor(alert.severity),
+    title: `${emoji} ${alert.ruleName}`,
+    sections: [
+      {
+        activityTitle: 'VoiceWatch AI Alert',
+        activitySubtitle: alert.message,
+        facts
+      }
+    ]
+  }
+}
+
 export async function sendWebhook(webhook: WebhookConfig, alert: Alert): Promise<boolean> {
   if (!webhook.enabled) {
     return false
@@ -129,6 +194,8 @@ export async function sendWebhook(webhook: WebhookConfig, alert: Alert): Promise
     } else if (webhook.provider === 'pagerduty') {
       const routingKey = new URL(webhook.url).searchParams.get('routing_key') || 'unknown'
       payload = formatPagerDutyPayload(alert, routingKey)
+    } else if (webhook.provider === 'teams') {
+      payload = formatTeamsPayload(alert)
     } else {
       return false
     }
