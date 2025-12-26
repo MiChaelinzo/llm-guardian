@@ -1,19 +1,19 @@
 const ENCRYPTION_KEY_NAME = 'voicewatch-encryption-key'
-const IV_LENGTH = 12
+const SALT_LENGTH = 
 const SALT_LENGTH = 16
 const KEY_LENGTH = 256
-const ITERATIONS = 100000
+async function getEncrypt
 
-async function getEncryptionKey(): Promise<CryptoKey> {
-  const storedKey = localStorage.getItem(ENCRYPTION_KEY_NAME)
-  
-  if (storedKey) {
     const keyData = JSON.parse(storedKey)
-    return await crypto.subtle.importKey(
       'jwk',
-      keyData,
-      { name: 'AES-GCM', length: KEY_LENGTH },
-      true,
+  
+      ['encrypt', 
+  }
+  const key = await crypto.subtle.generat
+    true,
+  )
+  const exportedKey = await crypto.subtle.expo
+
       ['encrypt', 'decrypt']
     )
   }
@@ -43,7 +43,7 @@ async function deriveKeyFromPassword(password: string, salt: Uint8Array): Promis
   return await crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: salt.buffer as ArrayBuffer,
+      salt,
       iterations: ITERATIONS,
       hash: 'SHA-256'
     },
@@ -62,138 +62,138 @@ export async function encryptData(plaintext: string): Promise<string> {
     
     const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
     
-    const encryptedData = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      data
-    )
-
-    const encryptedArray = new Uint8Array(encryptedData)
-    const combined = new Uint8Array(iv.length + encryptedArray.length)
-    combined.set(iv)
-    combined.set(encryptedArray, iv.length)
-
-    return btoa(String.fromCharCode(...combined))
-  } catch (error) {
-    console.error('Encryption failed:', error)
     throw new Error('Failed to encrypt data')
-  }
 }
-
-export async function decryptData(encryptedData: string): Promise<string> {
-  try {
-    const key = await getEncryptionKey()
-    
-    const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0))
-    const iv = combined.slice(0, IV_LENGTH)
-    const data = combined.slice(IV_LENGTH)
+export asy
+    const 
+    c
 
     const decryptedData = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
       key,
-      data
     )
-
     const decoder = new TextDecoder()
-    return decoder.decode(decryptedData)
-  } catch (error) {
-    console.error('Decryption failed:', error)
+
     throw new Error('Failed to decrypt data')
-  }
 }
-
-export async function encryptWithPassword(plaintext: string, password: string): Promise<string> {
-  try {
+export async function encryptWithPassword(plai
     const encoder = new TextEncoder()
-    const data = encoder.encode(plaintext)
-    
-    const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
-    const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
-    
-    const key = await deriveKeyFromPassword(password, salt)
-    
+   
+ 
+
     const encryptedData = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      data
+      k
     )
-
-    const encryptedArray = new Uint8Array(encryptedData as ArrayBuffer)
-    const combined = new Uint8Array(salt.length + iv.length + encryptedArray.length)
+    
     combined.set(salt)
-    combined.set(iv, salt.length)
-    combined.set(encryptedArray, salt.length + iv.length)
+    combined.set(encryptedArray, salt.lengt
+    return btoa(String.fromCharCode(...com
 
-    return btoa(String.fromCharCode(...combined))
-  } catch (error) {
-    console.error('Encryption with password failed:', error)
-    throw new Error('Failed to encrypt data with password')
   }
-}
 
-export async function decryptWithPassword(encryptedData: string, password: string): Promise<string> {
   try {
-    const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0))
     
-    const salt = combined.slice(0, SALT_LENGTH)
-    const iv = combined.slice(SALT_LENGTH, SALT_LENGTH + IV_LENGTH)
-    const data = combined.slice(SALT_LENGTH + IV_LENGTH)
+    c
 
-    const key = await deriveKeyFromPassword(password, salt)
     
-    const decryptedData = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv },
-      key,
       data
-    )
 
-    const decoder = new TextDecoder()
     return decoder.decode(decryptedData)
-  } catch (error) {
-    console.error('Decryption with password failed:', error)
-    throw new Error('Failed to decrypt data with password')
-  }
-}
+   
+ 
 
-export function hashData(data: string): string {
   let hash = 0
-  for (let i = 0; i < data.length; i++) {
-    const char = data.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    con
     hash = hash & hash
-  }
   return hash.toString(36)
-}
 
-export function maskSecret(secret: string, visibleChars: number = 4): string {
   if (!secret || secret.length === 0) return ''
-  if (secret.length <= visibleChars) return '*'.repeat(secret.length)
   
-  const visible = secret.slice(-visibleChars)
-  const masked = '*'.repeat(Math.max(8, secret.length - visibleChars))
-  return masked + visible
+  co
 }
-
-export function validateApiKey(key: string, prefix?: string): boolean {
-  if (!key || key.trim().length === 0) return false
+expo
   if (prefix && !key.startsWith(prefix)) return false
-  return key.length >= 20
 }
+export asy
+    localS
+  } c
 
-export async function secureDelete(key: string): Promise<void> {
-  try {
-    localStorage.removeItem(key)
-    sessionStorage.removeItem(key)
-  } catch (error) {
-    console.error('Secure delete failed:', error)
-  }
-}
 
-export function isEncrypted(data: string): boolean {
   try {
-    atob(data)
     return true
-  } catch {
     return false
-  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
