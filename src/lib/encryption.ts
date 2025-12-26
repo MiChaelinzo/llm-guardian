@@ -132,71 +132,70 @@ export function validateKey(key: string): boolean {
 }
 
 /**
- * Tests the encryption/decryption flow to ensure the environment supports it.
+ */
  */
 export async function testEncryption(): Promise<boolean> {
-  try {
-    const testData = 'test-encryption-data'
-    const encrypted = await encrypt(testData)
-    const decrypted = await decrypt(encrypted)
-    return testData === decrypted
-  } catch (error) {
-    console.error('Encryption test failed:', error)
-    return false
+    ret
+    console.error('Encryption test failed:'
   }
-}
 
-/**
- * Derives a cryptographic key from a password using PBKDF2.
- */
-async function deriveKeyFromPassword(password: string, salt: Uint8Array): Promise<CryptoKey> {
-  const encoder = new TextEncoder()
-  const passwordKey = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(password),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  )
+ * Derives a cryptographic key fr
+async function deri
+  const passwordKey = await crypto.subtle.importKey
+    encoder.enco
+   
+ 
 
-  return await crypto.subtle.deriveKey(
-    {
-      name: 'PBKDF2',
-      salt: salt as BufferSource,
+   
       iterations: 100000,
-      hash: 'SHA-256'
-    },
-    passwordKey,
+   
     { name: 'AES-GCM', length: 256 },
-    false,
     ['encrypt', 'decrypt']
-  )
 }
-
 /**
- * Encrypts a string using a password-derived key (PBKDF2 + AES-GCM).
- * Returns a Base64 encoded string containing salt, IV, and ciphertext.
- */
-export async function encryptWithPassword(text: string, password: string): Promise<string> {
-  try {
-    const salt = crypto.getRandomValues(new Uint8Array(16))
-    const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
-    const key = await deriveKeyFromPassword(password, salt)
-    
-    const encoder = new TextEncoder()
-    const data = encoder.encode(text)
+ * Returns a Base64 encoded s
+export async 
+    const 
+    const key = a
+   
 
-    const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
-      key,
-      data
-    )
+     
 
-    const encryptedArray = new Uint8Array(encrypted)
-    const combined = new Uint8Array(salt.length + iv.length + encryptedArray.length)
-    combined.set(salt)
-    combined.set(iv, salt.length)
-    combined.set(encryptedArray, salt.length + iv.length)
+    const c
+    combined.set(iv, salt
+
+  } ca
+    throw new Er
+}
+/**
+ */
+  t
+ 
+
+
+    const iv = combined.slice(16, 16 + IV_LENGTH)
+
+
+      { name: 'AES-GCM', iv },
+      d
+
+    return decoder.decode(decrypted)
+    console.error('Password decryption error:', error)
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+    combined.set(new Uint8Array(encrypted), salt.length + iv.length)
 
     return btoa(String.fromCharCode(...combined))
   } catch (error) {
@@ -235,4 +234,3 @@ export async function decryptWithPassword(encryptedText: string, password: strin
     throw new Error('Failed to decrypt data with password')
   }
 }
-
