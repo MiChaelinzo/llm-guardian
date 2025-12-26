@@ -503,7 +503,6 @@ export function DetectionRules({ rules, onToggleRule, onAddRule, onEditRule, onD
             </Button>
           </DialogContent>
         </Dialog>
-      
       {rules.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Lightning size={48} weight="thin" className="mx-auto mb-3 opacity-50" />
