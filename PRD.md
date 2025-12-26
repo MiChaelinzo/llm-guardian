@@ -63,10 +63,10 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
   - Multiple webhooks can be configured simultaneously
 
 ### Webhook Integrations
-- **Functionality**: Send real-time alerts to Slack channels, PagerDuty incidents, or Microsoft Teams channels when detection rules are triggered
-- **Purpose**: Enable team-wide awareness of critical issues and integrate with existing incident management workflows
-- **Trigger**: Alert fires that matches webhook severity filter
-- **Progression**: Alert created → Webhook payload formatted → HTTP POST sent → Delivery confirmed → Team notified
+- **Functionality**: Send real-time alerts to Slack channels, PagerDuty incidents, or Microsoft Teams channels when detection rules are triggered, with comprehensive integration testing and validation
+- **Purpose**: Enable team-wide awareness of critical issues, integrate with existing incident management workflows, and ensure reliable alert delivery
+- **Trigger**: Alert fires that matches webhook severity filter, or user initiates test from integration testing panel
+- **Progression**: Alert created → Webhook payload formatted → HTTP POST sent → Delivery confirmed/tracked → Team notified
 - **Success criteria**:
   - Support for Slack incoming webhooks with rich message formatting
   - Support for PagerDuty Events API v2 with proper severity mapping
@@ -77,6 +77,26 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
   - Multiple webhooks can be active simultaneously
   - Formatted payloads include alert details, metrics, and thresholds
   - Graceful error handling for failed webhook deliveries
+
+### Webhook Integration Testing (NEW)
+- **Functionality**: Real-time endpoint validation with single tests, burst tests (5x), comprehensive health monitoring, and delivery tracking for all configured webhooks
+- **Purpose**: Ensure webhook reliability before production use, diagnose connectivity issues, monitor delivery success rates, and validate endpoint configurations
+- **Trigger**: User navigates to Testing tab, clicks test buttons, or views webhook health dashboard
+- **Progression**: User selects webhook → Configures test severity → Runs single/burst test → Views detailed results (success/fail, response time, status codes, errors) → Reviews historical test data and delivery statistics
+- **Success criteria**:
+  - Single test functionality validates endpoint connectivity and response
+  - Burst testing (5 rapid requests) validates rate handling and consistency
+  - Real-time progress indicators during test execution
+  - Detailed test results showing: success status, HTTP status codes, response times, error messages
+  - Test history preserved (last 10 tests per webhook)
+  - Aggregated statistics: total tests, success count, success rate percentage, average response time
+  - URL validation with provider-specific checks (Slack domains, Teams domains, PagerDuty endpoints)
+  - 10-second timeout handling with clear error messages
+  - CORS and network error detection with actionable feedback
+  - Per-webhook health badges (Healthy 90%+, Degraded 50-90%, Unhealthy <50%)
+  - Webhook delivery tracking showing last 100 deliveries with timestamps
+  - Real-time delivery status monitoring in Settings tab
+  - Dedicated Testing tab in main navigation for comprehensive webhook validation
 
 ### Conversational Alert Triage
 - **Functionality**: Voice-guided investigation of triggered alerts with AI-suggested remediation

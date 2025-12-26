@@ -18,6 +18,7 @@ import { useSecureStorage } from '@/hooks/use-secure-storage'
 import { validateKey } from '@/lib/encryption'
 import { CredentialBackup } from '@/components/CredentialBackup'
 import { Webhooks } from '@/components/Webhooks'
+import { WebhookStatus } from '@/components/WebhookStatus'
 
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -496,6 +497,8 @@ export function Settings() {
       </Tabs>
 
       <Webhooks />
+
+      <WebhookStatus />
 
       <CredentialBackup
         onExport={handleExportCredentials}

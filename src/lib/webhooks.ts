@@ -183,6 +183,11 @@ export async function sendWebhook(webhook: WebhookConfig, alert: Alert): Promise
     return false
   }
 
+  const startTime = Date.now()
+  let success = false
+  let statusCode: number | undefined
+  let error: string | undefined
+
   try {
     let payload: any
     let headers: Record<string, string> = {
@@ -206,10 +211,55 @@ export async function sendWebhook(webhook: WebhookConfig, alert: Alert): Promise
       body: JSON.stringify(payload)
     })
 
-    return response.ok
+    success = response.ok
+    statusCode = response.status
+
+    if (!success) {
+      try {
+        const errorBody = await response.text()
+        error = `HTTP ${response.status}: ${errorBody.substring(0, 100)}`
+      } catch {
+        error = `HTTP ${response.status}: ${response.statusText}`
+      }
+    }
+  } catch (err) {
+    console.error(`Webhook delivery failed for ${webhook.name}:`, err)
+    success = false
+    error = err instanceof Error ? err.message : 'Unknown error'
+  }
+
+  await trackWebhookDelivery({
+    webhookId: webhook.id,
+    webhookName: webhook.name,
+    alertId: alert.id,
+    alertMessage: alert.message,
+    severity: alert.severity,
+    timestamp: startTime,
+    success,
+    statusCode,
+    error
+  })
+
+  return success
+}
+
+async function trackWebhookDelivery(delivery: {
+  webhookId: string
+  webhookName: string
+  alertId: string
+  alertMessage: string
+  severity: 'info' | 'warning' | 'critical'
+  timestamp: number
+  success: boolean
+  statusCode?: number
+  error?: string
+}) {
+  try {
+    const deliveries = await window.spark.kv.get<any[]>('webhook-deliveries') || []
+    const updatedDeliveries = [...deliveries, delivery].slice(-100)
+    await window.spark.kv.set('webhook-deliveries', updatedDeliveries)
   } catch (error) {
-    console.error(`Webhook delivery failed for ${webhook.name}:`, error)
-    return false
+    console.error('Failed to track webhook delivery:', error)
   }
 }
 

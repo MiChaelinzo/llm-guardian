@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChartLine, Bell, Lightning, Bug, Waveform } from '@phosphor-icons/react'
+import { ChartLine, Bell, Lightning, Bug, Waveform, Flask } from '@phosphor-icons/react'
 import { MetricCards } from '@/components/MetricCards'
 import { MetricChart } from '@/components/MetricChart'
 import { AIInsights } from '@/components/AIInsights'
@@ -15,6 +15,7 @@ import { OnboardingDialog } from '@/components/OnboardingDialog'
 import { SponsorBadges } from '@/components/SponsorBadges'
 import { VoiceButton } from '@/components/VoiceButton'
 import { TrendVisualization } from '@/components/TrendVisualization'
+import { WebhookTestingPanel } from '@/components/WebhookTestingPanel'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
@@ -302,6 +303,10 @@ function App() {
               <Bug size={18} />
               Incidents
             </TabsTrigger>
+            <TabsTrigger value="webhooks" className="gap-2">
+              <Flask size={18} />
+              Testing
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Waveform size={18} />
               Settings
@@ -391,6 +396,14 @@ function App() {
               incidents={incidents || []}
               onResolve={(incidentId) => handleUpdateIncident(incidentId, { status: 'resolved', resolvedAt: Date.now() })}
             />
+          </TabsContent>
+
+          <TabsContent value="webhooks" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Webhook Integration Testing</h2>
+              <p className="text-muted-foreground">Test and validate webhook endpoints in real-time</p>
+            </div>
+            <WebhookTestingPanel />
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
