@@ -24,7 +24,6 @@ async function getEncryptionKey(): Promise<CryptoKey> {
     }
   }
 
-  // Generate a new key if none exists or import failed
   const key = await crypto.subtle.generateKey(
     { name: 'AES-GCM', length: KEY_LENGTH },
     true,
@@ -54,12 +53,11 @@ export async function encrypt(text: string): Promise<string> {
       data
     )
 
-    // Combine IV and Encrypted Data
-    const combined = new Uint8Array(iv.length + new Uint8Array(encrypted).length)
+    const encryptedArray = new Uint8Array(encrypted)
+    const combined = new Uint8Array(iv.length + encryptedArray.length)
     combined.set(iv)
-    combined.set(new Uint8Array(encrypted), iv.length)
+    combined.set(encryptedArray, iv.length)
 
-    // Convert to Base64
     return btoa(String.fromCharCode(...combined))
   } catch (error) {
     console.error('Encryption error:', error)
@@ -74,14 +72,12 @@ export async function decrypt(encryptedText: string): Promise<string> {
   try {
     const key = await getEncryptionKey()
     
-    // Convert Base64 back to Uint8Array
     const binaryString = atob(encryptedText)
     const combined = new Uint8Array(binaryString.length)
     for (let i = 0; i < binaryString.length; i++) {
       combined[i] = binaryString.charCodeAt(i)
     }
 
-    // Extract IV and Ciphertext
     const iv = combined.slice(0, IV_LENGTH)
     const data = combined.slice(IV_LENGTH)
 
@@ -109,7 +105,7 @@ export function hashSecret(secret: string): string {
   for (let i = 0; i < secret.length; i++) {
     const char = secret.charCodeAt(i)
     hash = ((hash << 5) - hash) + char
-    hash = hash & hash // Convert to 32bit integer
+    hash = hash & hash
   }
   return Math.abs(hash).toString(16)
 }
@@ -132,70 +128,70 @@ export function validateKey(key: string): boolean {
 }
 
 /**
- */
+ * Tests the encryption/decryption functionality.
  */
 export async function testEncryption(): Promise<boolean> {
-    ret
-    console.error('Encryption test failed:'
+  try {
+    const testData = 'test-encryption-data'
+    const encrypted = await encrypt(testData)
+    const decrypted = await decrypt(encrypted)
+    return testData === decrypted
+  } catch (error) {
+    console.error('Encryption test failed:', error)
+    return false
   }
-
- * Derives a cryptographic key fr
-async function deri
-  const passwordKey = await crypto.subtle.importKey
-    encoder.enco
-   
- 
-
-   
-      iterations: 100000,
-   
-    { name: 'AES-GCM', length: 256 },
-    ['encrypt', 'decrypt']
 }
+
 /**
- * Returns a Base64 encoded s
-export async 
-    const 
-    const key = a
-   
-
-      { name: 'AES-GCM', iv },
-     
-
-    const c
-    combined.set(iv, salt
-
-  } ca
-    throw new Er
-}
-/**
+ * Derives a cryptographic key from a password using PBKDF2.
  */
-  t
- 
+async function deriveKeyFromPassword(password: string, salt: Uint8Array): Promise<CryptoKey> {
+  const encoder = new TextEncoder()
+  const passwordKey = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  )
 
+  return await crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: salt.buffer as ArrayBuffer,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    passwordKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  )
+}
 
-    const iv = combined.slice(16, 16 + IV_LENGTH)
+/**
+ * Encrypts a string using a password-derived key (PBKDF2 + AES-GCM).
+ * Returns a Base64 encoded string containing the Salt, IV, and Ciphertext.
+ */
+export async function encryptWithPassword(text: string, password: string): Promise<string> {
+  try {
+    const salt = crypto.getRandomValues(new Uint8Array(16))
+    const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+    const key = await deriveKeyFromPassword(password, salt)
+    const encoder = new TextEncoder()
+    const data = encoder.encode(text)
 
-
+    const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
-      d
+      key,
+      data
+    )
 
-    return decoder.decode(decrypted)
-    console.error('Password decryption error:', error)
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-    combined.set(new Uint8Array(encrypted), salt.length + iv.length)
+    const encryptedArray = new Uint8Array(encrypted)
+    const combined = new Uint8Array(salt.length + iv.length + encryptedArray.length)
+    combined.set(salt)
+    combined.set(iv, salt.length)
+    combined.set(encryptedArray, salt.length + iv.length)
 
     return btoa(String.fromCharCode(...combined))
   } catch (error) {
