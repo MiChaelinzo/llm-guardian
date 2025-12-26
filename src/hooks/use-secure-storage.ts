@@ -1,33 +1,43 @@
 import { useState, useEffect, useCallback } from 'react'
-import { encryptData, decryptData } from '@/lib/encryption'
+// Fix: Import 'encrypt' and 'decrypt' (aliased if you prefer maintaining the name)
+import { encrypt, decrypt } from '@/lib/encryption'
 
-export function useSecureStorage<T>(key: string, defaultValue: T): [T, (value: T) => Promise<void>, () => Promise<void>] {
+export function useSecureStorage<T>(
+  key: string, 
+  defaultValue: T
+): [T, (value: T) => Promise<void>, () => Promise<void>] {
   const [value, setValue] = useState<T>(defaultValue)
-  const [isLoading, setIsLoading] = useState(true)
+  // Removed unused 'isLoading' state to fix linter error/return type mismatch
 
   useEffect(() => {
+    let isMounted = true
+
     const loadSecureData = async () => {
       try {
         const stored = localStorage.getItem(`secure_${key}`)
-        if (stored) {
-          const decrypted = await decryptData(stored)
+        if (stored && isMounted) {
+          // Fix: Use 'decrypt' instead of 'decryptData'
+          const decrypted = await decrypt(stored)
           setValue(JSON.parse(decrypted))
         }
       } catch (error) {
         console.error('Failed to load secure data:', error)
-        setValue(defaultValue)
-      } finally {
-        setIsLoading(false)
+        if (isMounted) setValue(defaultValue)
       }
     }
 
     loadSecureData()
+
+    return () => {
+      isMounted = false
+    }
   }, [key, defaultValue])
 
   const setSecureValue = useCallback(async (newValue: T) => {
     try {
       const jsonString = JSON.stringify(newValue)
-      const encrypted = await encryptData(jsonString)
+      // Fix: Use 'encrypt' instead of 'encryptData'
+      const encrypted = await encrypt(jsonString)
       localStorage.setItem(`secure_${key}`, encrypted)
       setValue(newValue)
     } catch (error) {
@@ -48,3 +58,7 @@ export function useSecureStorage<T>(key: string, defaultValue: T): [T, (value: T
 
   return [value, setSecureValue, deleteSecureValue]
 }
+
+
+
+

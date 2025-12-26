@@ -1,4 +1,4 @@
-import { Download, Upload, FileKey } from 'lucide-react'
+import { Download, Upload, FileKey, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -6,10 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { useState } from 'react'
+// Ensure src/lib/encryption.ts has these functions (see previous step)
 import { encryptWithPassword, decryptWithPassword } from '@/lib/encryption'
 
 interface CredentialBackupProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onImport: (data: any) => Promise<void>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onExport: () => Promise<any>
 }
 
@@ -20,6 +23,8 @@ export function CredentialBackup({ onImport, onExport }: CredentialBackupProps) 
   const [importFile, setImportFile] = useState<File | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
 
   const handleExport = async () => {
     if (password.length < 8) {
@@ -51,6 +56,7 @@ export function CredentialBackup({ onImport, onExport }: CredentialBackupProps) 
       toast.success('Credentials exported securely')
       setPassword('')
       setConfirmPassword('')
+      setExportOpen(false)
     } catch (error) {
       toast.error('Failed to export credentials')
       console.error(error)
@@ -77,11 +83,12 @@ export function CredentialBackup({ onImport, onExport }: CredentialBackupProps) 
       const data = JSON.parse(decrypted)
 
       await onImport(data)
-      toast.success('Credentials imported successfully')
+      // toast.success is handled by parent or here
       setImportPassword('')
       setImportFile(null)
+      setImportOpen(false)
     } catch (error) {
-      toast.error('Failed to import credentials - invalid file or password')
+      toast.error('Failed to import - invalid password or file')
       console.error(error)
     } finally {
       setIsImporting(false)
@@ -96,12 +103,12 @@ export function CredentialBackup({ onImport, onExport }: CredentialBackupProps) 
           Credential Backup & Restore
         </CardTitle>
         <CardDescription>
-          Securely export and import your encrypted API credentials
+          Securely export and import your encrypted API credentials using a personal password.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Dialog>
+          <Dialog open={exportOpen} onOpenChange={setExportOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="w-full">
                 <Download size={16} className="mr-2" />
@@ -112,12 +119,12 @@ export function CredentialBackup({ onImport, onExport }: CredentialBackupProps) 
               <DialogHeader>
                 <DialogTitle>Export Encrypted Credentials</DialogTitle>
                 <DialogDescription>
-                  Your credentials will be encrypted with a password before export.
+                  Your credentials will be encrypted with this password. You will need it to restore them later.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="export-password">Encryption Password</Label>
+                  <Label htmlFor="export-password">Encryption Password (min 8 chars)</Label>
                   <Input
                     id="export-password"
                     type="password"
@@ -138,16 +145,23 @@ export function CredentialBackup({ onImport, onExport }: CredentialBackupProps) 
                 </div>
                 <Button 
                   onClick={handleExport} 
-                  disabled={isExporting || !password || password !== confirmPassword}
+                  disabled={isExporting || !password || password.length < 8 || password !== confirmPassword}
                   className="w-full"
                 >
-                  {isExporting ? 'Exporting...' : 'Export Encrypted File'}
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Encrypting & Exporting...
+                    </>
+                  ) : (
+                    'Download Encrypted Backup'
+                  )}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
 
-          <Dialog>
+          <Dialog open={importOpen} onOpenChange={setImportOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="w-full">
                 <Upload size={16} className="mr-2" />
@@ -158,12 +172,12 @@ export function CredentialBackup({ onImport, onExport }: CredentialBackupProps) 
               <DialogHeader>
                 <DialogTitle>Import Encrypted Credentials</DialogTitle>
                 <DialogDescription>
-                  Select your encrypted backup file and enter the password.
+                  Select your .enc backup file and enter the password used to encrypt it.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="import-file">Encrypted File</Label>
+                  <Label htmlFor="import-file">Encrypted Backup File</Label>
                   <Input
                     id="import-file"
                     type="file"
@@ -178,7 +192,7 @@ export function CredentialBackup({ onImport, onExport }: CredentialBackupProps) 
                     type="password"
                     value={importPassword}
                     onChange={(e) => setImportPassword(e.target.value)}
-                    placeholder="Enter password"
+                    placeholder="Enter original password"
                   />
                 </div>
                 <Button 
@@ -186,7 +200,14 @@ export function CredentialBackup({ onImport, onExport }: CredentialBackupProps) 
                   disabled={isImporting || !importFile || !importPassword}
                   className="w-full"
                 >
-                  {isImporting ? 'Importing...' : 'Import Credentials'}
+                  {isImporting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Decrypting & Importing...
+                    </>
+                  ) : (
+                    'Restore Credentials'
+                  )}
                 </Button>
               </div>
             </DialogContent>

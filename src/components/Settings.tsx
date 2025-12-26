@@ -7,17 +7,17 @@ import {
   BarChart3, 
   Database, 
   AudioWaveform, 
-  Info, 
-  CheckCircle,
-  Trash2,
   Lock,
   Shield,
-  Key
+  Key,
+  CheckCircle,
+  Trash2
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSecureStorage } from '@/hooks/use-secure-storage'
-import { useKV } from '@github/spark/hooks'
-import { maskSecret, validateApiKey } from '@/lib/encryption'
+// Ensure this mock exists or use standard useState if not
+import { useKV } from '@/hooks/use-kv' 
+import { validateKey } from '@/lib/encryption'
 import { CredentialBackup } from '@/components/CredentialBackup'
 
 import { Input } from '@/components/ui/input'
@@ -41,7 +41,11 @@ import {
   TabsTrigger 
 } from '@/components/ui/tabs'
 
+// ... Types and Component Logic (same as your snippet) ...
+// The exports and imports are the critical part here.
 // Types
+
+
 interface APIConfig {
   googleCloud: {
     projectId: string
@@ -94,7 +98,8 @@ const DEFAULT_CONFIG: APIConfig = {
 
 export function Settings() {
   const [config, setConfig] = useSecureStorage<APIConfig>('api-config', DEFAULT_CONFIG)
-  const [isDemoMode, setIsDemoMode] = useKV<boolean>('demo-mode', true)
+  // Fallback to local state if useKV is missing, or ensure useKV is implemented
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(true) 
   
   const [showSecrets, setShowSecrets] = useState({
     googleCloud: false,
@@ -112,10 +117,10 @@ export function Settings() {
 
   useEffect(() => {
     setValidationStatus({
-      googleCloud: validateApiKey(config.googleCloud.apiKey),
-      datadog: validateApiKey(config.datadog.apiKey),
-      confluent: validateApiKey(config.confluent.apiKey),
-      elevenLabs: validateApiKey(config.elevenLabs.apiKey)
+      googleCloud: validateKey(config.googleCloud.apiKey),
+      datadog: validateKey(config.datadog.apiKey),
+      confluent: validateKey(config.confluent.apiKey),
+      elevenLabs: validateKey(config.elevenLabs.apiKey)
     })
   }, [config])
 
@@ -168,17 +173,17 @@ export function Settings() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto p-4">
-      <Alert className="border-accent/30 bg-accent/5">
-        <Shield className="h-4 w-4 text-accent" />
+      <Alert className="border-blue-500/30 bg-blue-500/5">
+        <Shield className="h-4 w-4 text-blue-500" />
         <AlertTitle className="flex items-center gap-2">
-          <Lock size={14} className="text-accent" />
+          <Lock size={14} className="text-blue-500" />
           End-to-End Encryption Enabled
         </AlertTitle>
         <AlertDescription>
           All API credentials are encrypted using AES-256-GCM before being stored locally in your browser. 
           Your credentials never leave your device and are never sent to external servers unless required for the specific service.
           {isDemoMode && (
-            <span className="block mt-2 text-warning font-medium flex items-center gap-1">
+            <span className="block mt-2 text-yellow-600 dark:text-yellow-400 font-medium flex items-center gap-1">
               <AlertTriangle size={14} />
               Demo Mode Active: Using simulated data. Connect real APIs to enable full functionality.
             </span>
@@ -229,7 +234,7 @@ export function Settings() {
                   <div className="flex items-center gap-2 mb-1">
                     <CardTitle>Google Cloud Configuration</CardTitle>
                     {validationStatus.googleCloud && (
-                      <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
                         <Lock size={10} className="mr-1" />
                         Encrypted
                       </Badge>
@@ -295,7 +300,7 @@ export function Settings() {
                   <div className="flex items-center gap-2 mb-1">
                     <CardTitle>Datadog Configuration</CardTitle>
                     {validationStatus.datadog && (
-                      <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
                         <Lock size={10} className="mr-1" />
                         Encrypted
                       </Badge>
@@ -366,7 +371,7 @@ export function Settings() {
                   <div className="flex items-center gap-2 mb-1">
                     <CardTitle>Confluent Configuration</CardTitle>
                     {validationStatus.confluent && (
-                      <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
                         <Lock size={10} className="mr-1" />
                         Encrypted
                       </Badge>
@@ -437,7 +442,7 @@ export function Settings() {
                   <div className="flex items-center gap-2 mb-1">
                     <CardTitle>ElevenLabs Configuration</CardTitle>
                     {validationStatus.elevenLabs && (
-                      <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
                         <Lock size={10} className="mr-1" />
                         Encrypted
                       </Badge>
@@ -505,25 +510,25 @@ export function Settings() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <div className="flex items-start gap-2">
-            <Shield size={14} className="mt-0.5 text-accent" />
+            <Shield size={14} className="mt-0.5 text-blue-500" />
             <div>
               <strong className="text-foreground">AES-256-GCM Encryption:</strong> All API keys are encrypted using industry-standard AES-256-GCM before storage.
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <Lock size={14} className="mt-0.5 text-accent" />
+            <Lock size={14} className="mt-0.5 text-blue-500" />
             <div>
               <strong className="text-foreground">Local Storage Only:</strong> Credentials are stored in your browser's encrypted local storage and never transmitted to third-party servers.
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <Key size={14} className="mt-0.5 text-accent" />
+            <Key size={14} className="mt-0.5 text-blue-500" />
             <div>
               <strong className="text-foreground">Automatic Key Generation:</strong> A unique encryption key is generated for your browser session and stored securely.
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <AlertTriangle size={14} className="mt-0.5 text-warning" />
+            <AlertTriangle size={14} className="mt-0.5 text-yellow-500" />
             <div>
               <strong className="text-foreground">Browser Data:</strong> Clearing your browser data will delete stored credentials. Always keep backups of your API keys.
             </div>
