@@ -65,6 +65,13 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
 - **Progression**: Simulator runs → Generates varied metrics → Streams to dashboard → Triggers rules → Creates incidents
 - **Success criteria**: Generates 5+ distinct scenarios showing different monitoring use cases
 
+### Incident Export & Reporting
+- **Functionality**: Professional PDF export of individual incidents, comprehensive observability reports, and alert summaries
+- **Purpose**: Generate documentation for post-mortems, stakeholder updates, compliance requirements, and incident analysis
+- **Trigger**: User clicks "Generate Report" button in Incidents tab or "Export PDF" on individual incidents/alerts
+- **Progression**: User selects report type → Configures options (metrics, AI suggestions, alerts) → Generates PDF → Downloads automatically
+- **Success criteria**: PDF reports include all relevant data with professional formatting, sponsor branding, timestamps, severity classifications, and AI recommendations
+
 ## Edge Case Handling
 
 - **First-Time Users**: Welcoming onboarding dialog with clear Demo vs Production mode choice

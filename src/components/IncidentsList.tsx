@@ -2,10 +2,12 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Bug, CheckCircle, Clock } from '@phosphor-icons/react'
+import { Bug, CheckCircle, Clock, FilePdf, DownloadSimple } from '@phosphor-icons/react'
 import { formatTimestamp } from '@/lib/metrics'
 import type { Incident } from '@/lib/types'
 import { motion } from 'framer-motion'
+import { exportIncidentToPDF } from '@/lib/pdf-export'
+import { toast } from 'sonner'
 
 interface IncidentsListProps {
   incidents: Incident[]
@@ -15,6 +17,17 @@ interface IncidentsListProps {
 export function IncidentsList({ incidents, onResolve }: IncidentsListProps) {
   const openIncidents = incidents.filter(i => i.status !== 'resolved')
   const resolvedIncidents = incidents.filter(i => i.status === 'resolved').slice(-5)
+
+  const handleExportIncident = (incident: Incident) => {
+    try {
+      exportIncidentToPDF(incident)
+      toast.success('Incident exported to PDF', {
+        description: 'Your download should start automatically'
+      })
+    } catch (error) {
+      toast.error('Failed to export incident')
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -104,6 +117,15 @@ export function IncidentsList({ incidents, onResolve }: IncidentsListProps) {
                     </div>
                     
                     <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleExportIncident(incident)}
+                        className="text-xs h-7 gap-1"
+                      >
+                        <FilePdf size={14} weight="fill" />
+                        Export PDF
+                      </Button>
                       {incident.status === 'open' && (
                         <Button
                           size="sm"

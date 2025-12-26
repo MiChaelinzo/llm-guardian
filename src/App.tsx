@@ -14,6 +14,7 @@ import { ConfluentStream } from '@/components/ConfluentStream'
 import { Settings } from '@/components/Settings'
 import { OnboardingDialog } from '@/components/OnboardingDialog'
 import { EncryptionStatus } from '@/components/EncryptionStatus'
+import { ReportingDialog } from '@/components/ReportingDialog'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { calculateMetrics, checkDetectionRules } from '@/lib/metrics'
 import { processVoiceQuery, generateIncidentSuggestion, generateAIInsights } from '@/lib/voice'
@@ -408,6 +409,19 @@ function App() {
               </TabsContent>
 
               <TabsContent value="incidents">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold">Incident Management</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Track, investigate, and resolve critical incidents with AI-powered recommendations
+                    </p>
+                  </div>
+                  <ReportingDialog 
+                    incidents={incidents || []} 
+                    alerts={alerts || []} 
+                    summary={summary}
+                  />
+                </div>
                 <IncidentsList
                   incidents={incidents || []}
                   onResolve={handleResolveIncident}

@@ -3,10 +3,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Alert as AlertComponent } from '@/components/ui/alert'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Warning, CheckCircle, Info, Bell } from '@phosphor-icons/react'
+import { Warning, CheckCircle, Info, Bell, FilePdf } from '@phosphor-icons/react'
 import { formatTimestamp } from '@/lib/metrics'
 import type { Alert } from '@/lib/types'
 import { motion, AnimatePresence } from 'framer-motion'
+import { exportAlertsToPDF } from '@/lib/pdf-export'
+import { toast } from 'sonner'
 
 interface AlertsListProps {
   alerts: Alert[]
@@ -16,6 +18,20 @@ interface AlertsListProps {
 
 export function AlertsList({ alerts, onAcknowledge, onCreateIncident }: AlertsListProps) {
   const activeAlerts = alerts.filter(a => !a.acknowledged).slice(-10).reverse()
+
+  const handleExportAlerts = () => {
+    if (alerts.length === 0) {
+      toast.error('No alerts to export')
+      return
+    }
+    
+    try {
+      exportAlertsToPDF(alerts)
+      toast.success('Alerts exported to PDF')
+    } catch (error) {
+      toast.error('Failed to export alerts')
+    }
+  }
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -61,6 +77,16 @@ export function AlertsList({ alerts, onAcknowledge, onCreateIncident }: AlertsLi
             Datadog
           </Badge>
         </div>
+        <Button 
+          size="sm" 
+          variant="outline" 
+          onClick={handleExportAlerts}
+          disabled={alerts.length === 0}
+          className="gap-2"
+        >
+          <FilePdf size={16} weight="fill" />
+          Export PDF
+        </Button>
       </div>
       
       <ScrollArea className="h-[400px] pr-4">
