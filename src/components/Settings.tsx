@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switc
+import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigg
-import { toast } from 'sonner'
-  Cloud, 
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
@@ -26,42 +25,42 @@ import {
 type APIConfig = {
   googleCloud: {
     projectId: string
-    enabled: boole
+    apiKey: string
     enabled: boolean
   }
   datadog: {
     apiKey: string
-    enabled: boole
+    appKey: string
+    site: string
+    enabled: boolean
+  }
+  confluent: {
+    apiKey: string
+    apiSecret: string
+    bootstrapServer: string
+    enabled: boolean
+  }
   elevenLabs: {
+    apiKey: string
     agentId: string
+    enabled: boolean
   }
+}
 
+const DEFAULT_CONFIG: APIConfig = {
   googleCloud: {
+    projectId: '',
     apiKey: '',
+    enabled: false
   },
+  datadog: {
     apiKey: '',
-   
+    appKey: '',
+    site: 'datadoghq.com',
+    enabled: false
   },
+  confluent: {
     apiKey: '',
-    bootstrapServer
-  },
-   
- 
-
-export function Settings() {
-  const [showSec
-    datadog: false
-    elevenLabs:
-  const [isDemoMod
-  co
-  const hand
-      descripti
-  }
-  const handleTestConnecti
-    
-    
-  }
-  const updateC
     apiSecret: '',
     bootstrapServer: '',
     enabled: false
@@ -101,13 +100,16 @@ export function Settings() {
     platform: K,
     updates: Partial<APIConfig[K]>
   ) => {
-    setConfig((current) => ({
-      ...current,
-      [platform]: {
-        ...current[platform],
-        ...updates
+    setConfig((current) => {
+      const base = current || DEFAULT_CONFIG
+      return {
+        ...base,
+        [platform]: {
+          ...base[platform],
+          ...updates
+        }
       }
-    }))
+    })
   }
 
   const toggleSecretVisibility = (platform: keyof typeof showSecrets) => {
@@ -118,142 +120,109 @@ export function Settings() {
   }
 
   const getConnectionStatus = (platform: keyof APIConfig) => {
-    const platformConfig = config[platform]
+    const safeConfig = config || DEFAULT_CONFIG
+    const platformConfig = safeConfig[platform]
     const hasRequiredKeys = Object.entries(platformConfig).some(
-      ([key, value]) => key !== 'enabled' && value && value.length > 0
+      ([key, value]) => key !== 'enabled' && typeof value === 'string' && value.length > 0
     )
     
     if (platformConfig.enabled && hasRequiredKeys) {
       return { status: 'connected', color: 'bg-success', icon: CheckCircle }
     } else if (hasRequiredKeys) {
-          </div>
-     
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-   
+      return { status: 'configured', color: 'bg-warning', icon: Info }
+    } else {
+      return { status: 'not configured', color: 'bg-muted', icon: Warning }
+    }
+  }
 
-          
-            confluent: { name: 
-          }
-          con
-          return (
-              borderLeftColor: safeConfig[platform].enabled ? 'var(--success)' : 'var(--border)'
-              
-                  <div className="flex items-center gap
-                    <CardTitle className="text-l
-                  <div
-                 
-            
+  const safeConfig = config || DEFAULT_CONFIG
 
-             
-                </div>
-            </Card>
-        })}
+  return (
+    <div className="space-y-6">
+      <Alert>
+        <Info size={16} />
+        <AlertDescription>
+          Configure your API credentials for Google Cloud, Datadog, Confluent, and ElevenLabs. 
+          All credentials are stored locally in your browser and never sent to external servers.
+          {isDemoMode && (
+            <span className="block mt-2 text-warning">
+              <strong>Demo Mode Active:</strong> Using simulated data. Connect real APIs to enable full functionality.
+            </span>
+          )}
+        </AlertDescription>
+      </Alert>
 
-        <TabsLis
+      <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+        <div className="space-y-0.5">
+          <Label htmlFor="demo-mode" className="text-base">Demo Mode</Label>
+          <p className="text-sm text-muted-foreground">
+            Use simulated data instead of real API connections
+          </p>
+        </div>
+        <Switch
+          id="demo-mode"
+          checked={isDemoMode}
+          onCheckedChange={(checked) => setIsDemoMode(checked)}
+        />
+      </div>
+
+      <Tabs defaultValue="googleCloud" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="googleCloud" className="gap-2">
             <Cloud size={16} />
+            Google Cloud
           </TabsTrigger>
-            <ChartBa
+          <TabsTrigger value="datadog" className="gap-2">
+            <ChartBar size={16} />
+            Datadog
           </TabsTrigger>
+          <TabsTrigger value="confluent" className="gap-2">
             <Database size={16} />
+            Confluent
           </TabsTrigger>
+          <TabsTrigger value="elevenLabs" className="gap-2">
             <Waveform size={16} />
+            ElevenLabs
           </TabsTrigger>
+        </TabsList>
 
-          <Car
-              <C
-                Configure y
-            </
-
+        <TabsContent value="googleCloud" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Google Cloud Configuration</CardTitle>
+                  <CardDescription>
+                    Configure your Google Cloud project for Vertex AI and Gemini
+                  </CardDescription>
+                </div>
+                <Switch
+                  checked={safeConfig.googleCloud.enabled}
+                  onCheckedChange={(checked) => updateConfig('googleCloud', { enabled: checked })}
+                />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="gc-project-id">Project ID</Label>
                 <Input
+                  id="gc-project-id"
                   value={safeConfig.googleCloud.projectId}
+                  onChange={(e) => updateConfig('googleCloud', { projectId: e.target.value })}
                   placeholder="my-gcp-project"
-              </div>
-          
-                <div class
-                    id="gc-api-key"
-                    value={safeConfig.googleCloud.apiKey}
-                    placeholder="AIza..."
-                  />
-           
-          
-                    {showSecrets.googleCloud ? <EyeS
-          
-                  
-              </div>
-              <Separator />
-              <
-                  onClick=
-                  className="flex-1"
-                  Test Connection
-                <Button 
-                    updateConfig('googleCloud', { projectId: '', apiKey: '', enabled: 
-                  }}
-                  className="text-destructive"
-                  Clear
-              </div>
-          </Card>
-
-          <Card>
-              <CardTitle>Datadog Configuration</CardTitl
-                Configure Datadog for LLM observability and monitoring
-            </CardHead
-              <div class
-                <div c
-                    id="dd-
-                   
-           
-           
-            
-
-                    {showSecrets.datadog ? <EyeSlash size=
-                </div>
-
-                <Label htmlFor=
-                  id="dd
-                  value=
-                  placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxx
                 />
-
-                <Label h
-                  id="dd-site"
-                  onChange={(e) =>
-                />
-                  Your D
               </div>
-              <Separator />
-              <div cla
-                  onClic
-                  c
 
-                <Button 
-                
-                  }}
-                  className="text-destructive"
-                  Clear
-              </div>
-          </Card>
-
-          <Card>
-              <CardTitle>Confluent Config
-                Configure Confluent for real-time data streaming
-            </CardHead
-              <div className="space-
+              <div className="space-y-2">
+                <Label htmlFor="gc-api-key">API Key</Label>
                 <div className="flex gap-2">
-                    id="cf-api-key"
-                    value={safeConfig.confluen
-                  
-                  />
-
-                    onClick={() => toggle
-                    {showSecrets.confluent ? <EyeSlash size
-                </div>
-
-                <Label htmlFor="cf-
-                  id="cf-api-secret"
-                  value={safeConfig.confluent.apiSecr
-                  placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                />
-
+                  <Input
+                    id="gc-api-key"
+                    type={showSecrets.googleCloud ? 'text' : 'password'}
+                    value={safeConfig.googleCloud.apiKey}
+                    onChange={(e) => updateConfig('googleCloud', { apiKey: e.target.value })}
+                    placeholder="AIza..."
+                    className="font-mono"
                   />
                   <Button
                     size="icon"
@@ -296,10 +265,18 @@ export function Settings() {
         <TabsContent value="datadog" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Datadog Configuration</CardTitle>
-              <CardDescription>
-                Configure Datadog for LLM observability and monitoring
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Datadog Configuration</CardTitle>
+                  <CardDescription>
+                    Configure Datadog for LLM observability and monitoring
+                  </CardDescription>
+                </div>
+                <Switch
+                  checked={safeConfig.datadog.enabled}
+                  onCheckedChange={(checked) => updateConfig('datadog', { enabled: checked })}
+                />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -308,7 +285,7 @@ export function Settings() {
                   <Input
                     id="dd-api-key"
                     type={showSecrets.datadog ? 'text' : 'password'}
-                    value={config.datadog.apiKey}
+                    value={safeConfig.datadog.apiKey}
                     onChange={(e) => updateConfig('datadog', { apiKey: e.target.value })}
                     placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                     className="font-mono"
@@ -328,7 +305,7 @@ export function Settings() {
                 <Input
                   id="dd-app-key"
                   type="password"
-                  value={config.datadog.appKey}
+                  value={safeConfig.datadog.appKey}
                   onChange={(e) => updateConfig('datadog', { appKey: e.target.value })}
                   placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                   className="font-mono"
@@ -339,7 +316,7 @@ export function Settings() {
                 <Label htmlFor="dd-site">Site</Label>
                 <Input
                   id="dd-site"
-                  value={config.datadog.site}
+                  value={safeConfig.datadog.site}
                   onChange={(e) => updateConfig('datadog', { site: e.target.value })}
                   placeholder="datadoghq.com"
                 />
@@ -376,10 +353,18 @@ export function Settings() {
         <TabsContent value="confluent" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Confluent Configuration</CardTitle>
-              <CardDescription>
-                Configure Confluent for real-time data streaming
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Confluent Configuration</CardTitle>
+                  <CardDescription>
+                    Configure Confluent for real-time data streaming
+                  </CardDescription>
+                </div>
+                <Switch
+                  checked={safeConfig.confluent.enabled}
+                  onCheckedChange={(checked) => updateConfig('confluent', { enabled: checked })}
+                />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -388,7 +373,7 @@ export function Settings() {
                   <Input
                     id="cf-api-key"
                     type={showSecrets.confluent ? 'text' : 'password'}
-                    value={config.confluent.apiKey}
+                    value={safeConfig.confluent.apiKey}
                     onChange={(e) => updateConfig('confluent', { apiKey: e.target.value })}
                     placeholder="XXXXXXXXXXXXXXXX"
                     className="font-mono"
@@ -408,124 +393,13 @@ export function Settings() {
                 <Input
                   id="cf-api-secret"
                   type="password"
-                  value={config.confluent.apiSecret}
+                  value={safeConfig.confluent.apiSecret}
                   onChange={(e) => updateConfig('confluent', { apiSecret: e.target.value })}
                   placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                   className="font-mono"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cf-bootstrap">Bootstrap Server</Label>
-                <Input
-                  id="cf-bootstrap"
-                  value={config.confluent.bootstrapServer}
-                  onChange={(e) => updateConfig('confluent', { bootstrapServer: e.target.value })}
-                  placeholder="pkc-xxxxx.us-east-1.aws.confluent.cloud:9092"
-                  className="font-mono"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Your Confluent Kafka cluster bootstrap server
-                </p>
-              </div>
-
-              <Separator />
-
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => handleTestConnection('Confluent')}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Test Connection
-                </Button>
-                <Button 
-                  onClick={() => {
-                    updateConfig('confluent', { apiKey: '', apiSecret: '', bootstrapServer: '', enabled: false })
-                    toast.success('Confluent credentials cleared')
-                  }}
-                  variant="outline"
-                  className="text-destructive"
-                >
-                  Clear
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="elevenLabs" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>ElevenLabs Configuration</CardTitle>
-              <CardDescription>
-                Configure ElevenLabs for voice-driven interactions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="el-api-key">API Key</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="el-api-key"
-                    type={showSecrets.elevenLabs ? 'text' : 'password'}
-                    value={config.elevenLabs.apiKey}
-                    onChange={(e) => updateConfig('elevenLabs', { apiKey: e.target.value })}
-                    placeholder="sk_..."
-                    className="font-mono"
-                  />
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    onClick={() => toggleSecretVisibility('elevenLabs')}
-                  >
-                    {showSecrets.elevenLabs ? <EyeSlash size={16} /> : <Eye size={16} />}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="el-agent-id">Agent ID</Label>
-                <Input
-                  id="el-agent-id"
-                  value={config.elevenLabs.agentId}
-                  onChange={(e) => updateConfig('elevenLabs', { agentId: e.target.value })}
-                  placeholder="agent_..."
-                  className="font-mono"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Get your credentials from ElevenLabs dashboard
-                </p>
-              </div>
-
-              <Separator />
-
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => handleTestConnection('ElevenLabs')}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Test Connection
-                </Button>
-                <Button 
-                  onClick={() => {
-                    updateConfig('elevenLabs', { apiKey: '', agentId: '', enabled: false })
-                    toast.success('ElevenLabs credentials cleared')
-                  }}
-                  variant="outline"
-                  className="text-destructive"
-                >
-                  Clear
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
-}
               <div className="space-y-2">
                 <Label htmlFor="cf-bootstrap">Bootstrap Server</Label>
                 <Input
@@ -568,10 +442,18 @@ export function Settings() {
         <TabsContent value="elevenLabs" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>ElevenLabs Configuration</CardTitle>
-              <CardDescription>
-                Configure ElevenLabs for voice-driven interactions
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>ElevenLabs Configuration</CardTitle>
+                  <CardDescription>
+                    Configure ElevenLabs for voice-driven interactions
+                  </CardDescription>
+                </div>
+                <Switch
+                  checked={safeConfig.elevenLabs.enabled}
+                  onCheckedChange={(checked) => updateConfig('elevenLabs', { enabled: checked })}
+                />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
