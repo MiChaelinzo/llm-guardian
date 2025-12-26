@@ -15,8 +15,6 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSecureStorage } from '@/hooks/use-secure-storage'
-// Ensure this mock exists or use standard useState if not
-import { useKV } from '@/hooks/use-kv' 
 import { validateKey } from '@/lib/encryption'
 import { CredentialBackup } from '@/components/CredentialBackup'
 

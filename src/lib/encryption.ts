@@ -146,5 +146,93 @@ export async function testEncryption(): Promise<boolean> {
   }
 }
 
+/**
+ * Derives a cryptographic key from a password using PBKDF2.
+ */
+async function deriveKeyFromPassword(password: string, salt: Uint8Array): Promise<CryptoKey> {
+  const encoder = new TextEncoder()
+  const passwordKey = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    'PBKDF2',
+    false,
+    ['deriveKey']
+  )
 
+  return await crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: salt as BufferSource,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    passwordKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  )
+}
+
+/**
+ * Encrypts a string using a password-derived key (PBKDF2 + AES-GCM).
+ * Returns a Base64 encoded string containing salt, IV, and ciphertext.
+ */
+export async function encryptWithPassword(text: string, password: string): Promise<string> {
+  try {
+    const salt = crypto.getRandomValues(new Uint8Array(16))
+    const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+    const key = await deriveKeyFromPassword(password, salt)
+    
+    const encoder = new TextEncoder()
+    const data = encoder.encode(text)
+
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      data
+    )
+
+    const encryptedArray = new Uint8Array(encrypted)
+    const combined = new Uint8Array(salt.length + iv.length + encryptedArray.length)
+    combined.set(salt)
+    combined.set(iv, salt.length)
+    combined.set(encryptedArray, salt.length + iv.length)
+
+    return btoa(String.fromCharCode(...combined))
+  } catch (error) {
+    console.error('Password encryption error:', error)
+    throw new Error('Failed to encrypt data with password')
+  }
+}
+
+/**
+ * Decrypts a Base64 encoded string using a password-derived key (PBKDF2 + AES-GCM).
+ */
+export async function decryptWithPassword(encryptedText: string, password: string): Promise<string> {
+  try {
+    const binaryString = atob(encryptedText)
+    const combined = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      combined[i] = binaryString.charCodeAt(i)
+    }
+
+    const salt = combined.slice(0, 16)
+    const iv = combined.slice(16, 16 + IV_LENGTH)
+    const data = combined.slice(16 + IV_LENGTH)
+
+    const key = await deriveKeyFromPassword(password, salt)
+
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      data
+    )
+
+    const decoder = new TextDecoder()
+    return decoder.decode(decrypted)
+  } catch (error) {
+    console.error('Password decryption error:', error)
+    throw new Error('Failed to decrypt data with password')
+  }
+}
 
