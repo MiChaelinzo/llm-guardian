@@ -428,5 +428,5 @@ export function Settings() {
 
       </Tabs>
     </div>
-  }
-}  
+  )
+}
