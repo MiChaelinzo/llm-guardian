@@ -1,24 +1,24 @@
 import { useState } from 'react'
-import { Card, CardContent, CardDescription
+import { useKV } from '@github/spark/hooks'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switc
-import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigg
-  Cloud, 
-  Database, 
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Cloud, 
   ChartBar, 
   Database, 
   Waveform, 
-    apiKey: '',
-  Warning, 
-  },
-  EyeSlash,
-    bootstrap
+  FloppyDisk,
+  Warning,
+  CheckCircle,
+  Eye,
+  EyeSlash
 } from '@phosphor-icons/react'
 import type { APIConfig } from '@/lib/types'
 import { toast } from 'sonner'
@@ -28,23 +28,23 @@ const DEFAULT_CONFIG: APIConfig = {
     projectId: '',
     apiKey: '',
     enabled: false
-  co
+  },
   datadog: {
-      descripti
-  }
-  const handleTestConnecti
-    
-    
-  }
-  const updateC
-    updates: Parti
-    setConfig((current =
-      [platform]: 
-    
-    }))
-
-    const platfo
-      ([key, value
+    apiKey: '',
+    appKey: '',
+    site: 'datadoghq.com',
+    enabled: false
+  },
+  confluent: {
+    apiKey: '',
+    apiSecret: '',
+    bootstrapServer: '',
+    enabled: false
+  },
+  elevenLabs: {
+    apiKey: '',
+    agentId: '',
+    enabled: false
   }
 }
 
@@ -76,19 +76,23 @@ export function Settings() {
     platform: K,
     updates: Partial<APIConfig[K]>
   ) => {
-    setConfig((current) => ({
-      ...current,
-      [platform]: {
-        ...current[platform],
-        ...updates
+    setConfig((current) => {
+      const currentConfig = current || DEFAULT_CONFIG
+      return {
+        ...currentConfig,
+        [platform]: {
+          ...currentConfig[platform],
+          ...updates
+        }
       }
-    }))
+    })
   }
 
   const getConnectionStatus = (platform: keyof APIConfig) => {
-    const platformConfig = config[platform]
+    const currentConfig = config || DEFAULT_CONFIG
+    const platformConfig = currentConfig[platform]
     const hasRequiredKeys = Object.entries(platformConfig).some(
-      ([key, value]) => key !== 'enabled' && value && value.length > 0
+      ([key, value]) => key !== 'enabled' && typeof value === 'string' && value.length > 0
     )
     
     if (platformConfig.enabled && hasRequiredKeys) {
@@ -98,11 +102,13 @@ export function Settings() {
     }
     return { status: 'not configured', color: 'bg-muted-foreground', icon: Warning }
   }
+  
+  const currentConfig = config || DEFAULT_CONFIG
 
   return (
-                <Input
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-             
+        <div>
           <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
           <p className="text-muted-foreground">Configure your API integrations and preferences</p>
         </div>
@@ -130,7 +136,7 @@ export function Settings() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {(['googleCloud', 'datadog', 'confluent', 'elevenLabs'] as const).map((platform) => {
-              <CardTitle>Datadog Configuration</CardTi
+          const status = getConnectionStatus(platform)
           const StatusIcon = status.icon
           
           const labels = {
@@ -138,15 +144,15 @@ export function Settings() {
             datadog: { name: 'Datadog', icon: ChartBar },
             confluent: { name: 'Confluent', icon: Database },
             elevenLabs: { name: 'ElevenLabs', icon: Waveform }
-           
+          }
           
           const PlatformIcon = labels[platform].icon
           
           return (
             <Card key={platform} className="border-l-4" style={{
-              borderLeftColor: config[platform].enabled ? 'var(--success)' : 'var(--border)'
+              borderLeftColor: currentConfig[platform].enabled ? 'var(--success)' : 'var(--border)'
             }}>
-                    type={
+              <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <PlatformIcon size={20} weight="fill" className="text-primary" />
@@ -158,9 +164,9 @@ export function Settings() {
                       {status.status}
                     </Badge>
                     <Switch 
-                      checked={config[platform].enabled}
+                      checked={currentConfig[platform].enabled}
                       onCheckedChange={(checked) => updateConfig(platform, { enabled: checked })}
-
+                    />
                   </div>
                 </div>
               </CardHeader>
@@ -172,25 +178,25 @@ export function Settings() {
       <Tabs defaultValue="googleCloud" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="googleCloud" className="gap-2">
-                <Warning size={
+            <Cloud size={16} />
             Google Cloud
-              </Alert>
+          </TabsTrigger>
           <TabsTrigger value="datadog" className="gap-2">
-
+            <ChartBar size={16} />
             Datadog
-              <CardTitle
+          </TabsTrigger>
           <TabsTrigger value="confluent" className="gap-2">
             <Database size={16} />
             Confluent
           </TabsTrigger>
           <TabsTrigger value="elevenLabs" className="gap-2">
-                    value={current
+            <Waveform size={16} />
             ElevenLabs
-                  />
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="googleCloud" className="space-y-4">
-                
+          <Card>
             <CardHeader>
               <CardTitle>Google Cloud Configuration</CardTitle>
               <CardDescription>
@@ -202,23 +208,23 @@ export function Settings() {
                 <Label htmlFor="gc-project-id">Project ID</Label>
                 <Input
                   id="gc-project-id"
-                  value={config.googleCloud.projectId}
+                  value={currentConfig.googleCloud.projectId}
                   onChange={(e) => updateConfig('googleCloud', { projectId: e.target.value })}
-                  value={currentConfig.confluent.b
+                  placeholder="my-gcp-project"
                 />
               </div>
 
-
+              <div className="space-y-2">
                 <Label htmlFor="gc-api-key">API Key</Label>
-                <Button 
+                <div className="flex gap-2">
                   <Input
                     id="gc-api-key"
                     type={showSecrets.googleCloud ? 'text' : 'password'}
-                  onClick={() => {
+                    value={currentConfig.googleCloud.apiKey}
                     onChange={(e) => updateConfig('googleCloud', { apiKey: e.target.value })}
-                  variant="outline"
+                    placeholder="AIzaSy..."
                     className="font-mono"
-                </Bu
+                  />
                   <Button
                     variant="outline"
                     size="icon"
@@ -239,7 +245,7 @@ export function Settings() {
                   onClick={() => handleTestConnection('Google Cloud')}
                   variant="outline"
                   className="flex-1"
-
+                >
                   Test Connection
                 </Button>
                 <Button 
@@ -249,282 +255,243 @@ export function Settings() {
                   }}
                   variant="outline"
                   className="text-destructive"
-                 
+                >
                   Clear
                 </Button>
               </div>
             </CardContent>
-                 
-                >
-
-
-                
-                  Get yo
-              </Alert>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="datadog" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Datadog Configuration</CardTitle>
+              <CardDescription>
+                Configure your Datadog credentials for telemetry streaming and monitoring
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="dd-api-key">API Key</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="dd-api-key"
+                    type={showSecrets.datadog ? 'text' : 'password'}
+                    value={currentConfig.datadog.apiKey}
+                    onChange={(e) => updateConfig('datadog', { apiKey: e.target.value })}
+                    placeholder="********************************"
+                    className="font-mono"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowSecrets(s => ({ ...s, datadog: !s.datadog }))}
+                  >
+                    {showSecrets.datadog ? <EyeSlash size={16} /> : <Eye size={16} />}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dd-app-key">Application Key</Label>
+                <Input
+                  id="dd-app-key"
+                  type="password"
+                  value={currentConfig.datadog.appKey}
+                  onChange={(e) => updateConfig('datadog', { appKey: e.target.value })}
+                  placeholder="********************************"
+                  className="font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dd-site">Site</Label>
+                <Input
+                  id="dd-site"
+                  value={currentConfig.datadog.site}
+                  onChange={(e) => updateConfig('datadog', { site: e.target.value })}
+                  placeholder="datadoghq.com"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Get your credentials from <a href="https://app.datadoghq.com/organization-settings/api-keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Datadog Settings</a>
+                </p>
+              </div>
+
+              <Separator />
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => handleTestConnection('Datadog')}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Test Connection
+                </Button>
+                <Button 
+                  onClick={() => {
+                    updateConfig('datadog', { apiKey: '', appKey: '', site: 'datadoghq.com', enabled: false })
+                    toast.success('Datadog credentials cleared')
+                  }}
+                  variant="outline"
+                  className="text-destructive"
+                >
+                  Clear
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="confluent" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Confluent Configuration</CardTitle>
+              <CardDescription>
+                Configure your Confluent Cloud credentials for real-time data streaming
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="cf-api-key">API Key</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="cf-api-key"
+                    type={showSecrets.confluent ? 'text' : 'password'}
+                    value={currentConfig.confluent.apiKey}
+                    onChange={(e) => updateConfig('confluent', { apiKey: e.target.value })}
+                    placeholder="********************************"
+                    className="font-mono"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowSecrets(s => ({ ...s, confluent: !s.confluent }))}
+                  >
+                    {showSecrets.confluent ? <EyeSlash size={16} /> : <Eye size={16} />}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cf-api-secret">API Secret</Label>
+                <Input
+                  id="cf-api-secret"
+                  type="password"
+                  value={currentConfig.confluent.apiSecret}
+                  onChange={(e) => updateConfig('confluent', { apiSecret: e.target.value })}
+                  placeholder="********************************"
+                  className="font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cf-bootstrap">Bootstrap Server</Label>
+                <Input
+                  id="cf-bootstrap"
+                  value={currentConfig.confluent.bootstrapServer}
+                  onChange={(e) => updateConfig('confluent', { bootstrapServer: e.target.value })}
+                  placeholder="pkc-xxxxx.us-east-1.aws.confluent.cloud:9092"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Get your credentials from <a href="https://confluent.cloud/settings/api-keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Confluent Cloud Console</a>
+                </p>
+              </div>
+
+              <Separator />
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => handleTestConnection('Confluent')}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Test Connection
+                </Button>
+                <Button 
+                  onClick={() => {
+                    updateConfig('confluent', { apiKey: '', apiSecret: '', bootstrapServer: '', enabled: false })
+                    toast.success('Confluent credentials cleared')
+                  }}
+                  variant="outline"
+                  className="text-destructive"
+                >
+                  Clear
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="elevenLabs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>ElevenLabs Configuration</CardTitle>
+              <CardDescription>
+                Configure your ElevenLabs credentials for voice AI agent functionality
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="el-api-key">API Key</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="el-api-key"
+                    type={showSecrets.elevenLabs ? 'text' : 'password'}
+                    value={currentConfig.elevenLabs.apiKey}
+                    onChange={(e) => updateConfig('elevenLabs', { apiKey: e.target.value })}
+                    placeholder="********************************"
+                    className="font-mono"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowSecrets(s => ({ ...s, elevenLabs: !s.elevenLabs }))}
+                  >
+                    {showSecrets.elevenLabs ? <EyeSlash size={16} /> : <Eye size={16} />}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="el-agent-id">Agent ID</Label>
+                <Input
+                  id="el-agent-id"
+                  value={currentConfig.elevenLabs.agentId}
+                  onChange={(e) => updateConfig('elevenLabs', { agentId: e.target.value })}
+                  placeholder="agent_xxxxxxxxxxxxxxxx"
+                  className="font-mono"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Get your credentials from <a href="https://elevenlabs.io/app/settings" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">ElevenLabs Dashboard</a>
+                </p>
+              </div>
+
+              <Separator />
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => handleTestConnection('ElevenLabs')}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Test Connection
+                </Button>
+                <Button 
+                  onClick={() => {
+                    updateConfig('elevenLabs', { apiKey: '', agentId: '', enabled: false })
+                    toast.success('ElevenLabs credentials cleared')
+                  }}
+                  variant="outline"
+                  className="text-destructive"
+                >
+                  Clear
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+    </div>
   )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                >
-
-
-
-
-
-
-
-
-
-                >
-
-
-
-
-
-                <Warning size={16} weight="fill" />
-
-
-
-              </Alert>
-
-          </Card>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                <Warning size={16} weight="fill" />
-
-
-
-              </Alert>
-
-          </Card>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                >
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                <Warning size={16} weight="fill" />
-
-
-
-              </Alert>
-
-          </Card>
-
-      </Tabs>
-
-  )
-
+}
