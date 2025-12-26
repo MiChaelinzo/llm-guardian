@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { toast } from 'sonner'
 import { MetricCards } from '@/components/MetricCards'
-import { VoiceButton } from '@/components/VoiceButton'
 import { MetricChart } from '@/components/MetricChart'
-import { AlertsList } from '@/components/AlertsList'
 import { AIInsights } from '@/components/AIInsights'
+import { DetectionRules } from '@/components/Detecti
+import { EncryptionStatus } from '@/components/Encry
 import { Settings } from '@/components/Settings'
 import { DetectionRules } from '@/components/DetectionRules'
 import { IncidentsList } from '@/components/IncidentsList'
@@ -14,85 +14,85 @@ import { OnboardingDialog } from '@/components/OnboardingDialog'
 import { SponsorBadges } from '@/components/SponsorBadges'
 import { ConfluentStream } from '@/components/ConfluentStream'
 import { TelemetrySimulator } from '@/lib/simulator'
-import { processVoiceQuery, generateIncidentSuggestion, generateAIInsights } from '@/lib/voice'
-import { calculateMetrics, formatTimestamp } from '@/lib/metrics'
-import { ChartLine, Bell, Lightning, Bug, Waveform } from '@phosphor-icons/react'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
-import type { TelemetryMetric, DetectionRule, Alert, Incident, MetricsSummary } from '@/lib/types'
-
+import type { TelemetryMetric, DetectionRule, Alert, Incident, MetricsSummary } from '@/lib/typ
 function App() {
-  const [metrics, setMetrics] = useKV<TelemetryMetric[]>('telemetry-metrics', [])
   const [rules, setRules] = useKV<DetectionRule[]>('detection-rules', [])
-  const [alerts, setAlerts] = useKV<Alert[]>('active-alerts', [])
   const [incidents, setIncidents] = useKV<Incident[]>('incidents', [])
-  const [aiInsights, setAiInsights] = useState<string[]>([
-    'System performance is stable with normal latency patterns.',
-    'All integrations operational and streaming data.'
+    'System performance is stable with normal l
   ])
-  const [lastVoiceResponse, setLastVoiceResponse] = useState<string>('')
-  const [isProcessingVoice, setIsProcessingVoice] = useState(false)
-  const [activeTab, setActiveTab] = useState('dashboard')
-  const [timeRange, setTimeRange] = useState(5 * 60 * 1000)
-  const [showOnboarding, setShowOnboarding] = useState(true)
+
+  const [timeRan
   const [hasEncryptedCreds, setHasEncryptedCreds] = useState(false)
-
   useEffect(() => {
-    const checkEncryptedStorage = async () => {
-      const hasStorage = await window.spark.kv.get('encrypted_credentials')
-      setHasEncryptedCreds(!!hasStorage)
+      const hasStorage = await window.spark.kv.get('encrypted_cre
     }
-    checkEncryptedStorage()
-    const interval = setInterval(checkEncryptedStorage, 2000)
-    return () => clearInterval(interval)
+    const interval = setInterval(checkEncryptedStorage, 20
   }, [])
-
   useEffect(() => {
-    if (!rules || rules.length === 0) {
-      const defaultRules: DetectionRule[] = [
-        {
+    
           id: 'rule_1',
-          name: 'High Latency Warning',
-          description: 'Triggers when average latency exceeds threshold',
-          metric: 'avgLatency',
+          description: 'Triggers when average latency exceeds thres
           condition: 'gt',
-          threshold: 500,
           severity: 'warning',
-          enabled: true,
           actions: ['alert', 'notify']
-        },
         {
-          id: 'rule_2',
-          name: 'Critical P99 Latency',
-          description: 'Triggers when P99 latency indicates performance degradation',
-          metric: 'p99Latency',
-          condition: 'gt',
+
+          metric: '
           threshold: 2000,
-          severity: 'critical',
           enabled: true,
-          actions: ['alert', 'incident']
         },
-        {
-          id: 'rule_3',
-          name: 'Error Rate Spike',
-          description: 'Triggers when error rate exceeds acceptable threshold',
-          metric: 'errorRate',
+     
+          description: 'Tri
           condition: 'gt',
-          threshold: 5,
           severity: 'critical',
-          enabled: true,
-          actions: ['alert']
-        },
-        {
-          id: 'rule_4',
-          name: 'Budget Alert',
-          description: 'Alerts when cost threshold is breached',
+        
+
+          name: 'Bu
           metric: 'totalCost',
-          condition: 'gt',
           threshold: 100,
-          severity: 'warning',
-          enabled: true,
-          actions: ['alert', 'notify']
+         
+        }
+      setRules(defaultRules)
+  }, [rules, setRules])
+  useEffect(() => {
+      setMetrics((current)
+        const cutoff = Da
+      })
+
+    simulator.start()
+    return
+    }
+
+    const interval = setInterval(() => 
+      
+      const enabledRules = rule
+
+        const metricValue 
+
+          case 'gt':
+            break
+          
+         
+            break
+            shouldAlert = metricVal
+          case 'lte':
+            break
+
+          const existin
+          )
+          if (!existingA
+              id: `alert_${D
+          
+         
+              value: me
+                metric: rule.me
+                condition: rule.condition
+              acknowledged: fa
+            newAlerts.push
+        }
+
+        setAlerts((curre
+        newAlerts.forEach((alert) => {
         }
       ]
       setRules(defaultRules)
@@ -100,16 +100,14 @@ function App() {
   }, [rules, setRules])
 
   useEffect(() => {
-    const handleMetric = (newMetric: TelemetryMetric) => {
+    const simulator = new TelemetrySimulator()
+    simulator.start((newMetric) => {
       setMetrics((current) => {
         const updated = [...(current || []), newMetric]
         const cutoff = Date.now() - 5 * 60 * 1000
         return updated.filter(m => m.timestamp >= cutoff)
       })
-    }
-
-    const simulator = new TelemetrySimulator(handleMetric)
-    simulator.start()
+    })
 
     return () => {
       simulator.stop()
@@ -193,116 +191,116 @@ function App() {
       }
     }, 5000)
 
-    return () => clearInterval(interval)
+      (current || []).filter(r => r.id !
   }, [metrics, rules, alerts, setAlerts, timeRange])
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if (!metrics || !alerts) return
-      
-      const summary = calculateMetrics(metrics, 5 * 60 * 1000)
-      const insights = await generateAIInsights(summary, alerts)
-      setAiInsights(insights)
-    }, 30000)
-
-    const initInsights = async () => {
-      if (metrics && alerts) {
-        const summary = calculateMetrics(metrics, 5 * 60 * 1000)
-        const insights = await generateAIInsights(summary, alerts)
-        setAiInsights(insights)
-      }
-    }
-
-    initInsights()
-
-    return () => clearInterval(interval)
-  }, [metrics, alerts])
-
-  const handleVoiceTranscript = useCallback(async (transcript: string) => {
-    setIsProcessingVoice(true)
-    setLastVoiceResponse(`You: "${transcript}"`)
-
-    try {
-      const summary = calculateMetrics(metrics || [], 5 * 60 * 1000)
-      const response = await processVoiceQuery(transcript, summary, alerts || [])
-
-      setLastVoiceResponse(response.text)
-
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel()
-        const utterance = new SpeechSynthesisUtterance(response.text)
-        utterance.rate = 1.1
-        utterance.pitch = 1
-        window.speechSynthesis.speak(utterance)
-      }
-
-      if (response.action === 'show_alerts') {
-        setActiveTab('alerts')
-      } else if (response.action === 'show_metrics') {
-        setActiveTab('dashboard')
-      }
-
-      toast.success('Voice command processed', {
-        description: response.text
-      })
-    } catch (error) {
-      toast.error('Failed to process voice command')
-    } finally {
-      setIsProcessingVoice(false)
-    }
-  }, [metrics, alerts])
-
-  const handleToggleRule = useCallback((ruleId: string) => {
-    setRules((current) =>
-      (current || []).map(r => r.id === ruleId ? { ...r, enabled: !r.enabled } : r)
-    )
-  }, [setRules])
-
-  const handleAddRule = useCallback((rule: Omit<DetectionRule, 'id'>) => {
-    const newRule: DetectionRule = {
-      ...rule,
-      id: `rule_${Date.now()}`
-    }
-    setRules((current) => [...(current || []), newRule])
-    toast.success('Detection rule created')
-  }, [setRules])
-  
-  const handleEditRule = useCallback((ruleId: string, rule: Omit<DetectionRule, 'id'>) => {
-    setRules((current) =>
-      (current || []).map(r => r.id === ruleId ? { ...r, ...rule } : r)
-    )
-  }, [setRules])
-  
-  const handleDeleteRule = useCallback((ruleId: string) => {
-    setRules((current) =>
-      (current || []).filter(r => r.id !== ruleId)
-    )
-  }, [setRules])
-
-  const handleAcknowledgeAlert = useCallback((alertId: string) => {
-    setAlerts((current) =>
-      (current || []).map(a => a.id === alertId ? { ...a, acknowledged: true } : a)
-    )
+      (current || [
     toast.success('Alert acknowledged')
-  }, [setAlerts])
 
-  const handleCreateIncident = useCallback(async (alert: Alert) => {
-    const aiSuggestion = await generateIncidentSuggestion(alert)
-
+    co
     const incident: Incident = {
-      id: `incident_${Date.now()}`,
       title: alert.ruleName,
-      description: alert.message,
-      severity: alert.severity,
-      status: 'open',
-      createdAt: Date.now(),
-      alerts: [alert],
-      aiSuggestion
-    }
+      severity: alert.severit
+      created
 
-    setIncidents((current) => [...(current || []), incident])
-    handleAcknowledgeAlert(alert.id)
-    toast.success('Incident created with AI recommendation')
+
+    handleAcknowledgeAlert(ale
+  }, [setIncidents, handleAcknowledgeAlert])
+  const handleResolveIncident = useCallback((incidentId: string) =
+      (current || []).map(i => 
+       
+     
+
+
+
+    <div className="min-h-screen bg-back
+        onComplete={() 
+
+        <div className="flex flex-col gap-6">
+            <div className="fl
+                <Waveform className="text-primar
+
+         
+            </div>
+            <div className="flex items-center gap-3">
+
+                isProcessing={isProcessin
+
+
+
+            <div className="p-4 bg-accent/20 rounded-lg border border
+            </div>
+
+            <TabsList className="grid w-full gr
+       
+
+                <Bell size={16} weight="bold" 
+              </TabsTrigger>
+                <Lightning size={16} weight="bold" />
+              </TabsTrigger>
+       
+
+                <Waveform size={16} weight="bold
+              </TabsTrigger>
+
+              <div cl
+                <ConfluentStream metricsCount={(metr
+
+
+     
+                  type=
+
+                />
+                <MetricCh
+                  type="error"
+     
+                
+
+                  type="cost"
+                  color="oklch(0.68 
+              
+                <MetricChart
+     
+                  color="oklch(0.70 0.17 145)"
+                />
+
+  
+            <TabsContent value="alerts" className="space-y-6 mt-6">
+                <h2 class
+              </div>
+     
+                
+  
+
+              <div>
+                <p className="text-muted-foregroun
+
+                
+
+                onDeleteRule={handleDeleteRule}
+            </TabsContent>
+            <TabsContent value="incidents" className="space-y-6 mt-6">
+     
+              </div>
+              <In
+
+            </TabsContent>
+            <TabsContent value="settings" className="space-y-6 m
+
+        </div>
+    </div>
+}
+export default App
+
+
+
+
+
+
+
+
+
+
   }, [setIncidents, handleAcknowledgeAlert])
 
   const handleResolveIncident = useCallback((incidentId: string) => {
@@ -321,7 +319,8 @@ function App() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <OnboardingDialog 
-        onComplete={() => setShowOnboarding(false)}
+        open={showOnboarding} 
+        onOpenChange={setShowOnboarding}
       />
 
       <div className="container mx-auto p-4 md:p-6 max-w-7xl">
@@ -338,7 +337,7 @@ function App() {
             </div>
 
             <div className="flex items-center gap-3">
-              <EncryptionStatus hasEncryptedCredentials={hasEncryptedCreds} />
+              <EncryptionStatus hasEncrypted={hasEncryptedCreds} />
               <VoiceButton 
                 onTranscript={handleVoiceTranscript}
                 isProcessing={isProcessingVoice}
@@ -381,7 +380,7 @@ function App() {
             <TabsContent value="dashboard" className="space-y-6 mt-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Real-Time Telemetry</h2>
-                <ConfluentStream metricsCount={(metrics || []).length} />
+                <ConfluentStream />
               </div>
 
               <MetricCards summary={summary} />
@@ -393,7 +392,7 @@ function App() {
                   title="Average Latency"
                   color="oklch(0.65 0.19 245)"
                   timeRange={timeRange}
-                />
+
 
                 <MetricChart
                   metrics={metrics || []}
@@ -401,7 +400,7 @@ function App() {
                   title="Error Count"
                   color="oklch(0.65 0.22 25)"
                   timeRange={timeRange}
-                />
+
 
                 <MetricChart
                   metrics={metrics || []}
@@ -420,7 +419,7 @@ function App() {
                 />
               </div>
 
-              <AIInsights summary={summary} insights={aiInsights} />
+              <AIInsights insights={aiInsights} />
             </TabsContent>
 
             <TabsContent value="alerts" className="space-y-6 mt-6">
@@ -444,8 +443,9 @@ function App() {
 
               <DetectionRules
                 rules={rules || []}
-                onToggleRule={handleToggleRule}
-                onAddRule={handleAddRule}
+                summary={summary}
+                onToggle={handleToggleRule}
+                onAdd={handleAddRule}
                 onEditRule={handleEditRule}
                 onDeleteRule={handleDeleteRule}
               />
@@ -467,10 +467,10 @@ function App() {
               <Settings />
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
-    </div>
-  )
-}
 
-export default App
+      </div>
+
+  )
+
+
+
