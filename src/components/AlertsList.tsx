@@ -53,9 +53,13 @@ export function AlertsList({ alerts, onAcknowledge, onCreateIncident }: AlertsLi
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Bell size={20} weight="fill" className="text-primary" />
+          <Bell size={20} weight="fill" className="text-cost" />
           <h3 className="font-semibold">Active Alerts</h3>
           <Badge variant="secondary">{activeAlerts.length}</Badge>
+          <Badge variant="outline" className="text-xs gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-cost" />
+            Datadog
+          </Badge>
         </div>
       </div>
       

@@ -58,6 +58,10 @@ export function IncidentsList({ incidents, onResolve }: IncidentsListProps) {
             <Bug size={20} weight="fill" className="text-destructive" />
             <h3 className="font-semibold">Open Incidents</h3>
             <Badge variant="secondary">{openIncidents.length}</Badge>
+            <Badge variant="outline" className="text-xs gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-cost" />
+              Datadog
+            </Badge>
           </div>
           
           <ScrollArea className="h-[500px] pr-4">

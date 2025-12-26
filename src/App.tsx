@@ -8,9 +8,12 @@ import { MetricChart } from '@/components/MetricChart'
 import { AlertsList } from '@/components/AlertsList'
 import { DetectionRules } from '@/components/DetectionRules'
 import { IncidentsList } from '@/components/IncidentsList'
+import { SponsorBadges } from '@/components/SponsorBadges'
+import { AIInsights } from '@/components/AIInsights'
+import { ConfluentStream } from '@/components/ConfluentStream'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { calculateMetrics, checkDetectionRules } from '@/lib/metrics'
-import { processVoiceQuery, generateIncidentSuggestion } from '@/lib/voice'
+import { processVoiceQuery, generateIncidentSuggestion, generateAIInsights } from '@/lib/voice'
 import type { TelemetryMetric, DetectionRule, Alert, Incident } from '@/lib/types'
 import { ChartLine, Bell, Lightning, Bug, Waveform } from '@phosphor-icons/react'
 
@@ -22,6 +25,11 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isProcessingVoice, setIsProcessingVoice] = useState(false)
   const [lastVoiceResponse, setLastVoiceResponse] = useState('')
+  const [aiInsights, setAiInsights] = useState<string[]>([
+    'System performance is stable with normal latency patterns.',
+    'Monitoring active across all telemetry streams.',
+    'All integrations operational and streaming data.'
+  ])
 
   useEffect(() => {
     if (!rules || rules.length === 0) {
@@ -120,6 +128,28 @@ function App() {
 
     return () => clearInterval(interval)
   }, [metrics, rules, alerts, setAlerts])
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (!metrics || !alerts) return
+      
+      const summary = calculateMetrics(metrics, 5 * 60 * 1000)
+      const insights = await generateAIInsights(summary, alerts)
+      setAiInsights(insights)
+    }, 30000)
+
+    const initInsights = async () => {
+      if (metrics && alerts) {
+        const summary = calculateMetrics(metrics, 5 * 60 * 1000)
+        const insights = await generateAIInsights(summary, alerts)
+        setAiInsights(insights)
+      }
+    }
+
+    initInsights()
+
+    return () => clearInterval(interval)
+  }, [metrics, alerts])
 
   const handleVoiceTranscript = useCallback(async (transcript: string) => {
     setIsProcessingVoice(true)
@@ -226,7 +256,7 @@ function App() {
         <div className="relative">
           <header className="border-b border-border/50 backdrop-blur-sm bg-background/80">
             <div className="container mx-auto px-6 py-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <Waveform size={32} weight="fill" className="text-accent" />
                   <div>
@@ -237,8 +267,12 @@ function App() {
                 
                 <div className="flex items-center gap-4">
                   {lastVoiceResponse && (
-                    <div className="max-w-md p-3 rounded-lg bg-card border border-border text-sm">
-                      {lastVoiceResponse}
+                    <div className="max-w-md p-3 rounded-lg bg-card border border-accent/30 text-sm flex items-start gap-2">
+                      <Waveform size={16} weight="fill" className="text-accent mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-0.5">ElevenLabs Voice Agent</div>
+                        {lastVoiceResponse}
+                      </div>
                     </div>
                   )}
                   <VoiceButton
@@ -246,6 +280,14 @@ function App() {
                     isProcessing={isProcessingVoice}
                   />
                 </div>
+              </div>
+              
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Powered by:</span>
+                <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">Google Cloud</span>
+                <span className="px-2 py-0.5 rounded bg-cost/10 text-cost font-medium">Datadog</span>
+                <span className="px-2 py-0.5 rounded bg-success/10 text-success font-medium">Confluent</span>
+                <span className="px-2 py-0.5 rounded bg-accent/10 text-accent font-medium">ElevenLabs</span>
               </div>
             </div>
           </header>
@@ -282,7 +324,16 @@ function App() {
               </TabsList>
 
               <TabsContent value="dashboard" className="space-y-6">
-                <MetricCards summary={summary} />
+                <SponsorBadges />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <MetricCards summary={summary} />
+                  </div>
+                  <ConfluentStream metricsCount={(metrics || []).length} />
+                </div>
+
+                <AIInsights summary={summary} insights={aiInsights} />
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <MetricChart

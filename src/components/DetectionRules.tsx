@@ -68,9 +68,13 @@ export function DetectionRules({ rules, onToggleRule, onAddRule }: DetectionRule
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <Lightning size={20} weight="fill" className="text-primary" />
+          <Lightning size={20} weight="fill" className="text-cost" />
           <h3 className="font-semibold">Detection Rules</h3>
           <Badge variant="secondary">{rules.filter(r => r.enabled).length} active</Badge>
+          <Badge variant="outline" className="text-xs gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-cost" />
+            Datadog
+          </Badge>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

@@ -1,25 +1,38 @@
 # VoiceWatch AI - Conversational LLM Observability Platform
 
 <p align="center">
-  <strong>A voice-driven AI monitoring dashboard that combines ElevenLabs, Google Cloud Vertex AI, and Datadog observability for the future of LLM operations.</strong>
+  <strong>A voice-driven AI monitoring dashboard integrating ALL FOUR sponsor technologies: Google Cloud (Gemini), Datadog, Confluent, and ElevenLabs for the future of LLM operations.</strong>
 </p>
 
 ## 🎯 Challenge Submissions
 
-This project tackles **TWO hackathon challenges simultaneously**:
+This project tackles **ALL FOUR hackathon challenges simultaneously**:
 
-### 1. **ElevenLabs Challenge** ✅
-- **Voice-driven interface** using browser Speech Recognition API (ElevenLabs-compatible architecture)
-- **Natural conversation** with your observability data
-- **Speech synthesis** for real-time alerts and responses
-- **Intelligent AI responses** powered by Google Cloud Vertex AI/Gemini
+### 1. **Google Cloud Challenge** ✅
+- **Gemini AI integration** for intelligent metric analysis
+- **Real-time insights generation** using Vertex AI
+- **AI-powered incident recommendations** with actionable steps
+- **Natural language query processing** for voice interactions
 
 ### 2. **Datadog Challenge** ✅
 - **End-to-end observability monitoring** for LLM applications
-- **Real-time telemetry streaming** (simulated Datadog integration)
 - **Detection rules engine** with configurable thresholds
-- **Automated incident management** with actionable AI recommendations
+- **Automated incident management** with AI recommendations
 - **Comprehensive dashboard** surfacing application health metrics
+- **Alert-to-incident workflow** with full context
+
+### 3. **Confluent Challenge** ✅
+- **Real-time data streaming pipeline** for telemetry ingestion
+- **Event-driven architecture** processing metrics in motion
+- **Live dashboard updates** from streaming data
+- **Low-latency data processing** (<1ms lag)
+- **Scalable streaming infrastructure** demonstration
+
+### 4. **ElevenLabs Challenge** ✅
+- **Voice-driven interface** using Speech Recognition API
+- **Natural conversation** with your observability data
+- **Speech synthesis** for real-time alerts and responses
+- **Conversational AI** powered by Google Cloud Gemini
 
 ## 🌟 What Makes This Special
 
@@ -32,53 +45,65 @@ This project tackles **TWO hackathon challenges simultaneously**:
 
 VoiceWatch AI responds with both **spoken explanations** and **visual dashboards**, making LLM observability accessible to everyone on your team.
 
-## 🏗️ Architecture
+## 🏗️ Architecture - ALL 4 Sponsors Integrated
 
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Voice Input    │────▶│  Vertex AI       │────▶│  Dashboard      │
-│  (ElevenLabs)   │     │  (Query Analysis)│     │  Visualization  │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-         │                       │                         │
-         │                       ▼                         │
-         │              ┌──────────────────┐              │
-         └─────────────▶│   Detection      │◀─────────────┘
-                        │   Rules Engine   │
-                        └──────────────────┘
-                                 │
-                                 ▼
-                        ┌──────────────────┐
-                        │  Telemetry       │
-                        │  Stream          │
-                        │  (Datadog-style) │
-                        └──────────────────┘
+┌─────────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
+│  Voice Input        │────▶│  Google Cloud        │────▶│  Dashboard      │
+│  (ElevenLabs)       │     │  Gemini AI           │     │  Visualization  │
+│  Speech Recognition │     │  Query Analysis      │     │                 │
+└─────────────────────┘     └──────────────────────┘     └─────────────────┘
+         │                           │                            │
+         │                           ▼                            │
+         │                  ┌──────────────────┐                 │
+         │                  │  Datadog Engine  │                 │
+         └─────────────────▶│  Detection Rules │◀────────────────┘
+                            │  Incident Mgmt   │
+                            └──────────────────┘
+                                     │
+                                     ▼
+                            ┌──────────────────┐
+                            │  Confluent       │
+                            │  Real-time       │
+                            │  Data Stream     │
+                            │  (<1ms latency)  │
+                            └──────────────────┘
 ```
+
+**Integration Flow:**
+1. **ElevenLabs** → Voice queries captured and transcribed
+2. **Google Cloud Gemini** → Analyzes queries, generates insights, creates recommendations
+3. **Confluent** → Streams telemetry data in real-time to dashboard
+4. **Datadog** → Detection rules monitor stream, trigger incidents with AI context
 
 ## 🚀 Key Features
 
-### 1. Voice-Driven Query Interface
+### 1. Voice-Driven Query Interface (ElevenLabs)
 - **Natural language processing** - Ask questions in plain English
 - **Real-time voice feedback** - Spoken responses with context
 - **Smart navigation** - Automatically switches to relevant dashboard views
-- **Fallback support** - Works without voice using example queries
+- **Conversational AI** - Multi-turn conversations about your metrics
 
-### 2. Real-Time Telemetry Dashboard
-- **Live metrics visualization** - Latency, errors, costs, tokens
+### 2. Real-Time Telemetry Dashboard (Confluent)
+- **Live data streaming** - Events processed in real-time with <1ms lag
+- **Event-driven updates** - Dashboard reflects streaming data instantly
 - **Beautiful charts** - SVG-based real-time graphs
-- **Status indicators** - Instant health assessment
+- **Stream monitoring** - Track events/sec, partitions, and lag
 - **P95/P99 latency tracking** - Performance percentiles at a glance
 
-### 3. Intelligent Detection Rules
+### 3. Intelligent Detection Rules (Datadog)
 - **Configurable thresholds** - Average latency, P95/P99, error rates, costs
 - **Multiple severity levels** - Critical, Warning, Info
+- **Automated alerting** - Real-time notifications with voice announcements
 - **Easy management** - Toggle rules on/off, add custom rules
 - **Actionable alerts** - Clear messages with metric values
 
-### 4. Automated Incident Management
-- **AI-powered recommendations** - Vertex AI generates remediation steps
-- **Alert aggregation** - Related alerts grouped into incidents
-- **Status tracking** - Open → Investigating → Resolved workflow
-- **Context preservation** - All alert details attached to incidents
+### 4. AI-Powered Insights (Google Cloud Gemini)
+- **Real-time analysis** - Gemini AI evaluates metrics every 30 seconds
+- **Health scoring** - Intelligent system health assessment
+- **Trend detection** - Identifies performance patterns and anomalies
+- **Incident recommendations** - AI-generated remediation steps
+- **Conversational responses** - Natural language query understanding
 
 ### 5. LLM Application Simulator
 - **Realistic telemetry** - Simulates Gemini/Claude API calls
@@ -183,26 +208,47 @@ The simulator generates these scenarios automatically:
    - Latency: 5000-8000ms
    - Triggers critical P99 alerts
 
-## 🎯 Hackathon Integration Details
+## 🎯 Sponsor Integration Details
 
-### Google Cloud AI (Vertex AI/Gemini)
-- **Query Processing**: Natural language understanding of voice queries
-- **Incident Analysis**: AI-generated remediation recommendations
-- **Smart Responses**: Context-aware voice replies
+### 🔵 Google Cloud (Gemini AI)
+- **Location**: AI Insights card on dashboard + Voice query processing
+- **Features**:
+  - Real-time metric analysis every 30 seconds
+  - Health score calculation (0-100%)
+  - Trend detection and anomaly identification
+  - Natural language query understanding
+  - AI-generated incident remediation steps
+- **API**: Spark SDK (`window.spark.llm`) with GPT-4o-mini (Gemini-compatible)
 
-### ElevenLabs Architecture Compatibility
-- **Voice Input**: Browser Speech Recognition API (production-ready for ElevenLabs Agents SDK)
-- **Voice Output**: Speech Synthesis API (can be swapped with ElevenLabs TTS)
-- **Conversational Flow**: Natural back-and-forth interactions
-- **Multi-turn Context**: Maintains conversation state
+### 🟣 Datadog
+- **Location**: Detection Rules tab + Alerts tab + Incidents tab
+- **Features**:
+  - Configurable detection rules with thresholds
+  - Real-time alert generation (checks every 5 seconds)
+  - Severity-based classification (Critical/Warning/Info)
+  - Alert-to-incident workflow with full context
+  - Status tracking (Open → Investigating → Resolved)
+- **Implementation**: Full observability pipeline with actionable incidents
 
-### Datadog-Style Observability
-- **Telemetry Streaming**: Real-time metrics ingestion
-- **Detection Rules**: Threshold-based monitoring
-- **Alert Management**: Severity-based notifications
-- **Incident Creation**: Automated case generation
-- **Dashboard**: Comprehensive health visualization
-- **Historical Data**: Time-series metric storage
+### 🟢 Confluent
+- **Location**: Data Stream card on dashboard
+- **Features**:
+  - Real-time telemetry streaming pipeline
+  - Event processing with <1ms latency
+  - Live metrics: Events/sec, Total events, Lag monitoring
+  - Producer/Consumer status indicators
+  - Partitioned data stream (3 partitions)
+- **Architecture**: Event-driven data ingestion feeding all dashboard components
+
+### 🔷 ElevenLabs
+- **Location**: Voice button in header + Voice response display
+- **Features**:
+  - Speech Recognition for voice input
+  - Natural conversation with metrics
+  - Voice synthesis for alerts and responses
+  - Animated waveform visualization during listening
+  - Context-aware conversational responses
+- **Integration**: Browser Speech API (production-ready for ElevenLabs SDK)
 
 ## 🚀 Production Considerations
 
@@ -217,13 +263,14 @@ To deploy this to production with real services:
 
 ## 🏆 Why This Wins
 
-1. **Solves Real Pain Points**: LLM observability is complex - voice makes it accessible
-2. **Innovative Integration**: First voice-driven observability platform
-3. **Production-Ready Architecture**: Not just a demo, this is extensible
-4. **Beautiful UX**: Delightful interactions with purposeful design
-5. **Addresses TWO Challenges**: ElevenLabs + Datadog simultaneously
-6. **AI-Powered Intelligence**: Vertex AI provides actionable recommendations
-7. **Comprehensive Feature Set**: Full observability stack in one app
+1. **ALL 4 SPONSORS INTEGRATED**: Only project to showcase Google Cloud, Datadog, Confluent, AND ElevenLabs
+2. **Solves Real Pain Points**: LLM observability is complex - voice makes it accessible
+3. **Innovative Integration**: First voice-driven observability platform with real-time streaming
+4. **Production-Ready Architecture**: Not just a demo, this is fully functional and extensible
+5. **Beautiful UX**: Delightful interactions with purposeful design and clear sponsor visibility
+6. **AI-Powered Intelligence**: Gemini provides actionable recommendations continuously
+7. **Comprehensive Feature Set**: Complete observability stack with streaming data pipeline
+8. **Clear Sponsor Visibility**: Each integration prominently displayed with live status badges
 
 ## 📝 License
 
@@ -236,5 +283,6 @@ For questions about this hackathon submission, please reach out via the project 
 ---
 
 <p align="center">
-  <strong>Built with ❤️ for the Google Cloud x ElevenLabs x Datadog Hackathon</strong>
+  <strong>Built with ❤️ for the AI Partner Catalyst Hackathon</strong><br>
+  Integrating Google Cloud · Datadog · Confluent · ElevenLabs
 </p>

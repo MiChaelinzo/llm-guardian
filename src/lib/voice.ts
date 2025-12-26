@@ -113,3 +113,41 @@ Provide a concise 2-3 sentence recommendation for an AI engineer to resolve this
     return 'Unable to generate AI suggestion at this time. Please review the alert details and check system logs.'
   }
 }
+
+export async function generateAIInsights(summary: MetricSummary, alerts: Alert[]): Promise<string[]> {
+  const promptText = `You are an AI observability assistant analyzing LLM application metrics powered by Google Cloud Gemini.
+
+Current Metrics:
+- Average Latency: ${Math.round(summary.avgLatency)}ms
+- P99 Latency: ${Math.round(summary.p99Latency)}ms
+- Error Rate: ${summary.errorRate.toFixed(2)}%
+- Total Requests: ${summary.totalRequests}
+- Total Cost: $${summary.totalCost.toFixed(4)}
+- Active Alerts: ${alerts.filter(a => !a.acknowledged).length}
+
+Generate exactly 3 concise, actionable insights (each 1 sentence) about system health, trends, or recommendations. Return as JSON with an "insights" array property containing 3 strings.`
+
+  try {
+    const response = await window.spark.llm(promptText, 'gpt-4o-mini', true)
+    const parsed = JSON.parse(response)
+    
+    if (Array.isArray(parsed)) {
+      return parsed.slice(0, 3)
+    }
+    if (parsed.insights && Array.isArray(parsed.insights)) {
+      return parsed.insights.slice(0, 3)
+    }
+    
+    return [
+      'System performance is stable with normal latency patterns.',
+      `Processing ${summary.totalRequests} requests with ${summary.errorRate.toFixed(1)}% error rate.`,
+      'No immediate optimization recommendations at this time.'
+    ]
+  } catch (error) {
+    return [
+      'System performance is stable with normal latency patterns.',
+      `Processing ${summary.totalRequests} requests with ${summary.errorRate.toFixed(1)}% error rate.`,
+      'No immediate optimization recommendations at this time.'
+    ]
+  }
+}

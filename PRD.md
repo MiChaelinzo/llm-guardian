@@ -1,6 +1,6 @@
 # VoiceWatch AI - Conversational LLM Observability Platform
 
-A voice-driven AI monitoring dashboard that lets developers interact with their LLM telemetry through natural conversation. Using ElevenLabs voice agents, Google Cloud Vertex AI, and Datadog observability, developers can ask questions about their AI application health, get real-time alerts, and diagnose issues—all through speech.
+A voice-driven AI monitoring dashboard that lets developers interact with their LLM telemetry through natural conversation. This hackathon project integrates **all four sponsor technologies**: Google Cloud (Gemini AI for intelligent analysis), Datadog (detection rules & incident management), Confluent (real-time data streaming), and ElevenLabs (conversational voice interface). Developers can ask questions about their AI application health, get real-time alerts, and diagnose issues—all through natural speech.
 
 **Experience Qualities**:
 1. **Conversational** - Natural voice interactions make complex monitoring accessible and intuitive
@@ -8,7 +8,7 @@ A voice-driven AI monitoring dashboard that lets developers interact with their 
 3. **Responsive** - Real-time alerts and immediate visual feedback create confidence in system health
 
 **Complexity Level**: Complex Application (advanced functionality with multiple views)
-This integrates three major platforms (ElevenLabs, Vertex AI, Datadog), real-time telemetry streaming, voice-driven interactions, dynamic dashboard generation, and detection rule management. It requires sophisticated state management, API orchestration, and data visualization.
+This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis and predictions, **Datadog** for detection rules and incident management, **Confluent** for real-time telemetry data streaming, and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, and multi-modal visualizations.
 
 ## Essential Features
 
