@@ -2,10 +2,10 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Clock, Warning, CheckCircle, CurrencyDollar } from '@phosphor-icons/react'
 import { formatLatency, formatCost, formatNumber } from '@/lib/metrics'
-import type { MetricSummary } from '@/lib/types'
+import type { MetricsSummary } from '@/lib/types'
 
 interface MetricCardProps {
-  summary: MetricSummary
+  summary: MetricsSummary
 }
 
 export function MetricCards({ summary }: MetricCardProps) {

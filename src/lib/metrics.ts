@@ -1,6 +1,6 @@
-import type { TelemetryMetric, MetricSummary, DetectionRule, Alert } from './types'
+import type { TelemetryMetric, MetricsSummary, DetectionRule, Alert } from './types'
 
-export function calculateMetrics(metrics: TelemetryMetric[], timeRange: number): MetricSummary {
+export function calculateMetrics(metrics: TelemetryMetric[], timeRange: number): MetricsSummary {
   const now = Date.now()
   const cutoff = now - timeRange
   
@@ -37,7 +37,7 @@ export function calculateMetrics(metrics: TelemetryMetric[], timeRange: number):
 
 export function checkDetectionRules(
   rules: DetectionRule[],
-  summary: MetricSummary,
+  summary: MetricsSummary,
   existingAlerts: Alert[]
 ): Alert[] {
   const newAlerts: Alert[] = []

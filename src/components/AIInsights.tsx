@@ -1,10 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Brain, Sparkle, TrendUp, Clock } from '@phosphor-icons/react'
-import type { MetricSummary } from '@/lib/types'
+import type { MetricsSummary } from '@/lib/types'
 
 interface AIInsightsProps {
-  summary: MetricSummary
+  summary: MetricsSummary
   insights: string[]
 }
 

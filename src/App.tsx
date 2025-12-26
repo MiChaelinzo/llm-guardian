@@ -11,11 +11,13 @@ import { IncidentsList } from '@/components/IncidentsList'
 import { SponsorBadges } from '@/components/SponsorBadges'
 import { AIInsights } from '@/components/AIInsights'
 import { ConfluentStream } from '@/components/ConfluentStream'
+import { Settings } from '@/components/Settings'
+import { OnboardingDialog } from '@/components/OnboardingDialog'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { calculateMetrics, checkDetectionRules } from '@/lib/metrics'
 import { processVoiceQuery, generateIncidentSuggestion, generateAIInsights } from '@/lib/voice'
 import type { TelemetryMetric, DetectionRule, Alert, Incident } from '@/lib/types'
-import { ChartLine, Bell, Lightning, Bug, Waveform } from '@phosphor-icons/react'
+import { ChartLine, Bell, Lightning, Bug, Waveform, Gear } from '@phosphor-icons/react'
 
 function App() {
   const [metrics, setMetrics] = useKV<TelemetryMetric[]>('telemetry-metrics', [])
@@ -25,6 +27,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isProcessingVoice, setIsProcessingVoice] = useState(false)
   const [lastVoiceResponse, setLastVoiceResponse] = useState('')
+  const [showOnboarding, setShowOnboarding] = useState(true)
   const [aiInsights, setAiInsights] = useState<string[]>([
     'System performance is stable with normal latency patterns.',
     'Monitoring active across all telemetry streams.',
@@ -249,6 +252,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
+      <OnboardingDialog onComplete={() => setShowOnboarding(false)} />
+      
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
@@ -321,6 +326,10 @@ function App() {
                     </span>
                   )}
                 </TabsTrigger>
+                <TabsTrigger value="settings" className="gap-2">
+                  <Gear size={16} weight="fill" />
+                  Settings
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="dashboard" className="space-y-6">
@@ -388,6 +397,10 @@ function App() {
                   incidents={incidents || []}
                   onResolve={handleResolveIncident}
                 />
+              </TabsContent>
+
+              <TabsContent value="settings">
+                <Settings />
               </TabsContent>
             </Tabs>
           </main>

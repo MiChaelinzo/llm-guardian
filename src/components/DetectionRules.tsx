@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Lightning, Plus } from '@phosphor-icons/react'
-import type { DetectionRule } from '@/lib/types'
+import type { DetectionRule, MetricType } from '@/lib/types'
 import { useState } from 'react'
 
 interface DetectionRulesProps {
@@ -25,10 +25,10 @@ interface DetectionRulesProps {
 
 export function DetectionRules({ rules, onToggleRule, onAddRule }: DetectionRulesProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [newRule, setNewRule] = useState({
+  const [newRule, setNewRule] = useState<Omit<DetectionRule, 'id'>>({
     name: '',
     description: '',
-    metric: 'avgLatency',
+    metric: 'avgLatency' as const,
     condition: 'gt' as const,
     threshold: 2000,
     severity: 'warning' as const,
@@ -43,10 +43,10 @@ export function DetectionRules({ rules, onToggleRule, onAddRule }: DetectionRule
       setNewRule({
         name: '',
         description: '',
-        metric: 'avgLatency',
-        condition: 'gt',
+        metric: 'avgLatency' as const,
+        condition: 'gt' as const,
         threshold: 2000,
-        severity: 'warning',
+        severity: 'warning' as const,
         enabled: true,
         actions: ['alert', 'notify']
       })
@@ -116,7 +116,7 @@ export function DetectionRules({ rules, onToggleRule, onAddRule }: DetectionRule
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="metric">Metric</Label>
-                  <Select value={newRule.metric} onValueChange={(value) => setNewRule({ ...newRule, metric: value })}>
+                  <Select value={newRule.metric} onValueChange={(value: MetricType) => setNewRule({ ...newRule, metric: value })}>
                     <SelectTrigger id="metric">
                       <SelectValue />
                     </SelectTrigger>

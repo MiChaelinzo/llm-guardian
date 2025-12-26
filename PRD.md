@@ -1,14 +1,32 @@
 # VoiceWatch AI - Conversational LLM Observability Platform
 
-A voice-driven AI monitoring dashboard that lets developers interact with their LLM telemetry through natural conversation. This hackathon project integrates **all four sponsor technologies**: Google Cloud (Gemini AI for intelligent analysis), Datadog (detection rules & incident management), Confluent (real-time data streaming), and ElevenLabs (conversational voice interface). Developers can ask questions about their AI application health, get real-time alerts, and diagnose issues—all through natural speech.
+A production-ready, voice-driven AI monitoring dashboard that lets developers interact with their LLM telemetry through natural conversation. This hackathon project integrates **all four sponsor technologies**: Google Cloud (Gemini AI for intelligent analysis), Datadog (detection rules & incident management), Confluent (real-time data streaming), and ElevenLabs (conversational voice interface). Developers can ask questions about their AI application health, get real-time alerts, and diagnose issues—all through natural speech.
+
+**Dual Mode Operation**: Works in **Demo Mode** with simulated data for immediate exploration, or **Production Mode** with user-configured API credentials for real integrations. Perfect for hackathon judges to test with their own accounts or demo scenarios.
 
 **Experience Qualities**:
 1. **Conversational** - Natural voice interactions make complex monitoring accessible and intuitive
 2. **Intelligent** - AI-powered analysis surfaces insights from telemetry data automatically
-3. **Responsive** - Real-time alerts and immediate visual feedback create confidence in system health
+3. **Flexible** - Seamlessly switch between demo and production modes for any use case
 
 **Complexity Level**: Complex Application (advanced functionality with multiple views)
-This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis and predictions, **Datadog** for detection rules and incident management, **Confluent** for real-time telemetry data streaming, and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, and multi-modal visualizations.
+This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis and predictions, **Datadog** for detection rules and incident management, **Confluent** for real-time telemetry data streaming, and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, multi-modal visualizations, and secure credential management with onboarding flows.
+
+## Essential Features
+
+### Onboarding & Configuration System
+- **Functionality**: Welcome flow guiding users to choose Demo or Production mode, with comprehensive API credential management
+- **Purpose**: Makes the platform accessible for both quick demos and production deployments
+- **Trigger**: First app launch or manual settings access
+- **Progression**: Welcome screen → Mode selection → API configuration (optional) → Dashboard launch
+- **Success criteria**: Users can configure all four sponsor APIs with credential validation and masked input fields
+
+### Settings & API Management
+- **Functionality**: Comprehensive settings interface for managing Google Cloud, Datadog, Confluent, and ElevenLabs API credentials
+- **Purpose**: Enable users to connect their own accounts for production use
+- **Trigger**: Settings tab or onboarding flow
+- **Progression**: Select platform → Enter credentials → Test connection → Enable integration → Save
+- **Success criteria**: All credentials stored securely in persistent storage with visual connection status indicators
 
 ## Essential Features
 
@@ -49,12 +67,16 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
 
 ## Edge Case Handling
 
+- **First-Time Users**: Welcoming onboarding dialog with clear Demo vs Production mode choice
+- **Missing API Credentials**: Clear configuration status indicators with direct links to credential sources
+- **Demo Mode**: Fully functional simulated environment requiring no external API keys
 - **Voice Recognition Failures**: Visual fallback with text input, "I didn't catch that" response with retry
 - **API Timeouts**: Graceful degradation with cached data, visual indicator of stale metrics
 - **No Active Alerts**: Voice agent proactively offers insights, suggests optimization opportunities
 - **Multiple Simultaneous Alerts**: Prioritized queue with severity-based voice notifications
 - **Missing Telemetry Data**: Clear "No data" states with troubleshooting suggestions
 - **Network Disconnection**: Offline mode shows last known state, auto-reconnect with data backfill
+- **Credential Masking**: All API keys displayed as masked password fields with show/hide toggle
 
 ## Design Direction
 

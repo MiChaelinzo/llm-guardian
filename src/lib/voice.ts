@@ -1,4 +1,4 @@
-import type { MetricSummary, Alert } from './types'
+import type { MetricsSummary, Alert } from './types'
 
 export interface VoiceResponse {
   text: string
@@ -8,7 +8,7 @@ export interface VoiceResponse {
 
 export async function processVoiceQuery(
   query: string,
-  summary: MetricSummary,
+  summary: MetricsSummary,
   alerts: Alert[]
 ): Promise<VoiceResponse> {
   const lowerQuery = query.toLowerCase()
@@ -114,7 +114,7 @@ Provide a concise 2-3 sentence recommendation for an AI engineer to resolve this
   }
 }
 
-export async function generateAIInsights(summary: MetricSummary, alerts: Alert[]): Promise<string[]> {
+export async function generateAIInsights(summary: MetricsSummary, alerts: Alert[]): Promise<string[]> {
   const promptText = `You are an AI observability assistant analyzing LLM application metrics powered by Google Cloud Gemini.
 
 Current Metrics:
