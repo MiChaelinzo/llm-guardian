@@ -13,6 +13,7 @@ import { AIInsights } from '@/components/AIInsights'
 import { ConfluentStream } from '@/components/ConfluentStream'
 import { Settings } from '@/components/Settings'
 import { OnboardingDialog } from '@/components/OnboardingDialog'
+import { EncryptionStatus } from '@/components/EncryptionStatus'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { calculateMetrics, checkDetectionRules } from '@/lib/metrics'
 import { processVoiceQuery, generateIncidentSuggestion, generateAIInsights } from '@/lib/voice'
@@ -33,6 +34,19 @@ function App() {
     'Monitoring active across all telemetry streams.',
     'All integrations operational and streaming data.'
   ])
+  const [hasEncryptedCreds, setHasEncryptedCreds] = useState(false)
+
+  useEffect(() => {
+    const checkEncryptedStorage = () => {
+      const hasSecure = localStorage.getItem('secure_api-config') !== null
+      setHasEncryptedCreds(hasSecure)
+    }
+    
+    checkEncryptedStorage()
+    
+    const interval = setInterval(checkEncryptedStorage, 2000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     if (!rules || rules.length === 0) {
@@ -271,6 +285,7 @@ function App() {
                 </div>
                 
                 <div className="flex items-center gap-4">
+                  <EncryptionStatus hasEncryptedCredentials={hasEncryptedCreds} />
                   {lastVoiceResponse && (
                     <div className="max-w-md p-3 rounded-lg bg-card border border-accent/30 text-sm flex items-start gap-2">
                       <Waveform size={16} weight="fill" className="text-accent mt-0.5 flex-shrink-0" />

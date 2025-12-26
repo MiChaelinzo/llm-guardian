@@ -22,11 +22,11 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
 - **Success criteria**: Users can configure all four sponsor APIs with credential validation and masked input fields
 
 ### Settings & API Management
-- **Functionality**: Comprehensive settings interface for managing Google Cloud, Datadog, Confluent, and ElevenLabs API credentials
-- **Purpose**: Enable users to connect their own accounts for production use
+- **Functionality**: Comprehensive settings interface for managing Google Cloud, Datadog, Confluent, and ElevenLabs API credentials with AES-256-GCM encryption
+- **Purpose**: Enable users to connect their own accounts for production use with enterprise-grade security
 - **Trigger**: Settings tab or onboarding flow
-- **Progression**: Select platform → Enter credentials → Test connection → Enable integration → Save
-- **Success criteria**: All credentials stored securely in persistent storage with visual connection status indicators
+- **Progression**: Select platform → Enter credentials → Auto-encrypt → Test connection → Enable integration → Save securely
+- **Success criteria**: All credentials stored with AES-256-GCM encryption, visual connection status indicators, backup/restore capability with password protection
 
 ## Essential Features
 
@@ -76,7 +76,9 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
 - **Multiple Simultaneous Alerts**: Prioritized queue with severity-based voice notifications
 - **Missing Telemetry Data**: Clear "No data" states with troubleshooting suggestions
 - **Network Disconnection**: Offline mode shows last known state, auto-reconnect with data backfill
-- **Credential Masking**: All API keys displayed as masked password fields with show/hide toggle
+- **Credential Masking**: All API keys displayed as masked password fields with show/hide toggle, encrypted with AES-256-GCM
+- **Backup & Restore**: Password-protected credential export/import with PBKDF2 key derivation (100,000 iterations)
+- **Security Indicators**: Visual badges showing encryption status for each configured platform
 
 ## Design Direction
 

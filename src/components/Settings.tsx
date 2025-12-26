@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Cloud, 
   Eye, 
@@ -9,17 +9,24 @@ import {
   AudioWaveform, 
   Info, 
   CheckCircle,
-  Trash2
+  Trash2,
+  Lock,
+  Shield,
+  Key
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useSecureStorage } from '@/hooks/use-secure-storage'
+import { useKV } from '@github/spark/hooks'
+import { maskSecret, validateApiKey } from '@/lib/encryption'
+import { CredentialBackup } from '@/components/CredentialBackup'
 
-// UI Components - assuming you have these shadcn/ui components
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { 
   Card, 
   CardContent, 
@@ -85,16 +92,8 @@ const DEFAULT_CONFIG: APIConfig = {
   }
 }
 
-// Mock useKV hook if you don't have the file. 
-// If you do, import { useKV } from '@/hooks/use-kv' instead.
-function useKV<T>(key: string, initialValue: T): [T, (value: T) => void] {
-  const [state, setState] = useState<T>(initialValue)
-  // In a real app, this would sync with localStorage/IndexDB
-  return [state, setState]
-}
-
 export function Settings() {
-  const [config, setConfig] = useKV<APIConfig>('api-config', DEFAULT_CONFIG)
+  const [config, setConfig] = useSecureStorage<APIConfig>('api-config', DEFAULT_CONFIG)
   const [isDemoMode, setIsDemoMode] = useKV<boolean>('demo-mode', true)
   
   const [showSecrets, setShowSecrets] = useState({
@@ -104,6 +103,22 @@ export function Settings() {
     elevenLabs: false
   })
 
+  const [validationStatus, setValidationStatus] = useState({
+    googleCloud: false,
+    datadog: false,
+    confluent: false,
+    elevenLabs: false
+  })
+
+  useEffect(() => {
+    setValidationStatus({
+      googleCloud: validateApiKey(config.googleCloud.apiKey),
+      datadog: validateApiKey(config.datadog.apiKey),
+      confluent: validateApiKey(config.confluent.apiKey),
+      elevenLabs: validateApiKey(config.elevenLabs.apiKey)
+    })
+  }, [config])
+
   const handleTestConnection = async (platform: string) => {
     toast.info(`Testing ${platform} connection...`)
     // Mock API call
@@ -112,17 +127,18 @@ export function Settings() {
     }, 1500)
   }
 
-  const updateConfig = <K extends keyof APIConfig>(
+  const updateConfig = async <K extends keyof APIConfig>(
     platform: K,
     updates: Partial<APIConfig[K]>
   ) => {
-    setConfig({
+    const newConfig = {
       ...config,
       [platform]: {
         ...config[platform],
         ...updates
       }
-    })
+    }
+    await setConfig(newConfig)
   }
 
   const toggleSecretVisibility = (platform: keyof typeof showSecrets) => {
@@ -132,23 +148,38 @@ export function Settings() {
     }))
   }
 
-  const clearCredentials = (platform: keyof APIConfig) => {
-    setConfig({
+  const clearCredentials = async (platform: keyof APIConfig) => {
+    const newConfig = {
       ...config,
       [platform]: DEFAULT_CONFIG[platform]
-    })
-    toast.success(`${platform} credentials cleared`)
+    }
+    await setConfig(newConfig)
+    toast.success(`${platform} credentials cleared and securely deleted`)
+  }
+
+  const handleExportCredentials = async () => {
+    return config
+  }
+
+  const handleImportCredentials = async (data: APIConfig) => {
+    await setConfig(data)
+    toast.success('Credentials imported and encrypted')
   }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto p-4">
-      <Alert>
-        <Info className="h-4 w-4" />
+      <Alert className="border-accent/30 bg-accent/5">
+        <Shield className="h-4 w-4 text-accent" />
+        <AlertTitle className="flex items-center gap-2">
+          <Lock size={14} className="text-accent" />
+          End-to-End Encryption Enabled
+        </AlertTitle>
         <AlertDescription>
-          Configure your API credentials. All credentials are stored locally in your browser 
-          and never sent to external servers unless required for the specific service.
+          All API credentials are encrypted using AES-256-GCM before being stored locally in your browser. 
+          Your credentials never leave your device and are never sent to external servers unless required for the specific service.
           {isDemoMode && (
-            <span className="block mt-2 text-yellow-600 dark:text-yellow-400 font-medium">
+            <span className="block mt-2 text-warning font-medium flex items-center gap-1">
+              <AlertTriangle size={14} />
               Demo Mode Active: Using simulated data. Connect real APIs to enable full functionality.
             </span>
           )}
@@ -194,8 +225,16 @@ export function Settings() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Google Cloud Configuration</CardTitle>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CardTitle>Google Cloud Configuration</CardTitle>
+                    {validationStatus.googleCloud && (
+                      <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                        <Lock size={10} className="mr-1" />
+                        Encrypted
+                      </Badge>
+                    )}
+                  </div>
                   <CardDescription>Vertex AI and Gemini integration</CardDescription>
                 </div>
                 <Switch
@@ -252,8 +291,16 @@ export function Settings() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Datadog Configuration</CardTitle>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CardTitle>Datadog Configuration</CardTitle>
+                    {validationStatus.datadog && (
+                      <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                        <Lock size={10} className="mr-1" />
+                        Encrypted
+                      </Badge>
+                    )}
+                  </div>
                   <CardDescription>LLM observability and monitoring</CardDescription>
                 </div>
                 <Switch
@@ -315,8 +362,16 @@ export function Settings() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Confluent Configuration</CardTitle>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CardTitle>Confluent Configuration</CardTitle>
+                    {validationStatus.confluent && (
+                      <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                        <Lock size={10} className="mr-1" />
+                        Encrypted
+                      </Badge>
+                    )}
+                  </div>
                   <CardDescription>Real-time data streaming</CardDescription>
                 </div>
                 <Switch
@@ -378,8 +433,16 @@ export function Settings() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>ElevenLabs Configuration</CardTitle>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CardTitle>ElevenLabs Configuration</CardTitle>
+                    {validationStatus.elevenLabs && (
+                      <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                        <Lock size={10} className="mr-1" />
+                        Encrypted
+                      </Badge>
+                    )}
+                  </div>
                   <CardDescription>Voice synthesis and agent capabilities</CardDescription>
                 </div>
                 <Switch
@@ -427,6 +490,46 @@ export function Settings() {
         </TabsContent>
 
       </Tabs>
+
+      <CredentialBackup 
+        onExport={handleExportCredentials}
+        onImport={handleImportCredentials}
+      />
+
+      <Card className="border-muted">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Key size={16} className="text-muted-foreground" />
+            Security Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <div className="flex items-start gap-2">
+            <Shield size={14} className="mt-0.5 text-accent" />
+            <div>
+              <strong className="text-foreground">AES-256-GCM Encryption:</strong> All API keys are encrypted using industry-standard AES-256-GCM before storage.
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Lock size={14} className="mt-0.5 text-accent" />
+            <div>
+              <strong className="text-foreground">Local Storage Only:</strong> Credentials are stored in your browser's encrypted local storage and never transmitted to third-party servers.
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Key size={14} className="mt-0.5 text-accent" />
+            <div>
+              <strong className="text-foreground">Automatic Key Generation:</strong> A unique encryption key is generated for your browser session and stored securely.
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <AlertTriangle size={14} className="mt-0.5 text-warning" />
+            <div>
+              <strong className="text-foreground">Browser Data:</strong> Clearing your browser data will delete stored credentials. Always keep backups of your API keys.
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

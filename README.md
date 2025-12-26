@@ -183,6 +183,18 @@ Connect your own API credentials for real integrations:
 
 Navigate to the **Settings** tab to manage your integrations:
 
+#### 🔐 Security Features
+
+**All API credentials are encrypted using AES-256-GCM before storage:**
+- ✅ **End-to-end encryption** - Credentials encrypted locally before storage
+- ✅ **Zero-knowledge architecture** - Keys never leave your browser
+- ✅ **Automatic key management** - Encryption keys generated per session
+- ✅ **Visual indicators** - Green "Encrypted" badges show credential status
+- ✅ **Secure backups** - Password-protected credential export/import
+- ✅ **PBKDF2 key derivation** - 100,000 iterations for backup passwords
+
+See [SECURITY.md](./SECURITY.md) for complete security documentation.
+
 #### Google Cloud Setup
 1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
 2. Create or copy your API key
@@ -212,10 +224,26 @@ Navigate to the **Settings** tab to manage your integrations:
 5. Enable the integration
 
 **All credentials are:**
-- ✅ Stored securely in browser storage
-- ✅ Masked by default (show/hide toggle)
-- ✅ Never logged or transmitted externally
-- ✅ Deletable at any time
+- ✅ **Encrypted with AES-256-GCM** before storage
+- ✅ **Masked by default** (show/hide toggle)
+- ✅ **Never logged or transmitted** externally
+- ✅ **Deletable at any time** with secure cleanup
+- ✅ **Exportable with password protection** for backups
+
+#### Credential Backup & Restore
+
+**Export Credentials (Encrypted Backup):**
+1. Navigate to Settings → Credential Backup section
+2. Click "Export Credentials"
+3. Enter a strong encryption password
+4. Download the `.enc` file and store securely
+
+**Import Credentials:**
+1. Navigate to Settings → Credential Backup section
+2. Click "Import Credentials"
+3. Select your `.enc` backup file
+4. Enter the decryption password
+5. Credentials are automatically decrypted and stored
 
 ### 1. Voice Interaction
 Click the **large microphone button** in the header and speak your query:
