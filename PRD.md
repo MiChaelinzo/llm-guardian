@@ -4,15 +4,57 @@ A production-ready, voice-driven AI monitoring dashboard that lets developers in
 
 **Dual Mode Operation**: Works in **Demo Mode** with simulated data for immediate exploration, or **Production Mode** with user-configured API credentials for real integrations. Perfect for hackathon judges to test with their own accounts or demo scenarios.
 
+**NEW: Advanced AI Analytics Suite** - Powered by Google Cloud Gemini, featuring real-time anomaly detection, predictive forecasting, root cause analysis, and intelligent cost optimization recommendations that can save teams thousands in LLM expenses.
+
 **Experience Qualities**:
 1. **Conversational** - Natural voice interactions make complex monitoring accessible and intuitive
-2. **Intelligent** - AI-powered analysis surfaces insights from telemetry data automatically
-3. **Flexible** - Seamlessly switch between demo and production modes for any use case
+2. **Intelligent** - AI-powered analysis surfaces insights from telemetry data automatically, predicts future trends, and recommends optimizations
+3. **Collaborative** - Real-time team activity feeds and multi-user awareness for DevOps and SRE teams
+4. **Cost-Conscious** - Advanced cost optimization engine identifies savings opportunities and provides actionable recommendations
 
 **Complexity Level**: Complex Application (advanced functionality with multiple views)
-This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis and predictions, **Datadog** for detection rules and incident management, **Confluent** for real-time telemetry data streaming, and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, multi-modal visualizations, and secure credential management with onboarding flows.
+This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis, anomaly detection, predictions, and optimization recommendations; **Datadog** for detection rules and incident management; **Confluent** for real-time telemetry data streaming; and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, multi-modal visualizations, machine learning inference, and secure credential management with onboarding flows.
 
 ## Essential Features
+
+### Advanced AI Analytics (NEW - Google Cloud Gemini Integration)
+- **Functionality**: ML-powered anomaly detection, predictive forecasting, root cause analysis, and intelligent optimization recommendations
+- **Purpose**: Transform raw metrics into actionable insights automatically using Google Cloud's AI capabilities, enabling proactive issue resolution and cost optimization
+- **Trigger**: Automatic analysis as data accumulates, user-initiated deep-dive analysis
+- **Progression**: Data collected → AI analyzes patterns → Anomalies detected → Predictions generated → Root causes identified → Optimizations recommended → Actions taken
+- **Success criteria**:
+  - Anomaly detection identifies outliers with confidence scores and explanations
+  - Predictive insights forecast metric trends 5+ minutes ahead with confidence levels
+  - Root cause analysis provides primary cause + contributing factors for any alert
+  - Optimization recommendations identify specific cost-saving opportunities with projected savings
+  - All AI-generated insights include confidence scores and actionable next steps
+  - Dedicated "AI Analytics" tab showcasing Google Cloud integration
+
+### Cost Optimization Engine (NEW - High Impact Feature)
+- **Functionality**: Comprehensive cost analysis identifying savings opportunities across prompt optimization, caching, model selection, batching, and error reduction
+- **Purpose**: Help teams reduce LLM costs by 20-60% through data-driven recommendations, addressing one of the biggest pain points in AI deployment
+- **Trigger**: Automatic analysis of cost metrics, user navigates to Analytics tab
+- **Progression**: Metrics analyzed → Cost patterns identified → Savings opportunities calculated → Recommendations prioritized → Implementation plans generated → Projected ROI displayed
+- **Success criteria**:
+  - Real-time cost tracking with session and projected monthly spend
+  - 5+ optimization categories identified (prompt optimization, caching, model switching, batching, error reduction)
+  - Each recommendation includes current spend, projected savings, percentage reduction, and specific actions
+  - Combined impact analysis showing total potential monthly savings
+  - Visual progress indicators and before/after comparisons
+  - Export functionality for stakeholder reports
+
+### Team Collaboration Panel (NEW - Multi-User Impact)
+- **Functionality**: Real-time team activity feed showing who's online, recent actions, and collaborative monitoring
+- **Purpose**: Enable distributed teams to coordinate incident response and share observability insights in real-time
+- **Trigger**: Automatic on dashboard load, updates as team members interact
+- **Progression**: User actions tracked → Activity feed updated → Online status shown → Team notifications sent → Collaborative resolution enabled
+- **Success criteria**:
+  - Live avatar display of active team members with online status indicators
+  - Real-time activity stream showing recent actions (alerts acknowledged, rules created, incidents resolved)
+  - Activity timestamps with "time ago" formatting
+  - User identification with GitHub avatars and names
+  - Simulated team collaboration for demo purposes
+  - Enterprise-ready foundation for role-based access control and permissions
 
 ### Onboarding & Configuration System
 - **Functionality**: Welcome flow guiding users to choose Demo or Production mode, with comprehensive API credential management

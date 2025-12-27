@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChartLine, Bell, Lightning, Bug, Waveform, Flask } from '@phosphor-icons/react'
+import { ChartLine, Bell, Lightning, Bug, Waveform, Flask, Brain } from '@phosphor-icons/react'
 import { MetricCards } from '@/components/MetricCards'
 import { MetricChart } from '@/components/MetricChart'
 import { AIInsights } from '@/components/AIInsights'
@@ -16,6 +16,9 @@ import { SponsorBadges } from '@/components/SponsorBadges'
 import { VoiceButton } from '@/components/VoiceButton'
 import { TrendVisualization } from '@/components/TrendVisualization'
 import { WebhookTestingPanel } from '@/components/WebhookTestingPanel'
+import { AdvancedAnalytics } from '@/components/AdvancedAnalytics'
+import { TeamCollaboration } from '@/components/TeamCollaboration'
+import { CostOptimizationPanel } from '@/components/CostOptimizationPanel'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
@@ -291,6 +294,10 @@ function App() {
               <ChartLine size={18} />
               Dashboard
             </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2">
+              <Brain size={18} />
+              AI Analytics
+            </TabsTrigger>
             <TabsTrigger value="alerts" className="gap-2">
               <Bell size={18} />
               Alerts
@@ -355,10 +362,29 @@ function App() {
               />
             </div>
 
-            <AIInsights
-              summary={summary}
-              insights={aiInsights || []}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <AIInsights
+                  summary={summary}
+                  insights={aiInsights || []}
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <TeamCollaboration />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Advanced AI Analytics</h2>
+              <p className="text-muted-foreground">Powered by Google Cloud Gemini for intelligent anomaly detection, predictions, and optimization</p>
+            </div>
+            <AdvancedAnalytics
+              metrics={metrics || []}
+              alerts={alerts || []}
             />
+            <CostOptimizationPanel metrics={metrics || []} />
           </TabsContent>
 
           <TabsContent value="alerts" className="space-y-4">
