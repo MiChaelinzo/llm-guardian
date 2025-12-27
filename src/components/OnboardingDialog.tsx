@@ -43,19 +43,19 @@ const DEFAULT_CONFIG: APIConfig = {
 }
 
 export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
-  const [showOnboarding, setShowOnboarding] = useKV<boolean>('show-onboarding', true)
   const [config] = useKV<APIConfig>('api-config', DEFAULT_CONFIG)
   const [step, setStep] = useState(0)
+  const [isOpen, setIsOpen] = useState(true)
 
   const currentConfig = config || DEFAULT_CONFIG
 
   const handleSkipToDemo = () => {
-    setShowOnboarding(false)
+    setIsOpen(false)
     onComplete()
   }
 
   const handleGoToSettings = () => {
-    setShowOnboarding(false)
+    setIsOpen(false)
     onComplete()
   }
 
@@ -216,12 +216,15 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
     }
   ]
 
-  if (!showOnboarding) {
+  if (!isOpen) {
     return null
   }
 
   return (
-    <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open)
+      if (!open) onComplete()
+    }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">{steps[step].title}</DialogTitle>

@@ -42,15 +42,6 @@ function App() {
   const [lastVoiceResponse, setLastVoiceResponse] = useState<string>('')
 
   useEffect(() => {
-    const checkOnboarding = async () => {
-      if (!hasSeenOnboarding) {
-        return
-      }
-    }
-    checkOnboarding()
-  }, [hasSeenOnboarding])
-
-  useEffect(() => {
     const checkEncryptedStorage = async () => {
       const hasStorage = await window.spark.kv.get('encrypted-credentials')
       setHasEncryptedStorage(!!hasStorage)
