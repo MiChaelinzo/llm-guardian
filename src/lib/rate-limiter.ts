@@ -3,7 +3,7 @@ declare global {
   interface Window {
     spark: {
       llm: (prompt: string, model: string, json: boolean) => Promise<string>;
-      llmPrompt: (strings: string[], ...values: any[]) => string;
+      llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string;
       user: () => Promise<{
         avatarUrl: string;
         email: string;
@@ -75,16 +75,16 @@ const llmRateLimiter = new RateLimiter({
   maxRequests: 20
 });
 
-// Initialize cache
 const cache = new Map<string, LLMCacheEntry>();
 
-export async function rateLimitedLLMCall(prompt: string, model: string = 'gpt-4o', jsonMode: boolean = false): Promise<string> {
+// FIXED: Added 'export' keyword here so it can be used in google-cloud.ts
+export async function rateLimitedLLMCall(prompt: string, model: string, jsonMode: boolean): Promise<string> {
   const cacheKey = JSON.stringify({ prompt, model, jsonMode });
   const cached = cache.get(cacheKey);
 
   // 1. Check Cache
   if (cached) {
-    // Optional: Add cache expiration logic here if needed (e.g., 1 hour)
+    // Optional: Cache expiration (e.g., 1 hour)
     if (Date.now() - cached.timestamp < 1000 * 60 * 60) {
       return cached.data;
     }
@@ -141,3 +141,4 @@ export function getRateLimiterStatus() {
     isRateLimited: llmRateLimiter.getWaitTime() > 0
   };
 }
+
