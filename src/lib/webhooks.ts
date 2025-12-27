@@ -255,7 +255,7 @@ async function trackWebhookDelivery(delivery: {
   error?: string
 }) {
   try {
-    const deliveries = await window.spark.kv.get<any[]>('webhook-deliveries') || []
+    const deliveries = (await window.spark.kv.get<any[]>('webhook-deliveries')) || []
     const updatedDeliveries = [...deliveries, delivery].slice(-100)
     await window.spark.kv.set('webhook-deliveries', updatedDeliveries)
   } catch (error) {

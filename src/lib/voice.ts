@@ -107,7 +107,7 @@ Alert Details:
 Provide a concise 2-3 sentence recommendation for an AI engineer to resolve this issue. Focus on actionable steps.`
 
   try {
-    const suggestion = await window.spark.llm(promptText, 'gpt-4o-mini')
+    const suggestion = await window.spark.llm(promptText, 'gpt-4o-mini', false)
     return suggestion
   } catch (error) {
     return 'Unable to generate AI suggestion at this time. Please review the alert details and check system logs.'

@@ -1,19 +1,9 @@
-// If window.spark is not globally typed in your project, you might need this declaration.
-// Otherwise, you can remove the declare global block.
-declare global {
-  interface Window {
-    spark: {
-      llm: (prompt: string, model: string, json: boolean) => Promise<string>;
-      llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string;
-    };
-  }
-}
-
 const spark = window.spark;
 
 export interface AnomalyDetection {
   metric: string;
   expectedValue: number;
+  actualValue: number;
   severity: 'low' | 'medium' | 'high';
   explanation: string;
   confidence: number;
@@ -31,6 +21,7 @@ export interface PredictiveInsight {
 export interface RootCauseAnalysis {
   primaryCause: string;
   confidence: number;
+  contributingFactors: string[];
   suggestedActions: string[];
 }
 
@@ -45,17 +36,20 @@ export async function detectAnomalies(
   metricsData: any[]
 ): Promise<AnomalyDetection[]> {
   try {
-    const promptText = spark.llmPrompt`Analyze the provided metrics data for anomalies.
-Data: ${JSON.stringify(metricsData)}
+    const dataStr = JSON.stringify(metricsData);
+    const promptText = `Analyze the provided metrics data for anomalies.
+Data: ${dataStr}
 
 Focus on:
 1. Expected value vs actual value
-2. Severity (low, medium, high)
-3. Explanation of the anomaly
-4. Metric name
-5. Confidence level
+2. Actual value (current/observed value)
+3. Severity (low, medium, high)
+4. Explanation of the anomaly
+5. Metric name
+6. Confidence level
 
-Return as a JSON object with a single property "anomalies" that contains an array of anomaly objects.`;
+Return as a JSON object with a single property "anomalies" that contains an array of anomaly objects.
+Each anomaly must have: metric, expectedValue, actualValue, severity, explanation, confidence, timestamp`;
 
     const response = await window.spark.llm(promptText, 'gpt-4o', true);
     const result = JSON.parse(response);
@@ -70,8 +64,9 @@ export async function generatePredictiveInsights(
   metricsData: any[]
 ): Promise<PredictiveInsight[]> {
   try {
-    const promptText = spark.llmPrompt`Analyze these metrics and predict future trends.
-Data: ${JSON.stringify(metricsData)}
+    const dataStr = JSON.stringify(metricsData);
+    const promptText = `Analyze these metrics and predict future trends.
+Data: ${dataStr}
 
 For each metric provide:
 1. Metric name
@@ -95,15 +90,17 @@ export async function analyzeRootCause(
   metricsData: any[]
 ): Promise<RootCauseAnalysis | null> {
   try {
-    const promptText = spark.llmPrompt`Analyze the root cause of the system status based on these metrics.
-Metrics: ${JSON.stringify(metricsData)}
+    const dataStr = JSON.stringify(metricsData);
+    const promptText = `Analyze the root cause of the system status based on these metrics.
+Metrics: ${dataStr}
 
 Provide:
 1. Primary root cause
 2. Confidence score (0-1)
-3. Suggested actions (array of strings)
+3. Contributing factors (array of strings)
+4. Suggested actions (array of strings)
 
-Return as a JSON object with properties: primaryCause, confidence, and suggestedActions.`;
+Return as a JSON object with properties: primaryCause, confidence, contributingFactors, and suggestedActions.`;
 
     const response = await window.spark.llm(promptText, 'gpt-4o', true);
     const result = JSON.parse(response);
@@ -111,6 +108,7 @@ Return as a JSON object with properties: primaryCause, confidence, and suggested
     return {
       primaryCause: result.primaryCause || 'Unknown',
       confidence: result.confidence || 0,
+      contributingFactors: result.contributingFactors || [],
       suggestedActions: result.suggestedActions || []
     };
   } catch (error) {
@@ -123,8 +121,9 @@ export async function getOptimizationRecommendations(
   metrics: any[]
 ): Promise<string[]> {
   try {
-    const promptText = spark.llmPrompt`Based on the provided metrics, suggest optimization strategies.
-Data: ${JSON.stringify(metrics)}
+    const dataStr = JSON.stringify(metrics);
+    const promptText = `Based on the provided metrics, suggest optimization strategies.
+Data: ${dataStr}
 
 Focus on:
 1. Performance bottlenecks
@@ -147,7 +146,7 @@ export async function analyzeConversationQuality(
   conversationText: string
 ): Promise<ConversationQuality | null> {
   try {
-    const promptText = spark.llmPrompt`You are an expert in conversational AI quality analysis.
+    const promptText = `You are an expert in conversational AI quality analysis.
 Analyze this conversation:
 
 ${conversationText}

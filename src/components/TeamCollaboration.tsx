@@ -23,7 +23,7 @@ export function TeamCollaboration() {
     const fetchUser = async () => {
       try {
         const user = await window.spark.user()
-        if (user) {
+        if (user && user.login) {
           setCurrentUser({ login: user.login, avatarUrl: user.avatarUrl })
           
           addActivity({

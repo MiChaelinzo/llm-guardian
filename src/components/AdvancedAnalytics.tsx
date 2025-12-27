@@ -16,7 +16,7 @@ import {
 } from '@phosphor-icons/react'
 import {
   detectAnomalies,
-  predictMetrics,
+  generatePredictiveInsights,
   analyzeRootCause,
   getOptimizationRecommendations,
   type AnomalyDetection,
@@ -43,7 +43,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
     setLoading(true)
     try {
       const aggregatedMetrics = aggregateMetrics(metrics)
-      const latencyAnomalies = await detectAnomalies(aggregatedMetrics, ['avgLatency'])
+      const latencyAnomalies = await detectAnomalies(aggregatedMetrics)
       setAnomalies(latencyAnomalies)
     } catch (error) {
       console.error('Anomaly detection failed:', error)
@@ -57,10 +57,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
     setLoading(true)
     try {
       const aggregatedMetrics = aggregateMetrics(metrics)
-      const insights = await predictMetrics(
-        aggregatedMetrics,
-        ['avgLatency', 'errorRate', 'cost', 'totalTokens']
-      )
+      const insights = await generatePredictiveInsights(aggregatedMetrics)
       setPredictions(insights)
     } catch (error) {
       console.error('Predictive analysis failed:', error)
@@ -73,16 +70,8 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
     if (alerts.length === 0) return
     setLoading(true)
     try {
-      const latestAlert = alerts[alerts.length - 1]
       const aggregatedMetrics = aggregateMetrics(metrics)
-      const analysis = await analyzeRootCause(
-        aggregatedMetrics,
-        alerts.map(a => ({
-          message: a.message,
-          timestamp: a.timestamp,
-          severity: a.severity
-        }))
-      )
+      const analysis = await analyzeRootCause(aggregatedMetrics)
       setRootCause(analysis)
     } catch (error) {
       console.error('Root cause analysis failed:', error)
