@@ -221,11 +221,8 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      setIsOpen(open)
-      if (!open) onComplete()
-    }}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{steps[step].title}</DialogTitle>
           <DialogDescription>{steps[step].description}</DialogDescription>
