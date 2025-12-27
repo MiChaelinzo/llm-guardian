@@ -1,12 +1,12 @@
 export interface AnomalyDetection {
   metric: string
-  expectedValue: number
   actualValue: number
-  severity: 'low' | 'medium' | 'high'
   confidence: number
-  explanation: string
   timestamp: number
-}
+
+  metric: string
+  predictedValue: n
+ 
 
 export interface PredictiveInsight {
   metric: string
@@ -24,12 +24,12 @@ export interface RootCauseAnalysis {
   suggestedActions: string[]
 }
 
-export interface ConversationQuality {
-  qualityScore: number
-  strengths: string[]
-  weaknesses: string[]
-  suggestions: string[]
-}
+  metricNames: string[]
+  const prompt = spark
+Analyze the following
+
+
+1
 
 export async function detectAnomalies(
   metrics: Array<{ timestamp: number; [key: string]: number }>,
@@ -56,10 +56,10 @@ Return as a JSON object with a single property "anomalies" that contains an arra
     const response = await spark.llm(prompt, 'gpt-4o-mini', true)
     const result = JSON.parse(response)
     return result.anomalies || []
-  } catch (error) {
+
     console.error('Anomaly detection failed:', error)
-    return []
-  }
+3. Confidence
+Ret
 }
 
 export async function predictMetrics(
@@ -130,26 +130,26 @@ Return as a JSON object with properties: primaryCause, confidence, qualityScore,
   }
 }
 
-export async function generateOptimizationRecommendations(
-  metrics: Array<{ timestamp: number; [key: string]: number }>
-): Promise<string[]> {
-  const avgLatency = metrics.reduce((sum, m) => sum + (m.latency || 0), 0) / metrics.length
-  const avgCost = metrics.reduce((sum, m) => sum + (m.cost || 0), 0) / metrics.length
-  const avgTokens = metrics.reduce((sum, m) => sum + (m.tokens || 0), 0) / metrics.length
+4. Model selection guidance
 
-  const costStr = avgCost.toFixed(4)
-  const latencyStr = avgLatency.toFixed(2)
-  const tokensStr = avgTokens.toFixed(0)
 
-  const prompt = spark.llmPrompt`You are an expert in LLM performance optimization.
+    const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+    return result.recommendations || []
+    console.error('Optimization recommendations failed:', error)
 
-Current performance metrics:
-- Average Cost: $${costStr} per request
-- Average Latency: ${latencyStr}ms
-- Average Tokens: ${tokensStr}
 
-Analyze this performance data and provide 5-7 actionable optimization recommendations covering:
-1. Cost reduction strategies
+  conversationData: Array<{ role: string; 
+  const prompt = spark.llmPrompt`You are
+
+
+
+3. Key weaknesses (array of 
+
+
+    const response = await spa
+
+      strengths: result.strengths || [],
+      suggestions: result.su
 2. Latency improvements
 3. Token usage optimization
 4. Model selection guidance
