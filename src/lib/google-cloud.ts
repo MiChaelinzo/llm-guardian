@@ -1,11 +1,11 @@
 export interface AnomalyDetection {
-  actualValue: n
-  severity: 'low' | '
+  metric: string
+  expectedValue: number
+  actualValue: number
+  severity: 'low' | 'medium' | 'high'
+  confidence: number
+  explanation: string
   timestamp: number
-}
-export interface Pre
-  currentValue: num
-  timeframe: string
 }
 
 export interface PredictiveInsight {
@@ -59,7 +59,7 @@ Return as a JSON object with a single property "anomalies" that contains an arra
   } catch (error) {
     console.error('Anomaly detection failed:', error)
     return []
-   
+  }
 }
 
 export async function predictMetrics(
@@ -84,7 +84,7 @@ Return as a JSON object with a single property "predictions" that contains an ar
     const response = await spark.llm(prompt, 'gpt-4o-mini', true)
     const result = JSON.parse(response)
     return result.predictions || []
-      qualityScore:
+  } catch (error) {
     console.error('Metric prediction failed:', error)
     return []
   }
@@ -126,9 +126,9 @@ Return as a JSON object with properties: primaryCause, confidence, qualityScore,
     }
   } catch (error) {
     console.error('Root cause analysis failed:', error)
-    return []
+    return null
   }
-
+}
 
 export async function generateOptimizationRecommendations(
   metrics: Array<{ timestamp: number; [key: string]: number }>
@@ -150,50 +150,50 @@ Current performance metrics:
 
 Analyze this performance data and provide 5-7 actionable optimization recommendations covering:
 1. Cost reduction strategies
+2. Latency improvements
+3. Token usage optimization
+4. Model selection guidance
+5. Caching strategies
 
+Return as a JSON object with a single property "recommendations" that contains an array of recommendation strings.`
 
+  try {
+    const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+    const result = JSON.parse(response)
+    return result.recommendations || []
+  } catch (error) {
+    console.error('Optimization recommendations failed:', error)
+    return []
+  }
+}
 
+export async function analyzeConversationQuality(
+  conversationData: Array<{ role: string; content: string; timestamp: number }>
+): Promise<ConversationQuality | null> {
+  const prompt = spark.llmPrompt`You are an expert in conversational AI quality assessment.
 
+Analyze this conversation:
+${JSON.stringify(conversationData)}
 
+Provide:
+1. Overall quality score (0-100)
+2. Key strengths (array of strings)
+3. Key weaknesses (array of strings)
+4. Improvement suggestions (array of strings)
 
+Return as a JSON object with properties: qualityScore, strengths, weaknesses, suggestions.`
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  try {
+    const response = await spark.llm(prompt, 'gpt-4o', true)
+    const result = JSON.parse(response)
+    return {
+      qualityScore: result.qualityScore || 0,
+      strengths: result.strengths || [],
+      weaknesses: result.weaknesses || [],
+      suggestions: result.suggestions || []
+    }
+  } catch (error) {
+    console.error('Conversation quality analysis failed:', error)
+    return null
+  }
+}
