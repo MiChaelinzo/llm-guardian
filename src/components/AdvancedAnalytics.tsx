@@ -43,7 +43,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
     setLoading(true)
     try {
       const aggregatedMetrics = aggregateMetrics(metrics)
-      const latencyAnomalies = await detectAnomalies(aggregatedMetrics, 'avgLatency')
+      const latencyAnomalies = await detectAnomalies(aggregatedMetrics, ['avgLatency'])
       setAnomalies(latencyAnomalies)
     } catch (error) {
       console.error('Anomaly detection failed:', error)
@@ -254,7 +254,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
                     <span className="text-sm font-medium">{anomaly.metric}</span>
                   </div>
                   <Badge variant="outline">
-                    {(anomaly.confidence * 100).toFixed(0)}% confident
+                    {((anomaly.confidence || 0) * 100).toFixed(0)}% confident
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">
@@ -269,12 +269,14 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
                     <span className="text-muted-foreground">Expected:</span>{' '}
                     <span className="font-mono font-medium">{anomaly.expectedValue.toFixed(2)}</span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Time:</span>{' '}
-                    <span className="font-mono font-medium">
-                      {new Date(anomaly.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
+                  {anomaly.timestamp && (
+                    <div>
+                      <span className="text-muted-foreground">Time:</span>{' '}
+                      <span className="font-mono font-medium">
+                        {new Date(anomaly.timestamp).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -329,7 +331,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold font-mono">
-                      {prediction.prediction.toFixed(2)}
+                      {(prediction.prediction || prediction.predictedValue).toFixed(2)}
                     </div>
                     <div className="text-xs text-muted-foreground">predicted</div>
                   </div>
