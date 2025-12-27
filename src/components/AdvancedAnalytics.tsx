@@ -18,7 +18,7 @@ import {
   detectAnomalies,
   predictMetrics,
   analyzeRootCause,
-  generateOptimizationRecommendations,
+  getOptimizationRecommendations,
   type AnomalyDetection,
   type PredictiveInsight,
   type RootCauseAnalysis
@@ -96,7 +96,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
     setLoading(true)
     try {
       const aggregatedMetrics = aggregateMetrics(metrics)
-      const recommendations = await generateOptimizationRecommendations(aggregatedMetrics)
+      const recommendations = await getOptimizationRecommendations(aggregatedMetrics)
       setOptimizations(recommendations)
     } catch (error) {
       console.error('Optimization analysis failed:', error)
