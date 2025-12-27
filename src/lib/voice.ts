@@ -1,4 +1,5 @@
 import type { MetricsSummary, Alert } from './types'
+import { rateLimitedLLMCall } from './rate-limiter'
 
 export interface VoiceResponse {
   text: string
@@ -107,9 +108,12 @@ Alert Details:
 Provide a concise 2-3 sentence recommendation for an AI engineer to resolve this issue. Focus on actionable steps.`
 
   try {
-    const suggestion = await window.spark.llm(promptText, 'gpt-4o-mini', false)
+    const suggestion = await rateLimitedLLMCall(promptText, 'gpt-4o-mini', false)
     return suggestion
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Rate limit')) {
+      return `Rate limit reached. ${alert.ruleName} requires attention: Check system logs and consider scaling resources.`
+    }
     return 'Unable to generate AI suggestion at this time. Please review the alert details and check system logs.'
   }
 }
@@ -128,7 +132,7 @@ Current Metrics:
 Generate exactly 3 concise, actionable insights (each 1 sentence) about system health, trends, or recommendations. Return as JSON with an "insights" array property containing 3 strings.`
 
   try {
-    const response = await window.spark.llm(promptText, 'gpt-4o-mini', true)
+    const response = await rateLimitedLLMCall(promptText, 'gpt-4o-mini', true)
     const parsed = JSON.parse(response)
     
     if (Array.isArray(parsed)) {
@@ -144,6 +148,13 @@ Generate exactly 3 concise, actionable insights (each 1 sentence) about system h
       'No immediate optimization recommendations at this time.'
     ]
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Rate limit')) {
+      return [
+        `System health: ${summary.errorRate < 2 ? 'Good' : summary.errorRate < 5 ? 'Fair' : 'Needs attention'}`,
+        `Average latency: ${Math.round(summary.avgLatency)}ms across ${summary.totalRequests} requests`,
+        'AI insights temporarily unavailable due to rate limiting'
+      ]
+    }
     return [
       'System performance is stable with normal latency patterns.',
       `Processing ${summary.totalRequests} requests with ${summary.errorRate.toFixed(1)}% error rate.`,

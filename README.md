@@ -4,6 +4,15 @@
   <strong>A voice-driven AI monitoring dashboard integrating ALL FOUR sponsor technologies: Google Cloud (Gemini), Datadog, Confluent, and ElevenLabs for the future of LLM operations.</strong>
 </p>
 
+## ⚡ Performance & Rate Limiting
+
+VoiceWatch AI now includes **intelligent rate limiting** and **response caching** to ensure optimal performance:
+
+- **Automatic rate limiting** prevents 429 errors by limiting LLM API calls to 10 per minute
+- **Smart caching** stores AI-generated insights for 5 minutes to reduce redundant calls
+- **Graceful degradation** with fallback responses when rate limits are reached
+- **Cost optimization** by using GPT-4o-mini for most operations (90% cost savings vs GPT-4)
+
 ## 🎯 Challenge Submissions
 
 This project tackles **ALL FOUR hackathon challenges simultaneously**:

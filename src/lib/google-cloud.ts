@@ -1,3 +1,5 @@
+import { rateLimitedLLMCall } from './rate-limiter'
+
 export interface AnomalyDetection {
   metric: string;
   expectedValue: number;
@@ -34,7 +36,8 @@ export async function detectAnomalies(
   metricsData: any[]
 ): Promise<AnomalyDetection[]> {
   try {
-    const dataStr = JSON.stringify(metricsData);
+    const recentData = metricsData.slice(-20)
+    const dataStr = JSON.stringify(recentData);
     const promptText = `Analyze the provided metrics data for anomalies.
 Data: ${dataStr}
 
@@ -49,11 +52,14 @@ Focus on:
 Return as a JSON object with a single property "anomalies" that contains an array of anomaly objects.
 Each anomaly must have: metric, expectedValue, actualValue, severity, explanation, confidence, timestamp`;
 
-    const response = await window.spark.llm(promptText, 'gpt-4o', true);
+    const response = await rateLimitedLLMCall(promptText, 'gpt-4o-mini', true);
     const result = JSON.parse(response);
     return result.anomalies || [];
   } catch (error) {
     console.error('Anomaly detection failed:', error);
+    if (error instanceof Error && error.message.includes('Rate limit')) {
+      throw error
+    }
     return [];
   }
 }
@@ -62,7 +68,8 @@ export async function generatePredictiveInsights(
   metricsData: any[]
 ): Promise<PredictiveInsight[]> {
   try {
-    const dataStr = JSON.stringify(metricsData);
+    const recentData = metricsData.slice(-15)
+    const dataStr = JSON.stringify(recentData);
     const promptText = `Analyze these metrics and predict future trends.
 Data: ${dataStr}
 
@@ -75,11 +82,14 @@ For each metric provide:
 
 Return as a JSON object with a single property "predictions" that contains an array of prediction objects.`;
 
-    const response = await window.spark.llm(promptText, 'gpt-4o', true);
+    const response = await rateLimitedLLMCall(promptText, 'gpt-4o-mini', true);
     const result = JSON.parse(response);
     return result.predictions || [];
   } catch (error) {
     console.error('Prediction failed:', error);
+    if (error instanceof Error && error.message.includes('Rate limit')) {
+      throw error
+    }
     return [];
   }
 }
@@ -88,7 +98,8 @@ export async function analyzeRootCause(
   metricsData: any[]
 ): Promise<RootCauseAnalysis | null> {
   try {
-    const dataStr = JSON.stringify(metricsData);
+    const recentData = metricsData.slice(-10)
+    const dataStr = JSON.stringify(recentData);
     const promptText = `Analyze the root cause of the system status based on these metrics.
 Metrics: ${dataStr}
 
@@ -100,7 +111,7 @@ Provide:
 
 Return as a JSON object with properties: primaryCause, confidence, contributingFactors, and suggestedActions.`;
 
-    const response = await window.spark.llm(promptText, 'gpt-4o', true);
+    const response = await rateLimitedLLMCall(promptText, 'gpt-4o-mini', true);
     const result = JSON.parse(response);
     
     return {
@@ -111,6 +122,9 @@ Return as a JSON object with properties: primaryCause, confidence, contributingF
     };
   } catch (error) {
     console.error('Root cause analysis failed:', error);
+    if (error instanceof Error && error.message.includes('Rate limit')) {
+      throw error
+    }
     return null;
   }
 }
@@ -119,7 +133,8 @@ export async function getOptimizationRecommendations(
   metrics: any[]
 ): Promise<string[]> {
   try {
-    const dataStr = JSON.stringify(metrics);
+    const recentData = metrics.slice(-15)
+    const dataStr = JSON.stringify(recentData);
     const promptText = `Based on the provided metrics, suggest optimization strategies.
 Data: ${dataStr}
 
@@ -131,11 +146,14 @@ Focus on:
 
 Return as a JSON object with a single property "recommendations" that contains an array of recommendation strings.`;
 
-    const response = await window.spark.llm(promptText, 'gpt-4o', true);
+    const response = await rateLimitedLLMCall(promptText, 'gpt-4o-mini', true);
     const result = JSON.parse(response);
     return result.recommendations || [];
   } catch (error) {
     console.error('Optimization recommendations failed:', error);
+    if (error instanceof Error && error.message.includes('Rate limit')) {
+      throw error
+    }
     return [];
   }
 }
@@ -144,10 +162,11 @@ export async function analyzeConversationQuality(
   conversationText: string
 ): Promise<ConversationQuality | null> {
   try {
+    const truncatedText = conversationText.slice(0, 1000)
     const promptText = `You are an expert in conversational AI quality analysis.
 Analyze this conversation:
 
-${conversationText}
+${truncatedText}
 
 Provide:
 1. Overall quality score (0-100)
@@ -157,7 +176,7 @@ Provide:
 
 Return as a JSON object with properties: score, strengths, weaknesses, suggestions.`;
 
-    const response = await window.spark.llm(promptText, 'gpt-4o', true);
+    const response = await rateLimitedLLMCall(promptText, 'gpt-4o-mini', true);
     const result = JSON.parse(response);
     return {
       score: result.score || 0,
@@ -167,6 +186,9 @@ Return as a JSON object with properties: score, strengths, weaknesses, suggestio
     };
   } catch (error) {
     console.error('Conversation quality analysis failed:', error);
+    if (error instanceof Error && error.message.includes('Rate limit')) {
+      throw error
+    }
     return null;
   }
 }

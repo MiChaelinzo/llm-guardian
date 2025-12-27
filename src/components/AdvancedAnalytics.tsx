@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { toast } from 'sonner'
 import { 
   Brain, 
   TrendUp, 
@@ -45,8 +46,14 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
       const aggregatedMetrics = aggregateMetrics(metrics)
       const latencyAnomalies = await detectAnomalies(aggregatedMetrics)
       setAnomalies(latencyAnomalies)
+      toast.success('Anomaly detection complete')
     } catch (error) {
       console.error('Anomaly detection failed:', error)
+      if (error instanceof Error && error.message.includes('Rate limit')) {
+        toast.error(error.message)
+      } else {
+        toast.error('Anomaly detection failed')
+      }
     } finally {
       setLoading(false)
     }
@@ -59,8 +66,14 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
       const aggregatedMetrics = aggregateMetrics(metrics)
       const insights = await generatePredictiveInsights(aggregatedMetrics)
       setPredictions(insights)
+      toast.success('Predictions generated')
     } catch (error) {
       console.error('Predictive analysis failed:', error)
+      if (error instanceof Error && error.message.includes('Rate limit')) {
+        toast.error(error.message)
+      } else {
+        toast.error('Prediction analysis failed')
+      }
     } finally {
       setLoading(false)
     }
@@ -73,8 +86,14 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
       const aggregatedMetrics = aggregateMetrics(metrics)
       const analysis = await analyzeRootCause(aggregatedMetrics)
       setRootCause(analysis)
+      toast.success('Root cause analysis complete')
     } catch (error) {
       console.error('Root cause analysis failed:', error)
+      if (error instanceof Error && error.message.includes('Rate limit')) {
+        toast.error(error.message)
+      } else {
+        toast.error('Root cause analysis failed')
+      }
     } finally {
       setLoading(false)
     }
@@ -87,8 +106,14 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
       const aggregatedMetrics = aggregateMetrics(metrics)
       const recommendations = await getOptimizationRecommendations(aggregatedMetrics)
       setOptimizations(recommendations)
+      toast.success('Optimization recommendations ready')
     } catch (error) {
       console.error('Optimization analysis failed:', error)
+      if (error instanceof Error && error.message.includes('Rate limit')) {
+        toast.error(error.message)
+      } else {
+        toast.error('Optimization analysis failed')
+      }
     } finally {
       setLoading(false)
     }
@@ -139,8 +164,11 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
   }
 
   useEffect(() => {
-    if (metrics.length >= 20 && anomalies.length === 0) {
-      runAnomalyDetection()
+    if (metrics.length >= 50 && anomalies.length === 0 && !loading) {
+      const timer = setTimeout(() => {
+        runAnomalyDetection()
+      }, 5000)
+      return () => clearTimeout(timer)
     }
   }, [metrics.length])
 

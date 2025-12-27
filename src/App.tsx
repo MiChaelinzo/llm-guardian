@@ -23,6 +23,7 @@ import { CostOptimizationPanel } from '@/components/CostOptimizationPanel'
 import { SmartRemediation } from '@/components/SmartRemediation'
 import { ModelBenchmarks } from '@/components/ModelBenchmarks'
 import { RealtimeStreamVisualizer } from '@/components/RealtimeStreamVisualizer'
+import { RateLimitIndicator } from '@/components/RateLimitIndicator'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
@@ -253,7 +254,13 @@ function App() {
         window.speechSynthesis.speak(utterance)
       }
     } catch (error) {
-      toast.error('Voice query failed')
+      console.error('Voice query error:', error)
+      if (error instanceof Error && error.message.includes('Rate limit')) {
+        toast.error('AI temporarily unavailable. Please try again in a moment.')
+        setLastVoiceResponse('AI features are temporarily rate limited. Your query has been noted.')
+      } else {
+        toast.error('Voice query failed')
+      }
     }
   }, [metrics, alerts, timeRange])
 
@@ -281,6 +288,7 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3">
+            <RateLimitIndicator />
             <EncryptionStatus hasEncryptedCredentials={hasEncryptedStorage} />
             <VoiceButton onTranscript={handleVoiceTranscript} />
           </div>
