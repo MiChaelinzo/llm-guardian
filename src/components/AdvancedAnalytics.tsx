@@ -16,8 +16,8 @@ import {
 } from '@phosphor-icons/react'
 import {
   detectAnomalies,
-  generatePredictiveInsights,
-  performRootCauseAnalysis,
+  predictMetrics,
+  analyzeRootCause,
   generateOptimizationRecommendations,
   type AnomalyDetection,
   type PredictiveInsight,
@@ -57,7 +57,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
     setLoading(true)
     try {
       const aggregatedMetrics = aggregateMetrics(metrics)
-      const insights = await generatePredictiveInsights(
+      const insights = await predictMetrics(
         aggregatedMetrics,
         ['avgLatency', 'errorRate', 'cost', 'totalTokens']
       )
@@ -75,8 +75,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
     try {
       const latestAlert = alerts[alerts.length - 1]
       const aggregatedMetrics = aggregateMetrics(metrics)
-      const analysis = await performRootCauseAnalysis(
-        latestAlert.message,
+      const analysis = await analyzeRootCause(
         aggregatedMetrics,
         alerts.map(a => ({
           message: a.message,
@@ -386,7 +385,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
               <div className="p-4 rounded-lg border bg-card">
                 <div className="flex items-center gap-2 mb-3">
                   <Badge className="bg-primary text-primary-foreground">Issue</Badge>
-                  <span className="text-sm font-medium">{rootCause.issue}</span>
+                  <span className="text-sm font-medium">{rootCause.primaryCause}</span>
                 </div>
                 
                 <div className="mb-4">
