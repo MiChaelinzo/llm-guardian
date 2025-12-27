@@ -331,7 +331,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold font-mono">
-                      {(prediction.prediction || prediction.predictedValue).toFixed(2)}
+                      {prediction.predictedValue.toFixed(2)}
                     </div>
                     <div className="text-xs text-muted-foreground">predicted</div>
                   </div>
