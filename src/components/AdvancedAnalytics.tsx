@@ -263,7 +263,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
                 <div className="flex gap-4 text-xs">
                   <div>
                     <span className="text-muted-foreground">Actual:</span>{' '}
-                    <span className="font-mono font-medium">{anomaly.value.toFixed(2)}</span>
+                    <span className="font-mono font-medium">{anomaly.actualValue.toFixed(2)}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Expected:</span>{' '}
@@ -338,7 +338,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
                 <div className="flex items-start gap-2">
                   <Lightbulb size={16} className="text-primary mt-0.5 shrink-0" />
                   <p className="text-sm text-muted-foreground">
-                    {prediction.recommendation}
+                    Prediction for {prediction.timeframe}
                   </p>
                 </div>
               </div>
