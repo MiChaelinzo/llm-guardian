@@ -1,4 +1,4 @@
-import { jsPDF } from 'jspdf'
+import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { Incident, Alert, MetricsSummary } from './types'
 import { formatTimestamp } from './metrics'
