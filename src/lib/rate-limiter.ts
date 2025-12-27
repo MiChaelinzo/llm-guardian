@@ -3,6 +3,20 @@ declare global {
   interface Window {
     spark: {
       llm: (prompt: string, model: string, json: boolean) => Promise<string>;
+      llmPrompt: (strings: string[], ...values: any[]) => string;
+      user: () => Promise<{
+        avatarUrl: string;
+        email: string;
+        id: string;
+        isOwner: boolean;
+        login: string;
+      }>;
+      kv: {
+        keys: () => Promise<string[]>;
+        get: <T>(key: string) => Promise<T | undefined>;
+        set: <T>(key: string, value: T) => Promise<void>;
+        delete: (key: string) => Promise<void>;
+      };
     };
   }
 }
@@ -64,8 +78,8 @@ const llmRateLimiter = new RateLimiter({
 // Initialize cache
 const cache = new Map<string, LLMCacheEntry>();
 
-export async function queryLLM(prompt: string, jsonMode: boolean = false): Promise<string> {
-  const cacheKey = JSON.stringify({ prompt, jsonMode });
+export async function rateLimitedLLMCall(prompt: string, model: string = 'gpt-4o', jsonMode: boolean = false): Promise<string> {
+  const cacheKey = JSON.stringify({ prompt, model, jsonMode });
   const cached = cache.get(cacheKey);
 
   // 1. Check Cache
@@ -86,8 +100,7 @@ export async function queryLLM(prompt: string, jsonMode: boolean = false): Promi
 
   // 3. Perform Request
   try {
-    // Assuming 'gpt-4o' is the default model based on previous context
-    const result = await window.spark.llm(prompt, 'gpt-4o', jsonMode);
+    const result = await window.spark.llm(prompt, model, jsonMode);
 
     // 4. Update Cache
     cache.set(cacheKey, {
@@ -111,6 +124,10 @@ export async function queryLLM(prompt: string, jsonMode: boolean = false): Promi
     console.error("LLM Call failed", error);
     throw error;
   }
+}
+
+export async function queryLLM(prompt: string, jsonMode: boolean = false): Promise<string> {
+  return rateLimitedLLMCall(prompt, 'gpt-4o', jsonMode);
 }
 
 export function clearLLMCache(): void {
