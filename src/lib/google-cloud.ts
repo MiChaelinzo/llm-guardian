@@ -1,17 +1,6 @@
 declare global {
-  interface Window {
     spark: {
-      llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string
-      llm: (prompt: string, modelName?: string, jsonMode?: boolean) => Promise<string>
-    }
-  }
-}
-
-const spark = window.spark
-
-export interface VertexAIConfig {
-  projectId: string
-}
+ 
 
 export interface AnomalyDetection {
   metric: string
@@ -25,22 +14,22 @@ export interface AnomalyDetection {
 
 export interface PredictiveInsight {
   metric: string
-  prediction: number
-  confidence: number
-  timeframe: string
-}
+  severity: 'low' | 
+  explanation: strin
 
-export interface RootCauseAnalysis {
-  issue: string
+ 
+
+}
+export interfac
   primaryCause: string
-  contributingFactors: string[]
   suggestedActions: string[]
-  confidence: number
 }
+export async functio
+ 
 
-export async function detectAnomaliesWithVertexAI(
-  metrics: Array<{ timestamp: number; [key: string]: number }>,
-  metricName: string
+Analyze the following time-series metric data for 
+
+1. The timestamp of 
 ): Promise<AnomalyDetection[]> {
   const prompt = spark.llmPrompt`You are an expert in LLM observability and anomaly detection. 
 
@@ -137,72 +126,72 @@ Return as a JSON object with properties: primaryCause, contributingFactors, sugg
 export async function generateOptimizationRecommendations(
   metrics: Array<{ timestamp: number; [key: string]: number }>
 ): Promise<string[]> {
-  const recentMetrics = metrics.slice(-30)
-  const avgLatency = recentMetrics.reduce((sum, m) => sum + (m.avgLatency || 0), 0) / recentMetrics.length
-  const avgCost = recentMetrics.reduce((sum, m) => sum + (m.cost || 0), 0) / recentMetrics.length
-  const avgTokens = recentMetrics.reduce((sum, m) => sum + (m.totalTokens || 0), 0) / recentMetrics.length
-  const errorRate = recentMetrics.reduce((sum, m) => sum + (m.errorRate || 0), 0) / recentMetrics.length
-
-  const prompt = spark.llmPrompt`You are an expert in optimizing LLM applications for cost, performance, and reliability.
-
-Current system metrics:
-- Average Latency: ${avgLatency.toFixed(0)}ms
-- Average Cost per Request: $${avgCost.toFixed(4)}
+- Average Latency: ${avgLatency.toFixed(0)
 - Average Tokens per Request: ${avgTokens.toFixed(0)}
-- Error Rate: ${errorRate.toFixed(2)}%
 
-Provide 3-5 specific, actionable optimization recommendations to improve this system.
 Consider: prompt optimization, caching strategies, model selection, rate limiting, error handling.
+Return as a JSON object with a single property "recommendations" containing an array of string recommend
 
-Return as a JSON object with a single property "recommendations" containing an array of string recommendations.`
-
-  try {
-    const response = await spark.llm(prompt, 'gpt-4o-mini', true)
     const result = JSON.parse(response)
-    return result.recommendations || []
-  } catch (error) {
-    console.error('Optimization recommendations failed:', error)
+
     return []
-  }
 }
-
 export async function analyzeConversationQuality(
-  conversationSample: Array<{ role: string; content: string; latency: number; tokens: number }>
 ): Promise<{
-  overallScore: number
   strengths: string[]
-  weaknesses: string[]
-  suggestions: string[]
-}> {
-  const prompt = spark.llmPrompt`You are an expert in evaluating LLM conversation quality and user experience.
 
+  const prompt = spark.llmPrompt`You are an expert in evaluating LLM conversation qua
 Analyze this conversation sample:
-${JSON.stringify(conversationSample, null, 2)}
 
-Evaluate and provide:
 1. Overall quality score (0-100)
-2. Strengths (array of 2-3 positive aspects)
-3. Weaknesses (array of 2-3 areas for improvement)
-4. Specific suggestions (array of 3-4 actionable improvements)
 
-Return as a JSON object with properties: overallScore, strengths, weaknesses, suggestions.`
 
-  try {
-    const response = await spark.llm(prompt, 'gpt-4o', true)
-    const result = JSON.parse(response)
+
+    const response = await spark.llm(pr
     return {
-      overallScore: result.overallScore || 0,
-      strengths: result.strengths || [],
-      weaknesses: result.weaknesses || [],
+      strengths: re
       suggestions: result.suggestions || []
-    }
-  } catch (error) {
-    console.error('Conversation quality analysis failed:', error)
-    return {
-      overallScore: 0,
-      strengths: [],
-      weaknesses: [],
-      suggestions: []
-    }
+  } catch (er
+   
+ 
+
   }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
