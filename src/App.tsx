@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { toast } from 'sonner'
+import { motion } from 'framer-motion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChartLine, Bell, Lightning, Bug, Waveform, Flask, Brain } from '@phosphor-icons/react'
+import { ChartLine, Bell, Lightning, Bug, Waveform, Flask, Brain, Wrench, ChartBar } from '@phosphor-icons/react'
 import { MetricCards } from '@/components/MetricCards'
 import { MetricChart } from '@/components/MetricChart'
 import { AIInsights } from '@/components/AIInsights'
@@ -19,6 +20,9 @@ import { WebhookTestingPanel } from '@/components/WebhookTestingPanel'
 import { AdvancedAnalytics } from '@/components/AdvancedAnalytics'
 import { TeamCollaboration } from '@/components/TeamCollaboration'
 import { CostOptimizationPanel } from '@/components/CostOptimizationPanel'
+import { SmartRemediation } from '@/components/SmartRemediation'
+import { ModelBenchmarks } from '@/components/ModelBenchmarks'
+import { RealtimeStreamVisualizer } from '@/components/RealtimeStreamVisualizer'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
@@ -265,12 +269,14 @@ function App() {
       <div className="container mx-auto p-4 md:p-6 max-w-7xl">
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Waveform size={24} weight="bold" className="text-primary-foreground" />
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+              <Waveform size={28} weight="bold" className="text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">VoiceWatch AI</h1>
-              <p className="text-sm text-muted-foreground">Conversational LLM Observability</p>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                VoiceWatch AI
+              </h1>
+              <p className="text-sm text-muted-foreground">Conversational LLM Observability Platform</p>
             </div>
           </div>
 
@@ -283,9 +289,19 @@ function App() {
         <SponsorBadges />
 
         {lastVoiceResponse && (
-          <div className="mb-6 p-4 bg-accent/10 border border-accent rounded-lg">
-            <p className="text-sm">{lastVoiceResponse}</p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/30 rounded-lg shadow-lg"
+          >
+            <div className="flex items-start gap-3">
+              <Waveform size={20} weight="fill" className="text-accent flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-xs font-semibold text-accent mb-1">Voice Assistant Response</div>
+                <p className="text-sm">{lastVoiceResponse}</p>
+              </div>
+            </div>
+          </motion.div>
         )}
 
         <Tabs defaultValue="dashboard" className="space-y-6">
@@ -297,6 +313,14 @@ function App() {
             <TabsTrigger value="analytics" className="gap-2">
               <Brain size={18} />
               AI Analytics
+            </TabsTrigger>
+            <TabsTrigger value="remediation" className="gap-2">
+              <Wrench size={18} />
+              Remediation
+            </TabsTrigger>
+            <TabsTrigger value="benchmarks" className="gap-2">
+              <ChartBar size={18} />
+              Benchmarks
             </TabsTrigger>
             <TabsTrigger value="alerts" className="gap-2">
               <Bell size={18} />
@@ -322,6 +346,8 @@ function App() {
 
           <TabsContent value="dashboard" className="space-y-6">
             <MetricCards summary={summary} />
+
+            <RealtimeStreamVisualizer metrics={metrics || []} />
 
             <TrendVisualization
               metrics={metrics || []}
@@ -385,6 +411,22 @@ function App() {
               alerts={alerts || []}
             />
             <CostOptimizationPanel metrics={metrics || []} />
+          </TabsContent>
+
+          <TabsContent value="remediation" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Smart Remediation Engine</h2>
+              <p className="text-muted-foreground">AI-powered automatic fixes and optimization recommendations</p>
+            </div>
+            <SmartRemediation alerts={alerts || []} />
+          </TabsContent>
+
+          <TabsContent value="benchmarks" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Model Performance Benchmarks</h2>
+              <p className="text-muted-foreground">Real-time comparison across leading LLM providers</p>
+            </div>
+            <ModelBenchmarks />
           </TabsContent>
 
           <TabsContent value="alerts" className="space-y-4">

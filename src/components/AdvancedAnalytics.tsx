@@ -15,7 +15,7 @@ import {
   Target
 } from '@phosphor-icons/react'
 import {
-  detectAnomaliesWithVertexAI,
+  detectAnomalies,
   generatePredictiveInsights,
   performRootCauseAnalysis,
   generateOptimizationRecommendations,
@@ -43,7 +43,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
     setLoading(true)
     try {
       const aggregatedMetrics = aggregateMetrics(metrics)
-      const latencyAnomalies = await detectAnomaliesWithVertexAI(aggregatedMetrics, 'avgLatency')
+      const latencyAnomalies = await detectAnomalies(aggregatedMetrics, 'avgLatency')
       setAnomalies(latencyAnomalies)
     } catch (error) {
       console.error('Anomaly detection failed:', error)
