@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { 
   Dialog, 
-  DialogContent, 
+  DialogOverlay,
+  DialogPortal,
   DialogDescription, 
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog'
+import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { cn } from "@/lib/utils"
 import { CheckCircle, Sparkle, Cloud, ChartBar, Database, Waveform } from '@phosphor-icons/react'
 import type { APIConfig } from '@/lib/types'
 
@@ -46,24 +49,15 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
   const [config] = useKV<APIConfig>('api-config', DEFAULT_CONFIG)
   const [step, setStep] = useState(0)
   const [isOpen, setIsOpen] = useState(true)
-  const [isClosing, setIsClosing] = useState(false)
 
   const currentConfig = config || DEFAULT_CONFIG
 
   const handleSkipToDemo = () => {
-    setIsClosing(true)
-    setTimeout(() => {
-      setIsOpen(false)
-      onComplete()
-    }, 200)
+    onComplete()
   }
 
   const handleGoToSettings = () => {
-    setIsClosing(true)
-    setTimeout(() => {
-      setIsOpen(false)
-      onComplete()
-    }, 200)
+    onComplete()
   }
 
   const steps = [
@@ -223,18 +217,21 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
     }
   ]
 
-  if (!isOpen) {
-    return null
-  }
-
   return (
-    <Dialog open={isOpen && !isClosing} modal>
-      <DialogContent 
-        className="max-w-2xl max-h-[90vh] overflow-y-auto" 
-        onInteractOutside={(e) => e.preventDefault()} 
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        onPointerDownOutside={(e) => e.preventDefault()}
-      >
+    <Dialog open={isOpen} modal defaultOpen={true} onOpenChange={(open) => {
+      if (!open) {
+        setIsOpen(false)
+      }
+    }}>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogPrimitive.Content
+          className={cn(
+            "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 max-w-2xl max-h-[90vh] overflow-y-auto"
+          )}
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
         <DialogHeader>
           <DialogTitle className="text-2xl">{steps[step].title}</DialogTitle>
           <DialogDescription>{steps[step].description}</DialogDescription>
@@ -268,7 +265,8 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
             )}
           </div>
         </div>
-      </DialogContent>
+      </DialogPrimitive.Content>
+      </DialogPortal>
     </Dialog>
   )
 }
