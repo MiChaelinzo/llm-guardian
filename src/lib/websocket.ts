@@ -1,6 +1,5 @@
 export type CollaborationEvent = 
   | { type: 'user_joined'; userId: string; userName: string; userAvatar: string; timestamp: number }
-  | { type: 'user_left'; userId: string; timestamp: number }
   | { type: 'alert_acknowledged'; userId: string; alertId: string; timestamp: number }
   | { type: 'rule_created'; userId: string; ruleName: string; timestamp: number }
   | { type: 'rule_updated'; userId: string; ruleName: string; timestamp: number }
@@ -9,7 +8,7 @@ export type CollaborationEvent =
   | { type: 'comment_added'; userId: string; entityId: string; comment: string; timestamp: number }
   | { type: 'presence_update'; userId: string; status: 'active' | 'idle' | 'away'; timestamp: number }
   | { type: 'cursor_move'; userId: string; x: number; y: number; timestamp: number }
-  | { type: 'chat_message'; userId: string; incidentId: string; message: string; timestamp: number }
+  | { type: 'chat_message'; userId: string; incidentId: string; message: string; timestamp: number };
 
 export interface CollaborationUser {
   id: string
@@ -49,7 +48,13 @@ export class WebSocketManager {
         console.log('WebSocket connected')
         this.reconnectAttempts = 0
         this.startHeartbeat()
-        this.send({ type: 'user_joined', userId: this.userId, userName: '', userAvatar: '', timestamp: Date.now() })
+        this.send({ 
+          type: 'user_joined', 
+          userId: this.userId, 
+          userName: 'CurrentUser', 
+          userAvatar: '', 
+          timestamp: Date.now() 
+        })
       }
 
       this.ws.onmessage = (event) => {
@@ -76,6 +81,31 @@ export class WebSocketManager {
     }
   }
 
+  send(event: CollaborationEvent) {
+    if (this.isSimulated) {
+      // Echo back local events in simulation mode
+      setTimeout(() => this.handleEvent(event), 50)
+      return
+    }
+
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(event))
+    }
+  }
+
+  private handleEvent(event: CollaborationEvent) {
+    const handlers = this.eventHandlers.get(event.type)
+    if (handlers) {
+      handlers.forEach(handler => handler(event))
+    }
+    
+    // Also trigger generic listeners if needed
+    const allHandlers = this.eventHandlers.get('*')
+    if (allHandlers) {
+      allHandlers.forEach(handler => handler(event))
+    }
+  }
+
   private startSimulation() {
     const simulatedUsers: CollaborationUser[] = [
       { id: 'user_sim_1', name: 'Alice Chen', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice', status: 'active', lastSeen: Date.now() },
@@ -83,12 +113,13 @@ export class WebSocketManager {
       { id: 'user_sim_3', name: 'Carol Kim', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Carol', status: 'idle', lastSeen: Date.now() },
     ]
 
+    // Simulate random events
     this.simulationInterval = setInterval(() => {
       const user = simulatedUsers[Math.floor(Math.random() * simulatedUsers.length)]
       const eventTypes = ['alert_acknowledged', 'rule_created', 'rule_updated', 'incident_resolved', 'metric_viewed', 'comment_added']
       const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)]
 
-      let event: CollaborationEvent
+      let event: CollaborationEvent | null = null
 
       switch (eventType) {
         case 'alert_acknowledged':
@@ -128,55 +159,61 @@ export class WebSocketManager {
             type: 'metric_viewed',
             userId: user.id,
             metricType: 'latency',
-            timestamp: Date.now(),
+            timestamp: Date.now()
           }
           break
         case 'comment_added':
           event = {
             type: 'comment_added',
             userId: user.id,
-            entityId: `entity_${Date.now()}`,
-            comment: 'Sample comment',
-            timestamp: Date.now(),
+            entityId: `evt_${Date.now()}`,
+            comment: 'I am investigating this anomaly.',
+            timestamp: Date.now()
           }
           break
-        default:
-          return
       }
 
-      this.handleEvent(event)
-    }, 8000 + Math.random() * 7000)
+      if (event) {
+        this.handleEvent(event)
+      }
+    }, 8000 + Math.random() * 5000)
 
-    simulatedUsers.forEach((user) => {
-      setTimeout(() => {
-        this.handleEvent({
-          type: 'user_joined',
-          userId: user.id,
-          userName: user.name,
-          userAvatar: user.avatar,
-          timestamp: Date.now(),
-        })
-      }, Math.random() * 2000)
-    })
+    // Simulate cursor moves
+    setInterval(() => {
+      simulatedUsers.forEach((user) => {
+        if (Math.random() > 0.7) {
+          this.handleEvent({
+            type: 'cursor_move',
+            userId: user.id,
+            x: Math.random() * 1000,
+            y: Math.random() * 800,
+            timestamp: Date.now()
+          })
+        }
+      })
+    }, 1000)
   }
 
   private attemptReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('Max reconnection attempts reached')
+      console.log('Max reconnect attempts reached')
       return
     }
 
     this.reconnectAttempts++
-    const delay = this.reconnectAttempts * 2000
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000)
+    
     setTimeout(() => {
+      console.log(`Attempting reconnect ${this.reconnectAttempts}...`)
       this.connect()
     }, delay)
   }
 
   private startHeartbeat() {
+    this.stopHeartbeat()
     this.heartbeatInterval = setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({ type: 'heartbeat' }))
+        this.ws.send(JSON.stringify({ type: 'ping' }))
       }
     }, 30000)
   }
@@ -188,30 +225,21 @@ export class WebSocketManager {
     }
   }
 
-  send(event: CollaborationEvent) {
-    if (this.isSimulated) {
-      this.handleEvent(event)
-      return
-    }
-
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(event))
-    }
-  }
-
   on(eventType: string, handler: (event: CollaborationEvent) => void) {
     if (!this.eventHandlers.has(eventType)) {
       this.eventHandlers.set(eventType, [])
     }
-    this.eventHandlers.get(eventType)!.push(handler)
+    this.eventHandlers.get(eventType)?.push(handler)
   }
 
-  private handleEvent(event: CollaborationEvent) {
-    const handlers = this.eventHandlers.get(event.type) || []
-    handlers.forEach(handler => handler(event))
-
-    const allHandlers = this.eventHandlers.get('*') || []
-    allHandlers.forEach(handler => handler(event))
+  off(eventType: string, handler: (event: CollaborationEvent) => void) {
+    const handlers = this.eventHandlers.get(eventType)
+    if (handlers) {
+      this.eventHandlers.set(
+        eventType, 
+        handlers.filter(h => h !== handler)
+      )
+    }
   }
 
   disconnect() {
@@ -220,11 +248,11 @@ export class WebSocketManager {
       this.simulationInterval = null
     }
 
+    this.stopHeartbeat()
+    
     if (this.ws) {
       this.ws.close()
       this.ws = null
     }
-
-    this.stopHeartbeat()
   }
 }
