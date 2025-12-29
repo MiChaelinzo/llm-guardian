@@ -1,9 +1,9 @@
 import type { 
-  EmailNotificationConfig, 
   EmailNotificationLog, 
   Alert, 
   Incident,
-  RuleSeverity 
+  RuleSeverity,
+  EmailNotificationConfig 
 } from './types'
 
 export interface EmailPayload {
@@ -14,39 +14,51 @@ export interface EmailPayload {
 }
 
 export class EmailNotificationService {
+  
+  /**
+   * Internal method to send emails. 
+   * Uses Spark LLM to generate HTML if available, otherwise logs to console.
+   */
   private async sendEmail(payload: EmailPayload): Promise<{ success: boolean; error?: string }> {
     try {
-      const prompt = window.spark.llmPrompt`
-You are an email notification service. Generate a professional HTML email template for the following notification:
+      let html = payload.html;
 
-TO: ${payload.to}
-SUBJECT: ${payload.subject}
-BODY: ${payload.body}
+      // Try to generate HTML content using Spark LLM if available and not provided
+      if (!html && (window as any).spark) {
+        try {
+          const prompt = (window as any).spark.llmPrompt`
+            You are an email formatting assistant. Convert the following text email into a professional, responsive HTML email template.
 
-Generate a well-formatted HTML email that includes:
-1. A professional header with VoiceWatch AI branding
-2. The main content clearly formatted
-3. Any relevant metrics or details highlighted
-4. A footer with unsubscribe/settings information
-5. Use appropriate colors: primary oklch(0.65 0.19 245), accent oklch(0.55 0.15 280), destructive oklch(0.65 0.22 25)
+            SUBJECT: ${payload.subject}
 
-Return ONLY the HTML content without any markdown formatting or code blocks.
-`
+            BODY:
+            ${payload.body}
 
-      const htmlContent = await window.spark.llm(prompt, 'gpt-4o-mini', false)
+            Instructions:
+            1. Use a clean, modern design.
+            2. Highlight key metrics and severity levels.
+            3. Any relevant metadata should be in a distinct section.
+            4. Use appropriate colors: Red for critical/high, Yellow for warning, Blue for info.
+            5. Return ONLY the HTML code.
+          `;
+          html = await prompt;
+        } catch (err) {
+          console.warn('Failed to generate HTML with LLM, falling back to text', err);
+        }
+      }
+
+      // Simulate sending logic
+      console.log(`[Email Service] Sending to: ${payload.to}`);
+      console.log(`Subject: ${payload.subject}`);
+      if (html) console.log(`HTML Preview:`, html.substring(0, 100) + '...');
       
-      console.log(`[Email Service] Email sent to ${payload.to}`)
-      console.log(`Subject: ${payload.subject}`)
-      console.log(`Body: ${payload.body}`)
-      console.log(`HTML Preview:`, htmlContent.substring(0, 200) + '...')
-      
-      return { success: true }
+      return { success: true };
     } catch (error) {
-      console.error('[Email Service] Failed to send email:', error)
+      console.error('[Email Service] Failed to send email:', error);
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      }
+        error: error instanceof Error ? error.message : String(error) 
+      };
     }
   }
 
@@ -54,18 +66,18 @@ Return ONLY the HTML content without any markdown formatting or code blocks.
     incident: Incident, 
     configs: EmailNotificationConfig[]
   ): Promise<EmailNotificationLog[]> {
-    const logs: EmailNotificationLog[] = []
+    const logs: EmailNotificationLog[] = [];
     
     const eligibleConfigs = configs.filter(config => 
       config.enabled && 
       config.notifyOnIncidentCreated &&
       config.severityFilter.includes(incident.severity)
-    )
+    );
 
     for (const config of eligibleConfigs) {
-      const subject = `🚨 ${incident.severity.toUpperCase()} Incident Created: ${incident.title}`
+      const subject = `🚨 New Incident: ${incident.title}`;
       const body = `
-A new ${incident.severity} incident has been created in VoiceWatch AI.
+A new ${incident.severity} incident has been reported in VoiceWatch AI.
 
 Incident Details:
 - Title: ${incident.title}
@@ -73,26 +85,25 @@ Incident Details:
 - Severity: ${incident.severity}
 - Status: ${incident.status}
 - Created: ${new Date(incident.createdAt).toLocaleString()}
-- Related Alerts: ${incident.alerts.length}
 
-${incident.alerts.length > 0 ? `
+${incident.alerts && incident.alerts.length > 0 ? `
 First Alert:
-- ${incident.alerts[0].ruleName}
-- ${incident.alerts[0].message}
+- Rule: ${incident.alerts[0].ruleName}
+- Message: ${incident.alerts[0].message}
 - Value: ${incident.alerts[0].value}
 ` : ''}
 
 Please review this incident in your VoiceWatch AI dashboard.
-`
+`;
 
       const result = await this.sendEmail({
         to: config.email,
         subject,
         body
-      })
+      });
 
       logs.push({
-        id: `email_${Date.now()}_${Math.random()}`,
+        id: `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         email: config.email,
         subject,
         body,
@@ -100,30 +111,30 @@ Please review this incident in your VoiceWatch AI dashboard.
         status: result.success ? 'sent' : 'failed',
         relatedIncidentId: incident.id,
         errorMessage: result.error
-      })
+      });
     }
 
-    return logs
+    return logs;
   }
 
   async notifyIncidentResolved(
     incident: Incident, 
     configs: EmailNotificationConfig[]
   ): Promise<EmailNotificationLog[]> {
-    const logs: EmailNotificationLog[] = []
+    const logs: EmailNotificationLog[] = [];
     
     const eligibleConfigs = configs.filter(config => 
       config.enabled && 
       config.notifyOnIncidentResolved &&
       config.severityFilter.includes(incident.severity)
-    )
+    );
 
     for (const config of eligibleConfigs) {
       const duration = incident.resolvedAt 
         ? Math.floor((incident.resolvedAt - incident.createdAt) / 1000 / 60)
-        : 0
+        : 0;
 
-      const subject = `✅ Incident Resolved: ${incident.title}`
+      const subject = `✅ Incident Resolved: ${incident.title}`;
       const body = `
 The ${incident.severity} incident has been resolved in VoiceWatch AI.
 
@@ -141,16 +152,16 @@ ${incident.aiSuggestion}
 ` : ''}
 
 Great work resolving this incident!
-`
+`;
 
       const result = await this.sendEmail({
         to: config.email,
         subject,
         body
-      })
+      });
 
       logs.push({
-        id: `email_${Date.now()}_${Math.random()}`,
+        id: `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         email: config.email,
         subject,
         body,
@@ -158,32 +169,33 @@ Great work resolving this incident!
         status: result.success ? 'sent' : 'failed',
         relatedIncidentId: incident.id,
         errorMessage: result.error
-      })
+      });
     }
 
-    return logs
+    return logs;
   }
 
   async notifyAlert(
     alert: Alert, 
     configs: EmailNotificationConfig[]
   ): Promise<EmailNotificationLog[]> {
-    const logs: EmailNotificationLog[] = []
+    const logs: EmailNotificationLog[] = [];
     
     const eligibleConfigs = configs.filter(config => 
       config.enabled && 
       config.notifyOnAlerts &&
       config.severityFilter.includes(alert.severity)
-    )
+    );
 
     for (const config of eligibleConfigs) {
       const severityEmoji = {
         critical: '🔴',
         warning: '⚠️',
-        info: 'ℹ️'
-      }[alert.severity] || '📢'
+        info: 'ℹ️',
+        low: '📢'
+      }[alert.severity] || '📢';
 
-      const subject = `${severityEmoji} ${alert.severity.toUpperCase()} Alert: ${alert.ruleName}`
+      const subject = `${severityEmoji} ${alert.severity.toUpperCase()} Alert: ${alert.ruleName}`;
       const body = `
 A ${alert.severity} alert has been triggered in VoiceWatch AI.
 
@@ -196,22 +208,18 @@ Alert Details:
 
 ${alert.metadata ? `
 Threshold Information:
-- Metric: ${alert.metadata.metric}
-- Condition: ${alert.metadata.condition}
-- Threshold: ${alert.metadata.threshold}
+${JSON.stringify(alert.metadata, null, 2)}
 ` : ''}
-
-Please review this alert in your VoiceWatch AI dashboard.
-`
+`;
 
       const result = await this.sendEmail({
         to: config.email,
         subject,
         body
-      })
+      });
 
       logs.push({
-        id: `email_${Date.now()}_${Math.random()}`,
+        id: `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         email: config.email,
         subject,
         body,
@@ -219,45 +227,11 @@ Please review this alert in your VoiceWatch AI dashboard.
         status: result.success ? 'sent' : 'failed',
         relatedAlertId: alert.id,
         errorMessage: result.error
-      })
+      });
     }
 
-    return logs
-  }
-
-  async testEmailConfiguration(email: string): Promise<EmailNotificationLog> {
-    const subject = '✅ VoiceWatch AI Email Notifications - Test Email'
-    const body = `
-This is a test email from VoiceWatch AI Email Notification System.
-
-If you received this email, your email notification configuration is working correctly!
-
-You will receive notifications for:
-- Critical incidents
-- High-severity alerts
-- Incident resolutions
-
-You can manage your notification preferences in the Settings tab.
-
-Time sent: ${new Date().toLocaleString()}
-`
-
-    const result = await this.sendEmail({
-      to: email,
-      subject,
-      body
-    })
-
-    return {
-      id: `email_${Date.now()}_${Math.random()}`,
-      email,
-      subject,
-      body,
-      sentAt: Date.now(),
-      status: result.success ? 'sent' : 'failed',
-      errorMessage: result.error
-    }
+    return logs;
   }
 }
 
-export const emailNotificationService = new EmailNotificationService()
+export const emailNotificationService = new EmailNotificationService();
