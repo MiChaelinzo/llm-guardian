@@ -47,7 +47,7 @@ function App() {
   const [emailConfigs] = useKV<EmailNotificationConfig[]>('email-notification-configs', [])
   const [, setEmailLogs] = useKV<EmailNotificationLog[]>('email-notification-logs', [])
   const [hasEncryptedStorage, setHasEncryptedStorage] = useState(false)
-  const [isOnboardingReady, setIsOnboardingReady] = useState(false)
+  const [isKVLoaded, setIsKVLoaded] = useState(false)
   const [currentUser, setCurrentUser] = useState<{ id: string; name: string; avatar: string } | null>(null)
 
   const [timeRange, setTimeRange] = useState<number>(15 * 60 * 1000)
@@ -99,8 +99,8 @@ function App() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsOnboardingReady(true)
-    }, 300)
+      setIsKVLoaded(true)
+    }, 500)
     return () => clearTimeout(timer)
   }, [])
 
@@ -418,7 +418,7 @@ function App() {
 
   const summary = calculateMetrics(metrics || [], timeRange)
 
-  if (!isOnboardingReady && !hasSeenOnboarding) {
+  if (!isKVLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -432,7 +432,7 @@ function App() {
   return (
     <>
       {currentUser && <CollaborativeCursors userId={currentUser.id} />}
-      {isOnboardingReady && !hasSeenOnboarding && (
+      {!hasSeenOnboarding && (
         <OnboardingDialog
           onComplete={() => setHasSeenOnboarding(true)}
         />

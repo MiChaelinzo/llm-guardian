@@ -9,6 +9,7 @@ import type {
 export type DigestFrequency = 'daily' | 'weekly'
 
 export interface DigestConfig {
+  id: string
   email: string
   frequency: DigestFrequency
   enabled: boolean
@@ -16,8 +17,9 @@ export interface DigestConfig {
   includeAlerts: boolean
   includeMetrics: boolean
   includeTrends: boolean
-  sendTime: string // Format "HH:MM" (24h)
+  sendTime: string
   lastSentAt?: number
+  createdAt: number
 }
 
 export interface DigestData {
