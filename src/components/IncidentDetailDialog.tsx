@@ -15,17 +15,21 @@ import {
   Lightning, 
   ChatCircle,
   ListChecks,
-  ChartBar 
+  ChartBar,
+  Paperclip
 } from '@phosphor-icons/react'
 import { IncidentChat } from './IncidentChat'
+import { FileUpload } from './FileUpload'
 import { formatDistanceToNow } from 'date-fns'
-import type { Incident } from '@/lib/types'
+import type { Incident, FileAttachment } from '@/lib/types'
 
 interface IncidentDetailDialogProps {
   incident: Incident | null
   open: boolean
   onClose: () => void
   onResolve: (incidentId: string) => void
+  onAddAttachment: (incidentId: string, file: FileAttachment) => void
+  onRemoveAttachment: (incidentId: string, fileId: string) => void
   currentUserId: string
   currentUserName: string
   currentUserAvatar: string
@@ -36,6 +40,8 @@ export function IncidentDetailDialog({
   open,
   onClose,
   onResolve,
+  onAddAttachment,
+  onRemoveAttachment,
   currentUserId,
   currentUserName,
   currentUserAvatar,
@@ -75,6 +81,14 @@ export function IncidentDetailDialog({
       default:
         return <Bug size={16} weight="fill" />
     }
+  }
+
+  const handleUpload = (file: FileAttachment) => {
+    onAddAttachment(incident.id, file)
+  }
+
+  const handleRemove = (fileId: string) => {
+    onRemoveAttachment(incident.id, fileId)
   }
 
   return (
@@ -129,9 +143,17 @@ export function IncidentDetailDialog({
                 <ChatCircle size={16} />
                 Team Chat
               </TabsTrigger>
+              <TabsTrigger value="attachments" className="gap-2">
+                <Paperclip size={16} />
+                Files {incident.attachments && incident.attachments.length > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-primary/20 text-primary rounded-full">
+                    {incident.attachments.length}
+                  </span>
+                )}
+              </TabsTrigger>
               <TabsTrigger value="metrics" className="gap-2">
                 <ChartBar size={16} />
-                Related Metrics
+                Timeline
               </TabsTrigger>
             </TabsList>
 
@@ -208,6 +230,26 @@ export function IncidentDetailDialog({
                 currentUserName={currentUserName}
                 currentUserAvatar={currentUserAvatar}
               />
+            </TabsContent>
+
+            <TabsContent value="attachments" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">File Attachments</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Share screenshots, logs, and documentation to help with incident resolution
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <FileUpload
+                    onUpload={handleUpload}
+                    onRemove={handleRemove}
+                    attachments={incident.attachments || []}
+                    currentUserId={currentUserId}
+                    currentUserName={currentUserName}
+                  />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="metrics" className="mt-4">

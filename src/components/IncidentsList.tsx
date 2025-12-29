@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Bug, CheckCircle, Clock, FilePdf, ChatCircle } from '@phosphor-icons/react'
 import { formatTimestamp } from '@/lib/metrics'
-import type { Incident } from '@/lib/types'
+import type { Incident, FileAttachment } from '@/lib/types'
 import { motion } from 'framer-motion'
 import { exportIncidentToPDF } from '@/lib/pdf-export'
 import { toast } from 'sonner'
@@ -14,6 +14,8 @@ import { IncidentDetailDialog } from './IncidentDetailDialog'
 interface IncidentsListProps {
   incidents: Incident[]
   onResolve: (incidentId: string) => void
+  onAddAttachment: (incidentId: string, file: FileAttachment) => void
+  onRemoveAttachment: (incidentId: string, fileId: string) => void
   currentUserId?: string
   currentUserName?: string
   currentUserAvatar?: string
@@ -22,6 +24,8 @@ interface IncidentsListProps {
 export function IncidentsList({ 
   incidents, 
   onResolve,
+  onAddAttachment,
+  onRemoveAttachment,
   currentUserId = 'user_default',
   currentUserName = 'User',
   currentUserAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
@@ -85,6 +89,8 @@ export function IncidentsList({
           onResolve(id)
           setSelectedIncident(null)
         }}
+        onAddAttachment={onAddAttachment}
+        onRemoveAttachment={onRemoveAttachment}
         currentUserId={currentUserId}
         currentUserName={currentUserName}
         currentUserAvatar={currentUserAvatar}

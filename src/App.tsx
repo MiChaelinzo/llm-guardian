@@ -32,7 +32,7 @@ import { useCollaboration } from '@/hooks/use-collaboration'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
-import type { TelemetryMetric, DetectionRule, Alert, Incident } from '@/lib/types'
+import type { TelemetryMetric, DetectionRule, Alert, Incident, FileAttachment } from '@/lib/types'
 
 function App() {
   const [metrics, setMetrics] = useKV<TelemetryMetric[]>('telemetry-metrics', [])
@@ -294,6 +294,36 @@ function App() {
       })
     }
   }, [setIncidents, currentUser, broadcastEvent])
+
+  const handleAddAttachment = useCallback((incidentId: string, file: FileAttachment) => {
+    setIncidents((current) =>
+      (current || []).map(i =>
+        i.id === incidentId ? { ...i, attachments: [...(i.attachments || []), file] } : i
+      )
+    )
+    toast.success('File attached to incident')
+    if (currentUser) {
+      broadcastEvent({
+        type: 'comment_added',
+        userId: currentUser.id,
+        entityId: incidentId,
+        comment: `Attached file: ${file.name}`,
+        timestamp: Date.now(),
+      })
+    }
+  }, [setIncidents, currentUser, broadcastEvent])
+
+  const handleRemoveAttachment = useCallback((incidentId: string, fileId: string) => {
+    setIncidents((current) =>
+      (current || []).map(i =>
+        i.id === incidentId ? { 
+          ...i, 
+          attachments: (i.attachments || []).filter(f => f.id !== fileId) 
+        } : i
+      )
+    )
+    toast.success('File removed from incident')
+  }, [setIncidents])
 
   const handleVoiceTranscript = useCallback(async (transcript: string) => {
     try {
@@ -566,11 +596,13 @@ function App() {
           <TabsContent value="incidents" className="space-y-4">
             <div>
               <h2 className="text-2xl font-bold mb-2">Incident Management</h2>
-              <p className="text-muted-foreground">Track and resolve critical issues with team chat</p>
+              <p className="text-muted-foreground">Track and resolve critical issues with team chat and file sharing</p>
             </div>
             <IncidentsList
               incidents={incidents || []}
               onResolve={(incidentId) => handleUpdateIncident(incidentId, { status: 'resolved', resolvedAt: Date.now() })}
+              onAddAttachment={handleAddAttachment}
+              onRemoveAttachment={handleRemoveAttachment}
               currentUserId={currentUser?.id}
               currentUserName={currentUser?.name}
               currentUserAvatar={currentUser?.avatar}

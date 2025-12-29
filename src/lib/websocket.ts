@@ -1,5 +1,6 @@
 export type CollaborationEvent = 
   | { type: 'user_joined'; userId: string; userName: string; userAvatar: string; timestamp: number }
+  | { type: 'user_left'; userId: string; timestamp: number }
   | { type: 'alert_acknowledged'; userId: string; alertId: string; timestamp: number }
   | { type: 'rule_created'; userId: string; ruleName: string; timestamp: number }
   | { type: 'rule_updated'; userId: string; ruleName: string; timestamp: number }

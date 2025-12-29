@@ -58,6 +58,17 @@ export interface Alert {
 
 export type IncidentStatus = 'open' | 'investigating' | 'resolved'
 
+export interface FileAttachment {
+  id: string
+  name: string
+  type: string
+  size: number
+  dataUrl: string
+  uploadedAt: number
+  uploadedBy: string
+  uploadedByName: string
+}
+
 export interface Incident {
   id: string
   title: string
@@ -68,6 +79,7 @@ export interface Incident {
   resolvedAt?: number
   alerts: Alert[]
   aiSuggestion?: string
+  attachments?: FileAttachment[]
 }
 
 export type WebhookProvider = 'slack' | 'pagerduty' | 'teams'
