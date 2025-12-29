@@ -30,6 +30,7 @@ import { PresenceIndicator } from '@/components/PresenceIndicator'
 import { CollaborativeCursors } from '@/components/CollaborativeCursors'
 import { useCollaboration } from '@/hooks/use-collaboration'
 import { useAutoCapture } from '@/hooks/use-auto-capture'
+import { useDigestScheduler } from '@/hooks/use-digest-scheduler'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
@@ -68,6 +69,12 @@ function App() {
         )
       )
     },
+  })
+
+  useDigestScheduler({
+    incidents: incidents || [],
+    alerts: alerts || [],
+    metrics: metrics || []
   })
 
   useEffect(() => {
@@ -681,7 +688,11 @@ function App() {
               <h2 className="text-2xl font-bold mb-2">Settings</h2>
               <p className="text-muted-foreground">Configure API integrations and platform credentials</p>
             </div>
-            <Settings />
+            <Settings 
+              incidents={incidents || []}
+              alerts={alerts || []}
+              metrics={metrics || []}
+            />
           </TabsContent>
         </Tabs>
       </div>

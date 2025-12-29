@@ -232,6 +232,40 @@ ${JSON.stringify(alert.metadata, null, 2)}
 
     return logs;
   }
+
+  async testEmailConfiguration(email: string): Promise<EmailNotificationLog> {
+    const subject = '🧪 VoiceWatch AI - Test Email Configuration';
+    const body = `
+This is a test email from VoiceWatch AI.
+
+Your email notification configuration is working correctly!
+
+You will receive notifications for:
+- Critical incidents
+- Incident resolutions
+- High-severity alerts
+
+Test sent at: ${new Date().toLocaleString()}
+
+If you received this email, your configuration is set up properly.
+`;
+
+    const result = await this.sendEmail({
+      to: email,
+      subject,
+      body
+    });
+
+    return {
+      id: `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      email,
+      subject,
+      body,
+      sentAt: Date.now(),
+      status: result.success ? 'sent' : 'failed',
+      errorMessage: result.error
+    };
+  }
 }
 
 export const emailNotificationService = new EmailNotificationService();

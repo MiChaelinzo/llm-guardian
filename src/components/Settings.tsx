@@ -23,6 +23,8 @@ import { Webhooks } from '@/components/Webhooks'
 import { WebhookStatus } from '@/components/WebhookStatus'
 import { AutoCaptureSettings } from '@/components/AutoCaptureSettings'
 import { EmailNotifications } from '@/components/EmailNotifications'
+import { EmailDigestSettings } from '@/components/EmailDigestSettings'
+import type { Incident, Alert as AlertType, TelemetryMetric } from '@/lib/types'
 
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -95,7 +97,13 @@ const DEFAULT_CONFIG: APIConfig = {
   }
 }
 
-export function Settings() {
+interface SettingsProps {
+  incidents?: Incident[]
+  alerts?: AlertType[]
+  metrics?: TelemetryMetric[]
+}
+
+export function Settings({ incidents = [], alerts = [], metrics = [] }: SettingsProps = {}) {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding', false)
   const [isDemoMode, setIsDemoMode] = useState<boolean>(true)
   
@@ -504,6 +512,12 @@ export function Settings() {
       </Tabs>
 
       <EmailNotifications />
+
+      <EmailDigestSettings 
+        incidents={incidents}
+        alerts={alerts}
+        metrics={metrics}
+      />
 
       <Webhooks />
 
