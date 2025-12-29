@@ -235,3 +235,4 @@ ${JSON.stringify(alert.metadata, null, 2)}
 }
 
 export const emailNotificationService = new EmailNotificationService();
+
