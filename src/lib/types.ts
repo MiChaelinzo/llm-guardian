@@ -152,3 +152,26 @@ export interface ChatChannel {
   lastMessageAt?: number
   unreadCount?: number
 }
+
+export interface EmailNotificationConfig {
+  id: string
+  email: string
+  enabled: boolean
+  severityFilter: RuleSeverity[]
+  notifyOnIncidentCreated: boolean
+  notifyOnIncidentResolved: boolean
+  notifyOnAlerts: boolean
+  createdAt: number
+}
+
+export interface EmailNotificationLog {
+  id: string
+  email: string
+  subject: string
+  body: string
+  sentAt: number
+  status: 'sent' | 'failed' | 'pending'
+  relatedIncidentId?: string
+  relatedAlertId?: string
+  errorMessage?: string
+}

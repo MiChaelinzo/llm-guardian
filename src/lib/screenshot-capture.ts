@@ -1,19 +1,32 @@
 import html2canvas from 'html2canvas'
-import type { FileAttachment } from './types'
 
+// Reconstructed Interface: ScreenshotOptions
 export interface ScreenshotOptions {
-  filename?: string
-  quality?: number
   backgroundColor?: string
   fullPage?: boolean
+  quality?: number
+  filename?: string
 }
 
+// Reconstructed Interface: ScreenshotResult
 export interface ScreenshotResult {
   blob: Blob
   dataUrl: string
   width: number
   height: number
   size: number
+}
+
+// Reconstructed Interface: FileAttachment (Inferred from usage)
+export interface FileAttachment {
+  id: string
+  name: string
+  dataUrl: string
+  uploadedBy: string
+  uploadedByName: string
+  uploadedAt: number
+  size: number
+  type: string
 }
 
 /**
@@ -23,8 +36,15 @@ export async function captureElement(
   selectorOrElement: string | HTMLElement, 
   options: ScreenshotOptions = {}
 ): Promise<ScreenshotResult> {
-  
-  const element = typeof selectorOrElement === 'string' 
+  // Destructure options with defaults
+  const { 
+    backgroundColor, 
+    fullPage = false, 
+    quality = 0.95 
+  } = options
+
+  // Resolve the element
+  const element = typeof selectorOrElement === 'string'
     ? document.querySelector(selectorOrElement) as HTMLElement
     : selectorOrElement
 
@@ -32,17 +52,11 @@ export async function captureElement(
     throw new Error(`Element not found: ${selectorOrElement}`)
   }
 
-  const {
-    fullPage = false,
-    quality = 0.95,
-    backgroundColor = '#0a0a0f' // Default to dark theme background
-  } = options
-
   try {
     const canvas = await html2canvas(element, {
       allowTaint: true,
       useCORS: true,
-      backgroundColor,
+      backgroundColor: backgroundColor || null, // null preserves transparency if not set
       scrollY: fullPage ? -window.scrollY : 0,
       scrollX: fullPage ? -window.scrollX : 0,
       windowWidth: fullPage ? document.documentElement.scrollWidth : window.innerWidth,
@@ -55,9 +69,9 @@ export async function captureElement(
     const dataUrl = canvas.toDataURL('image/png', quality)
     
     const blob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          resolve(blob)
+      canvas.toBlob((b) => {
+        if (b) {
+          resolve(b)
         } else {
           reject(new Error('Failed to create blob from canvas'))
         }
@@ -87,14 +101,14 @@ export async function captureScreenshot(options: ScreenshotOptions = {}): Promis
 /**
  * Downloads a screenshot result as a file
  */
-export async function downloadScreenshot(
+export function downloadScreenshot(
   result: ScreenshotResult | string, 
   filename: string = 'screenshot.png'
 ) {
-  const href = typeof result === 'string' ? result : result.dataUrl
+  const url = typeof result === 'string' ? result : result.dataUrl
   
   const link = document.createElement('a')
-  link.href = href
+  link.href = url
   link.download = filename
   document.body.appendChild(link)
   link.click()
@@ -122,6 +136,9 @@ export function createAttachmentFromScreenshot(
   }
 }
 
+/**
+ * Captures multiple elements
+ */
 export async function captureMultiple(
   selectors: string[],
   userId: string,

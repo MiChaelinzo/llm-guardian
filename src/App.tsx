@@ -33,7 +33,8 @@ import { useAutoCapture } from '@/hooks/use-auto-capture'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
-import type { TelemetryMetric, DetectionRule, Alert, Incident, FileAttachment } from '@/lib/types'
+import { emailNotificationService } from '@/lib/email-notifications'
+import type { TelemetryMetric, DetectionRule, Alert, Incident, FileAttachment, EmailNotificationConfig, EmailNotificationLog } from '@/lib/types'
 
 function App() {
   const [metrics, setMetrics] = useKV<TelemetryMetric[]>('telemetry-metrics', [])
@@ -42,6 +43,8 @@ function App() {
   const [incidents, setIncidents] = useKV<Incident[]>('incidents', [])
   const [aiInsights, setAiInsights] = useKV<string[]>('ai-insights', [])
   const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding', false)
+  const [emailConfigs] = useKV<EmailNotificationConfig[]>('email-notification-configs', [])
+  const [, setEmailLogs] = useKV<EmailNotificationLog[]>('email-notification-logs', [])
   const [hasEncryptedStorage, setHasEncryptedStorage] = useState(false)
   const [isOnboardingReady, setIsOnboardingReady] = useState(false)
   const [currentUser, setCurrentUser] = useState<{ id: string; name: string; avatar: string } | null>(null)
@@ -215,7 +218,7 @@ function App() {
 
     if (newAlerts.length > 0) {
       setAlerts((current) => [...(current || []), ...newAlerts])
-      newAlerts.forEach(alert => {
+      newAlerts.forEach(async (alert) => {
         toast.error(alert.message, {
           duration: 5000
         })
@@ -224,9 +227,18 @@ function App() {
           const utterance = new SpeechSynthesisUtterance(alert.message)
           window.speechSynthesis.speak(utterance)
         }
+
+        if (emailConfigs && emailConfigs.length > 0 && alert.severity === 'critical') {
+          try {
+            const logs = await emailNotificationService.notifyAlert(alert, emailConfigs)
+            setEmailLogs((current) => [...logs, ...(current || [])].slice(0, 100))
+          } catch (error) {
+            console.error('Failed to send email notification for alert:', error)
+          }
+        }
       })
     }
-  }, [metrics, rules, alerts, setAlerts])
+  }, [metrics, rules, alerts, setAlerts, emailConfigs, setEmailLogs])
 
   const handleAddRule = useCallback((rule: DetectionRule) => {
     setRules((current) => [...(current || []), rule])
@@ -280,7 +292,7 @@ function App() {
     }
   }, [setAlerts, currentUser, broadcastEvent])
 
-  const handleCreateIncident = useCallback((alertId: string) => {
+  const handleCreateIncident = useCallback(async (alertId: string) => {
     const alert = (alerts || []).find(a => a.id === alertId)
     if (!alert) return
 
@@ -295,22 +307,52 @@ function App() {
     }
     setIncidents((current) => [...(current || []), incident])
     toast.success('Incident created')
-  }, [alerts, setIncidents])
 
-  const handleUpdateIncident = useCallback((incidentId: string, updates: Partial<Incident>) => {
+    if (emailConfigs && emailConfigs.length > 0) {
+      try {
+        const logs = await emailNotificationService.notifyIncidentCreated(incident, emailConfigs)
+        setEmailLogs((current) => [...logs, ...(current || [])].slice(0, 100))
+        const successCount = logs.filter(l => l.status === 'sent').length
+        if (successCount > 0) {
+          toast.success(`Email notifications sent to ${successCount} recipient${successCount > 1 ? 's' : ''}`)
+        }
+      } catch (error) {
+        console.error('Failed to send email notifications:', error)
+      }
+    }
+  }, [alerts, setIncidents, emailConfigs, setEmailLogs])
+
+  const handleUpdateIncident = useCallback(async (incidentId: string, updates: Partial<Incident>) => {
+    const incident = (incidents || []).find(i => i.id === incidentId)
+    
     setIncidents((current) =>
       (current || []).map(i =>
         i.id === incidentId ? { ...i, ...updates } : i
       )
     )
+    
     if (updates.status === 'resolved' && currentUser) {
       broadcastEvent({
         type: 'incident_resolved',
         userId: currentUser.id,
         incidentId,
       })
+
+      if (incident && emailConfigs && emailConfigs.length > 0) {
+        try {
+          const updatedIncident = { ...incident, ...updates }
+          const logs = await emailNotificationService.notifyIncidentResolved(updatedIncident, emailConfigs)
+          setEmailLogs((current) => [...logs, ...(current || [])].slice(0, 100))
+          const successCount = logs.filter(l => l.status === 'sent').length
+          if (successCount > 0) {
+            toast.success(`Resolution notifications sent to ${successCount} recipient${successCount > 1 ? 's' : ''}`)
+          }
+        } catch (error) {
+          console.error('Failed to send email notifications:', error)
+        }
+      }
     }
-  }, [setIncidents, currentUser, broadcastEvent])
+  }, [setIncidents, incidents, currentUser, broadcastEvent, emailConfigs, setEmailLogs])
 
   const handleAddAttachment = useCallback((incidentId: string, file: FileAttachment) => {
     setIncidents((current) =>

@@ -161,6 +161,39 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
   - Toast notifications for capture success/failure
   - Element selector validation for targeted captures
 
+### Email Notification System (NEW - Critical Alert Distribution)
+- **Functionality**: Intelligent email notification system for critical incidents and alerts with configurable severity filters, recipient management, notification type preferences, and comprehensive delivery tracking
+- **Purpose**: Ensure critical incidents reach the right team members immediately, enabling faster response times and reducing MTTR by notifying on-call engineers, managers, and stakeholders via email regardless of whether they're actively monitoring the dashboard
+- **Trigger**: Automatic on incident creation, incident resolution, or critical alert triggering; manual test emails
+- **Progression**: Event occurs (incident/alert) → Email configs queried → Severity filter applied → HTML email generated via AI → Email sent → Delivery tracked → Success/failure logged → Team notified
+- **Success criteria**:
+  - Add unlimited email recipients with unique configurations per email
+  - Toggle notifications enabled/disabled per recipient without deletion
+  - Configure notification types independently:
+    - Incident Created (with alert details and metrics)
+    - Incident Resolved (with resolution time and duration)
+    - Alert Triggered (for critical/warning/info alerts)
+  - Severity filter selection (critical, warning, info) with multi-select support
+  - Professional HTML email templates generated via AI with:
+    - VoiceWatch AI branding and styled headers
+    - Severity-specific emoji indicators (🔴 critical, ⚠️ warning, ℹ️ info)
+    - Incident/alert details clearly formatted with metrics
+    - Timestamp and duration information
+    - Link context back to the dashboard
+  - Send test email functionality to verify configuration
+  - Email delivery log tracking last 50+ notifications with:
+    - Subject line and recipient
+    - Sent timestamp with human-readable formatting
+    - Success/failure status with visual indicators
+    - Error messages for failed deliveries
+    - Related incident/alert linking for context
+  - Real-time integration with incident workflow (sends on creation and resolution)
+  - Console logging for email content preview during development
+  - Integration in Settings tab for easy configuration access
+  - Toast notifications confirming email delivery success
+  - Automatic batching to prevent notification spam
+  - AI-powered HTML email generation with consistent styling
+
 ### Team Collaboration Panel (ENHANCED)
 - **Functionality**: Real-time team activity feed showing who's online, recent actions, and collaborative monitoring
 - **Purpose**: Enable distributed teams to coordinate incident response and share observability insights in real-time

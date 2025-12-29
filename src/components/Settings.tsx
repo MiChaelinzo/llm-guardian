@@ -22,6 +22,7 @@ import { CredentialBackup } from '@/components/CredentialBackup'
 import { Webhooks } from '@/components/Webhooks'
 import { WebhookStatus } from '@/components/WebhookStatus'
 import { AutoCaptureSettings } from '@/components/AutoCaptureSettings'
+import { EmailNotifications } from '@/components/EmailNotifications'
 
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -501,6 +502,8 @@ export function Settings() {
         </TabsContent>
 
       </Tabs>
+
+      <EmailNotifications />
 
       <Webhooks />
 
