@@ -3,7 +3,7 @@ import { useKV } from '@github/spark/hooks'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChartLine, Bell, Lightning, Bug, Waveform, Flask, Brain, Wrench, ChartBar } from '@phosphor-icons/react'
+import { ChartLine, Bell, Lightning, Bug, Waveform, Flask, Brain, Wrench, ChartBar, Users } from '@phosphor-icons/react'
 import { MetricCards } from '@/components/MetricCards'
 import { MetricChart } from '@/components/MetricChart'
 import { AIInsights } from '@/components/AIInsights'
@@ -24,6 +24,10 @@ import { SmartRemediation } from '@/components/SmartRemediation'
 import { ModelBenchmarks } from '@/components/ModelBenchmarks'
 import { RealtimeStreamVisualizer } from '@/components/RealtimeStreamVisualizer'
 import { RateLimitIndicator } from '@/components/RateLimitIndicator'
+import { RealtimeCollaboration } from '@/components/RealtimeCollaboration'
+import { PresenceIndicator } from '@/components/PresenceIndicator'
+import { CollaborativeCursors } from '@/components/CollaborativeCursors'
+import { useCollaboration } from '@/hooks/use-collaboration'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
@@ -38,9 +42,32 @@ function App() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding', false)
   const [hasEncryptedStorage, setHasEncryptedStorage] = useState(false)
   const [isOnboardingReady, setIsOnboardingReady] = useState(false)
+  const [currentUser, setCurrentUser] = useState<{ id: string; name: string; avatar: string } | null>(null)
 
   const [timeRange, setTimeRange] = useState<number>(15 * 60 * 1000)
   const [lastVoiceResponse, setLastVoiceResponse] = useState<string>('')
+
+  const { broadcastEvent } = useCollaboration(currentUser?.id || '')
+
+  useEffect(() => {
+    const initUser = async () => {
+      try {
+        const user = await window.spark.user()
+        setCurrentUser({
+          id: user.id,
+          name: user.login,
+          avatar: user.avatarUrl,
+        })
+      } catch (error) {
+        setCurrentUser({
+          id: `user_${Date.now()}`,
+          name: 'Demo User',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
+        })
+      }
+    }
+    initUser()
+  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -186,14 +213,29 @@ function App() {
   const handleAddRule = useCallback((rule: DetectionRule) => {
     setRules((current) => [...(current || []), rule])
     toast.success('Detection rule created')
-  }, [setRules])
+    if (currentUser) {
+      broadcastEvent({
+        type: 'rule_created',
+        userId: currentUser.id,
+        ruleName: rule.name,
+      })
+    }
+  }, [setRules, currentUser, broadcastEvent])
 
   const handleEditRule = useCallback((ruleId: string, updates: Partial<DetectionRule>) => {
     setRules((current) =>
       (current || []).map(r => r.id === ruleId ? { ...r, ...updates } : r)
     )
     toast.success('Rule updated')
-  }, [setRules])
+    const rule = (rules || []).find(r => r.id === ruleId)
+    if (currentUser && rule) {
+      broadcastEvent({
+        type: 'rule_updated',
+        userId: currentUser.id,
+        ruleName: rule.name,
+      })
+    }
+  }, [setRules, rules, currentUser, broadcastEvent])
 
   const handleToggleRule = useCallback((ruleId: string) => {
     setRules((current) =>
@@ -211,7 +253,14 @@ function App() {
       (current || []).map(a => a.id === alertId ? { ...a, acknowledged: true } : a)
     )
     toast.success('Alert acknowledged')
-  }, [setAlerts])
+    if (currentUser) {
+      broadcastEvent({
+        type: 'alert_acknowledged',
+        userId: currentUser.id,
+        alertId,
+      })
+    }
+  }, [setAlerts, currentUser, broadcastEvent])
 
   const handleCreateIncident = useCallback((alertId: string) => {
     const alert = (alerts || []).find(a => a.id === alertId)
@@ -236,7 +285,14 @@ function App() {
         i.id === incidentId ? { ...i, ...updates } : i
       )
     )
-  }, [setIncidents])
+    if (updates.status === 'resolved' && currentUser) {
+      broadcastEvent({
+        type: 'incident_resolved',
+        userId: currentUser.id,
+        incidentId,
+      })
+    }
+  }, [setIncidents, currentUser, broadcastEvent])
 
   const handleVoiceTranscript = useCallback(async (transcript: string) => {
     try {
@@ -278,6 +334,7 @@ function App() {
 
   return (
     <>
+      {currentUser && <CollaborativeCursors userId={currentUser.id} />}
       {isOnboardingReady && !hasSeenOnboarding && (
         <OnboardingDialog
           onComplete={() => setHasSeenOnboarding(true)}
@@ -297,7 +354,8 @@ function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            {currentUser && <PresenceIndicator userId={currentUser.id} />}
             <RateLimitIndicator />
             <EncryptionStatus hasEncryptedCredentials={hasEncryptedStorage} />
             <VoiceButton onTranscript={handleVoiceTranscript} />
@@ -339,6 +397,10 @@ function App() {
             <TabsTrigger value="benchmarks" className="gap-2">
               <ChartBar size={18} />
               Benchmarks
+            </TabsTrigger>
+            <TabsTrigger value="collaboration" className="gap-2">
+              <Users size={18} />
+              Collaboration
             </TabsTrigger>
             <TabsTrigger value="alerts" className="gap-2">
               <Bell size={18} />
@@ -445,6 +507,19 @@ function App() {
               <p className="text-muted-foreground">Real-time comparison across leading LLM providers</p>
             </div>
             <ModelBenchmarks />
+          </TabsContent>
+
+          <TabsContent value="collaboration" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Real-Time Collaboration</h2>
+              <p className="text-muted-foreground">Multi-user monitoring with WebSocket support for distributed teams</p>
+            </div>
+            {currentUser && (
+              <RealtimeCollaboration
+                userId={currentUser.id}
+                userName={currentUser.name}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="alerts" className="space-y-4">

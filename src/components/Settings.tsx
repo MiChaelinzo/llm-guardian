@@ -506,7 +506,7 @@ export function Settings() {
       <WebhookStatus />
 
       <CredentialBackup 
-        config={config} 
+        onExport={async () => config}
         onImport={setConfig} 
       />
 

@@ -13,7 +13,7 @@ A production-ready, voice-driven AI monitoring dashboard that lets developers in
 **Experience Qualities**:
 1. **Conversational** - Natural voice interactions make complex monitoring accessible and intuitive
 2. **Intelligent** - AI-powered analysis surfaces insights from telemetry data automatically, predicts future trends, and recommends optimizations
-3. **Collaborative** - Real-time team activity feeds and multi-user awareness for DevOps and SRE teams
+3. **Collaborative** - Real-time WebSocket-powered multi-user monitoring with live presence indicators, activity feeds, and collaborative cursor tracking for distributed DevOps and SRE teams
 4. **Cost-Conscious** - Advanced cost optimization engine identifies savings opportunities and provides actionable recommendations
 5. **Proactive** - Smart remediation engine automatically suggests and applies fixes for common issues
 
@@ -90,7 +90,26 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
   - Visual progress indicators and before/after comparisons
   - Export functionality for stakeholder reports
 
-### Team Collaboration Panel (NEW - Multi-User Impact)
+### Real-Time Collaboration with WebSocket Support (NEW - Enterprise Feature)
+- **Functionality**: Multi-user monitoring with live presence tracking, collaborative cursors, real-time activity feeds, and WebSocket-based event broadcasting for distributed teams
+- **Purpose**: Enable seamless team collaboration during incident response, allowing multiple engineers to monitor, triage, and resolve issues together in real-time
+- **Trigger**: Automatic on session start, updates continuously via WebSocket connection
+- **Progression**: User joins → WebSocket connects → Presence broadcast → Actions tracked → Events shared → Team sees updates → Collaborative resolution
+- **Success criteria**:
+  - WebSocket connection with automatic reconnection (exponential backoff up to 5 attempts)
+  - Live presence indicators showing online users with avatars and status (active/idle/away)
+  - Real-time activity feed displaying user actions (alerts acknowledged, rules created, incidents resolved)
+  - Collaborative cursor tracking showing other users' mouse positions with name labels
+  - Event broadcasting for all major actions (alert acknowledgment, rule creation/update, incident resolution)
+  - Simulated multi-user demo mode with 3 synthetic team members for showcase
+  - Dedicated Collaboration tab with comprehensive team activity dashboard
+  - Presence badge in header showing active user count
+  - Sub-100ms event propagation for real-time feel
+  - Graceful degradation when WebSocket unavailable
+  - Activity timestamps with human-readable "time ago" formatting
+  - Production-ready foundation for role-based access control and permissions
+
+### Team Collaboration Panel (ENHANCED)
 - **Functionality**: Real-time team activity feed showing who's online, recent actions, and collaborative monitoring
 - **Purpose**: Enable distributed teams to coordinate incident response and share observability insights in real-time
 - **Trigger**: Automatic on dashboard load, updates as team members interact
