@@ -20,6 +20,7 @@ import {
 } from '@phosphor-icons/react'
 import { IncidentChat } from './IncidentChat'
 import { FileUpload } from './FileUpload'
+import { ScreenshotCapture } from './ScreenshotCapture'
 import { formatDistanceToNow } from 'date-fns'
 import type { Incident, FileAttachment } from '@/lib/types'
 
@@ -232,7 +233,13 @@ export function IncidentDetailDialog({
               />
             </TabsContent>
 
-            <TabsContent value="attachments" className="mt-4">
+            <TabsContent value="attachments" className="mt-4 space-y-4">
+              <ScreenshotCapture
+                onCapture={handleUpload}
+                userId={currentUserId}
+                userName={currentUserName}
+              />
+              
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">File Attachments</CardTitle>

@@ -29,6 +29,7 @@ import { RealtimeCollaboration } from '@/components/RealtimeCollaboration'
 import { PresenceIndicator } from '@/components/PresenceIndicator'
 import { CollaborativeCursors } from '@/components/CollaborativeCursors'
 import { useCollaboration } from '@/hooks/use-collaboration'
+import { useAutoCapture } from '@/hooks/use-auto-capture'
 import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
@@ -49,6 +50,22 @@ function App() {
   const [lastVoiceResponse, setLastVoiceResponse] = useState<string>('')
 
   const { broadcastEvent } = useCollaboration(currentUser?.id || '')
+
+  useAutoCapture({
+    alerts: alerts || [],
+    incidents: incidents || [],
+    userId: currentUser?.id || '',
+    userName: currentUser?.name || '',
+    onCapture: (incidentId, attachment) => {
+      setIncidents((current) =>
+        (current || []).map(i =>
+          i.id === incidentId
+            ? { ...i, attachments: [...(i.attachments || []), attachment] }
+            : i
+        )
+      )
+    },
+  })
 
   useEffect(() => {
     const initUser = async () => {

@@ -21,6 +21,7 @@ import { validateKey } from '@/lib/encryption'
 import { CredentialBackup } from '@/components/CredentialBackup'
 import { Webhooks } from '@/components/Webhooks'
 import { WebhookStatus } from '@/components/WebhookStatus'
+import { AutoCaptureSettings } from '@/components/AutoCaptureSettings'
 
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -504,6 +505,8 @@ export function Settings() {
       <Webhooks />
 
       <WebhookStatus />
+
+      <AutoCaptureSettings />
 
       <CredentialBackup 
         onExport={async () => config}

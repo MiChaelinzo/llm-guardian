@@ -119,7 +119,16 @@ VoiceWatch AI responds with both **spoken explanations** and **visual dashboards
 - **Incident recommendations** - AI-generated remediation steps
 - **Conversational responses** - Natural language query understanding
 
-### 5. LLM Application Simulator
+### 5. Screenshot Capture & Documentation
+- **Manual capture** - Capture visible area, full page, or specific elements
+- **Auto-capture** - Automatically screenshot incidents for documentation
+- **Quick capture** - One-click screenshot button in incident dialogs
+- **Preview & review** - See dimensions and file size before attaching
+- **Configurable settings** - Control auto-capture behavior and delays
+- **Visual evidence** - Preserve critical system states for post-mortems
+- **See full documentation**: [Screenshot Capture Guide](./SCREENSHOT_CAPTURE.md)
+
+### 6. LLM Application Simulator
 - **Realistic telemetry** - Simulates Gemini/Claude API calls
 - **Varied scenarios** - Normal, slow, error, spike patterns
 - **Multiple models** - gemini-1.5-pro, gemini-1.5-flash, claude-3-5-sonnet
@@ -324,6 +333,36 @@ Create custom detection rules:
 2. Click **Add Rule** button
 3. Configure metric, threshold, and severity
 4. Save and enable the rule
+
+### 5. Screenshot Capture for Incidents
+Capture visual evidence for incident documentation:
+
+**Manual Capture:**
+1. Navigate to **Incidents** tab
+2. Click on an incident to open details
+3. Go to **Attachments** tab
+4. Use the **Screenshot Capture** component:
+   - Select capture mode (Visible Area, Full Page, or Specific Element)
+   - Click "Capture Screenshot"
+   - Review the preview with dimensions and file size
+   - Click "Attach to Incident" to save, or "Download" for local backup
+
+**Automatic Capture:**
+1. Navigate to **Settings** tab
+2. Find **Automatic Screenshot Capture** section
+3. Enable auto-capture
+4. Configure:
+   - Capture mode (visible area or full page)
+   - Capture delay (0-3000ms) for UI settling
+   - Trigger options (on alert or incident creation)
+   - Max captures per incident (1-10)
+5. Screenshots will automatically attach to new incidents
+
+**Quick Capture:**
+- Use the quick capture button in incident dialogs for one-click screenshots
+- Perfect for documenting state changes during troubleshooting
+
+See [Screenshot Capture Guide](./SCREENSHOT_CAPTURE.md) for detailed documentation.
 
 ## 🔬 Demo Scenarios
 

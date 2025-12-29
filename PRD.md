@@ -133,6 +133,34 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
   - Export chat history with incident reports
   - Search and filter capabilities for historical conversations
 
+### Automatic Screenshot Capture (NEW - Visual Documentation Feature)
+- **Functionality**: Intelligent screenshot capture system with manual and automatic modes for comprehensive incident documentation, supporting full-page capture, visible area capture, and element-specific capture with configurable auto-capture triggers
+- **Purpose**: Enable teams to document visual evidence of incidents, anomalies, and system states instantly, reducing documentation time from minutes to seconds and preserving critical visual context for post-mortems and debugging
+- **Trigger**: Manual capture via screenshot component in incident dialog, quick capture button, or automatic capture on alert/incident creation (configurable)
+- **Progression**: User triggers capture OR incident created → Screenshot captured (with delay if configured) → Preview shown → User reviews → Attach to incident → Saved with metadata → Team notified
+- **Success criteria**:
+  - Manual screenshot capture with 3 modes: visible area, full scrollable page, specific CSS element
+  - Live preview with dimensions and file size display before attaching
+  - Quick capture button for instant one-click screenshots
+  - Automatic capture system with configurable settings:
+    - Enable/disable auto-capture globally
+    - Capture on alert creation (optional)
+    - Capture on incident creation (optional)
+    - Configurable capture delay (0-3000ms) for UI settling
+    - Max captures per incident limit (1-10) to manage storage
+  - Screenshots automatically attached to incidents with proper metadata
+  - User attribution (captured by username) with timestamp
+  - File size optimization with configurable quality (default 92%)
+  - Download option for local backup of screenshots
+  - Integration with existing file attachment system
+  - Background capture doesn't interrupt workflow
+  - Visual feedback during capture process with loading states
+  - Screenshots stored as base64 data URLs in incident attachments
+  - Supports high-DPI displays with 2x scale factor
+  - Settings panel in Settings tab for auto-capture configuration
+  - Toast notifications for capture success/failure
+  - Element selector validation for targeted captures
+
 ### Team Collaboration Panel (ENHANCED)
 - **Functionality**: Real-time team activity feed showing who's online, recent actions, and collaborative monitoring
 - **Purpose**: Enable distributed teams to coordinate incident response and share observability insights in real-time
