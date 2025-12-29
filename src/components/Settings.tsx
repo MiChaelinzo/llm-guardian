@@ -9,11 +9,11 @@ import {
   Database, 
   AudioWaveform, 
   Lock,
-  Shield,
   Key,
   CheckCircle,
   Trash2,
-  RefreshCcw
+  RefreshCcw,
+  Shield
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSecureStorage } from '@/hooks/use-secure-storage'
@@ -42,11 +42,6 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs'
-
-// ... Types and Component Logic (same as your snippet) ...
-// The exports and imports are the critical part here.
-// Types
-
 
 interface APIConfig {
   googleCloud: {
@@ -99,10 +94,12 @@ const DEFAULT_CONFIG: APIConfig = {
 }
 
 export function Settings() {
-  const [config, setConfig] = useSecureStorage<APIConfig>('api-config', DEFAULT_CONFIG)
   const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding', false)
   const [isDemoMode, setIsDemoMode] = useState<boolean>(true)
   
+  // Use secure storage for sensitive config
+  const [config, setConfig] = useSecureStorage<APIConfig>('api-keys', DEFAULT_CONFIG)
+
   const [showSecrets, setShowSecrets] = useState({
     googleCloud: false,
     datadog: false,
@@ -118,17 +115,19 @@ export function Settings() {
   })
 
   useEffect(() => {
-    setValidationStatus({
-      googleCloud: validateKey(config.googleCloud.apiKey),
-      datadog: validateKey(config.datadog.apiKey),
-      confluent: validateKey(config.confluent.apiKey),
-      elevenLabs: validateKey(config.elevenLabs.apiKey)
-    })
+    if (config) {
+      setValidationStatus({
+        googleCloud: validateKey(config.googleCloud.apiKey),
+        datadog: validateKey(config.datadog.apiKey),
+        confluent: validateKey(config.confluent.apiKey),
+        elevenLabs: validateKey(config.elevenLabs.apiKey)
+      })
+    }
   }, [config])
 
   const handleTestConnection = async (platform: string) => {
     toast.info(`Testing ${platform} connection...`)
-    // Mock API call
+    // Mock API call simulation
     setTimeout(() => {
       toast.success(`${platform} connection test successful`)
     }, 1500)
@@ -164,24 +163,23 @@ export function Settings() {
     toast.success(`${platform} credentials cleared and securely deleted`)
   }
 
-  const handleExportCredentials = async () => {
-    return config
-  }
-
-  const handleImportCredentials = async (data: APIConfig) => {
-    await setConfig(data)
-    toast.success('Credentials imported and encrypted')
-  }
-
   const handleResetOnboarding = () => {
     setHasSeenOnboarding(false)
     toast.success('Onboarding reset! Refresh the page to see it again.')
   }
 
+  if (!config) return null
+
   return (
-    <div className="space-y-6 max-w-4xl mx-auto p-4">
-      <Alert className="border-blue-500/30 bg-blue-500/5">
-        <Shield className="h-4 w-4 text-blue-500" />
+    <div className="space-y-6 max-w-4xl mx-auto pb-10">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+        <p className="text-muted-foreground">
+          Manage your API connections, security preferences, and notifications.
+        </p>
+      </div>
+
+      <Alert variant="default" className="border-blue-500/20 bg-blue-500/5">
         <AlertTitle className="flex items-center gap-2">
           <Lock size={14} className="text-blue-500" />
           End-to-End Encryption Enabled
@@ -507,9 +505,9 @@ export function Settings() {
 
       <WebhookStatus />
 
-      <CredentialBackup
-        onExport={handleExportCredentials}
-        onImport={handleImportCredentials}
+      <CredentialBackup 
+        config={config} 
+        onImport={setConfig} 
       />
 
       <Card className="border-muted">
@@ -530,20 +528,14 @@ export function Settings() {
         </CardContent>
       </Card>
 
-      <Card className="border-muted">
+      <Card className="bg-muted/30 border-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Key size={16} className="text-muted-foreground" />
+            <Shield size={16} />
             Security Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <div className="flex items-start gap-2">
-            <Shield size={14} className="mt-0.5 text-blue-500" />
-            <div>
-              <strong className="text-foreground">AES-256-GCM Encryption:</strong> All API keys are encrypted using industry-standard AES-256-GCM before storage.
-            </div>
-          </div>
+        <CardContent className="space-y-4 text-sm text-muted-foreground">
           <div className="flex items-start gap-2">
             <Lock size={14} className="mt-0.5 text-blue-500" />
             <div>
@@ -567,3 +559,4 @@ export function Settings() {
     </div>
   )
 }
+
