@@ -1,20 +1,32 @@
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Bug, CheckCircle, Clock, FilePdf, DownloadSimple } from '@phosphor-icons/react'
+import { Bug, CheckCircle, Clock, FilePdf, ChatCircle } from '@phosphor-icons/react'
 import { formatTimestamp } from '@/lib/metrics'
 import type { Incident } from '@/lib/types'
 import { motion } from 'framer-motion'
 import { exportIncidentToPDF } from '@/lib/pdf-export'
 import { toast } from 'sonner'
+import { IncidentDetailDialog } from './IncidentDetailDialog'
 
 interface IncidentsListProps {
   incidents: Incident[]
   onResolve: (incidentId: string) => void
+  currentUserId?: string
+  currentUserName?: string
+  currentUserAvatar?: string
 }
 
-export function IncidentsList({ incidents, onResolve }: IncidentsListProps) {
+export function IncidentsList({ 
+  incidents, 
+  onResolve,
+  currentUserId = 'user_default',
+  currentUserName = 'User',
+  currentUserAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
+}: IncidentsListProps) {
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null)
   const openIncidents = incidents.filter(i => i.status !== 'resolved')
   const resolvedIncidents = incidents.filter(i => i.status === 'resolved').slice(-5)
 
@@ -64,7 +76,21 @@ export function IncidentsList({ incidents, onResolve }: IncidentsListProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <IncidentDetailDialog
+        incident={selectedIncident}
+        open={!!selectedIncident}
+        onClose={() => setSelectedIncident(null)}
+        onResolve={(id) => {
+          onResolve(id)
+          setSelectedIncident(null)
+        }}
+        currentUserId={currentUserId}
+        currentUserName={currentUserName}
+        currentUserAvatar={currentUserAvatar}
+      />
+
+      <div className="space-y-6">
       {openIncidents.length > 0 && (
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -120,11 +146,20 @@ export function IncidentsList({ incidents, onResolve }: IncidentsListProps) {
                       <Button
                         size="sm"
                         variant="ghost"
+                        onClick={() => setSelectedIncident(incident)}
+                        className="text-xs h-7 gap-1"
+                      >
+                        <ChatCircle size={14} weight="fill" />
+                        View Details
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
                         onClick={() => handleExportIncident(incident)}
                         className="text-xs h-7 gap-1"
                       >
                         <FilePdf size={14} weight="fill" />
-                        Export PDF
+                        Export
                       </Button>
                       {incident.status === 'open' && (
                         <Button
@@ -179,5 +214,6 @@ export function IncidentsList({ incidents, onResolve }: IncidentsListProps) {
         </Card>
       )}
     </div>
+    </>
   )
 }

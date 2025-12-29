@@ -19,6 +19,7 @@ import { TrendVisualization } from '@/components/TrendVisualization'
 import { WebhookTestingPanel } from '@/components/WebhookTestingPanel'
 import { AdvancedAnalytics } from '@/components/AdvancedAnalytics'
 import { TeamCollaboration } from '@/components/TeamCollaboration'
+import { TeamChatPanel } from '@/components/TeamChatPanel'
 import { CostOptimizationPanel } from '@/components/CostOptimizationPanel'
 import { SmartRemediation } from '@/components/SmartRemediation'
 import { ModelBenchmarks } from '@/components/ModelBenchmarks'
@@ -512,14 +513,28 @@ function App() {
           <TabsContent value="collaboration" className="space-y-4">
             <div>
               <h2 className="text-2xl font-bold mb-2">Real-Time Collaboration</h2>
-              <p className="text-muted-foreground">Multi-user monitoring with WebSocket support for distributed teams</p>
+              <p className="text-muted-foreground">Multi-user monitoring with WebSocket support and team chat for distributed teams</p>
             </div>
-            {currentUser && (
-              <RealtimeCollaboration
-                userId={currentUser.id}
-                userName={currentUser.name}
-              />
-            )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                {currentUser && (
+                  <RealtimeCollaboration
+                    userId={currentUser.id}
+                    userName={currentUser.name}
+                  />
+                )}
+              </div>
+              <div>
+                {currentUser && (
+                  <TeamChatPanel
+                    incidents={incidents || []}
+                    currentUserId={currentUser.id}
+                    currentUserName={currentUser.name}
+                    currentUserAvatar={currentUser.avatar}
+                  />
+                )}
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="alerts" className="space-y-4">
@@ -551,11 +566,14 @@ function App() {
           <TabsContent value="incidents" className="space-y-4">
             <div>
               <h2 className="text-2xl font-bold mb-2">Incident Management</h2>
-              <p className="text-muted-foreground">Track and resolve critical issues</p>
+              <p className="text-muted-foreground">Track and resolve critical issues with team chat</p>
             </div>
             <IncidentsList
               incidents={incidents || []}
               onResolve={(incidentId) => handleUpdateIncident(incidentId, { status: 'resolved', resolvedAt: Date.now() })}
+              currentUserId={currentUser?.id}
+              currentUserName={currentUser?.name}
+              currentUserAvatar={currentUser?.avatar}
             />
           </TabsContent>
 

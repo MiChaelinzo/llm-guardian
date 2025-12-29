@@ -115,3 +115,28 @@ export interface UserProfile {
   createdAt: number
   apiConfig: APIConfig
 }
+
+export interface ChatMessage {
+  id: string
+  incidentId: string
+  userId: string
+  userName: string
+  userAvatar: string
+  content: string
+  timestamp: number
+  type: 'message' | 'system' | 'action'
+  metadata?: {
+    action?: string
+    relatedAlertId?: string
+  }
+}
+
+export interface ChatChannel {
+  id: string
+  incidentId: string
+  name: string
+  createdAt: number
+  participantIds: string[]
+  lastMessageAt?: number
+  unreadCount?: number
+}

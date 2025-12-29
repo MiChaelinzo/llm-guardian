@@ -91,10 +91,10 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
   - Export functionality for stakeholder reports
 
 ### Real-Time Collaboration with WebSocket Support (NEW - Enterprise Feature)
-- **Functionality**: Multi-user monitoring with live presence tracking, collaborative cursors, real-time activity feeds, and WebSocket-based event broadcasting for distributed teams
-- **Purpose**: Enable seamless team collaboration during incident response, allowing multiple engineers to monitor, triage, and resolve issues together in real-time
+- **Functionality**: Multi-user monitoring with live presence tracking, collaborative cursors, real-time activity feeds, team chat for incidents, and WebSocket-based event broadcasting for distributed teams
+- **Purpose**: Enable seamless team collaboration during incident response, allowing multiple engineers to monitor, triage, resolve issues, and communicate in real-time
 - **Trigger**: Automatic on session start, updates continuously via WebSocket connection
-- **Progression**: User joins → WebSocket connects → Presence broadcast → Actions tracked → Events shared → Team sees updates → Collaborative resolution
+- **Progression**: User joins → WebSocket connects → Presence broadcast → Actions tracked → Events shared → Team sees updates → Chat communication → Collaborative resolution
 - **Success criteria**:
   - WebSocket connection with automatic reconnection (exponential backoff up to 5 attempts)
   - Live presence indicators showing online users with avatars and status (active/idle/away)
@@ -108,6 +108,30 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
   - Graceful degradation when WebSocket unavailable
   - Activity timestamps with human-readable "time ago" formatting
   - Production-ready foundation for role-based access control and permissions
+
+### Team Chat for Incident Response (NEW - Critical Communication Feature)
+- **Functionality**: Real-time messaging system integrated with incident management, enabling team communication during critical events with persistent chat history, participant tracking, and message threading
+- **Purpose**: Centralize incident communication, preserve conversation history for post-mortems, and eliminate context-switching between monitoring and chat tools
+- **Trigger**: Accessed via incident detail dialog or dedicated chat panel, automatically created when incidents occur
+- **Progression**: Incident created → Chat channel opened → Team members join → Messages exchanged → Actions discussed → Resolution coordinated → History preserved
+- **Success criteria**:
+  - Incident-specific chat channels created automatically for each open incident
+  - Real-time message delivery with WebSocket broadcasting
+  - Persistent message history stored per incident with user attribution
+  - Avatar display and user identification for all messages
+  - System messages for automated events (incident status changes, alert updates)
+  - Action messages for team activities (investigations started, fixes applied)
+  - Message timestamps with "time ago" formatting
+  - Participant count and active user tracking per channel
+  - Unread message indicators and notifications
+  - Integrated into incident detail view with tabs for overview/chat/metrics
+  - Standalone chat panel for quick access to all incident conversations
+  - Message input with Enter-to-send keyboard shortcut
+  - Smooth animations for message arrival and UI transitions
+  - Auto-scroll to latest messages
+  - Read receipts and typing indicators foundation
+  - Export chat history with incident reports
+  - Search and filter capabilities for historical conversations
 
 ### Team Collaboration Panel (ENHANCED)
 - **Functionality**: Real-time team activity feed showing who's online, recent actions, and collaborative monitoring

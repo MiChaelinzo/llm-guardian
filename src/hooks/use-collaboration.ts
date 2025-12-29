@@ -79,15 +79,12 @@ export function useCollaboration(userId: string) {
     setIsConnected(true)
 
     return () => {
-      if (wsManager) {
-        wsManager.off('*', handleEvent)
-      }
     }
   }, [userId])
 
-  const broadcastEvent = (event: Partial<CollaborationEvent>) => {
-    if (wsManager) {
-      wsManager.send(event)
+  const broadcastEvent = (event: Partial<CollaborationEvent> & { type: string }) => {
+    if (wsManager && event.type) {
+      wsManager.send(event as CollaborationEvent)
     }
   }
 
@@ -97,6 +94,7 @@ export function useCollaboration(userId: string) {
       userId,
       x,
       y,
+      timestamp: Date.now(),
     })
   }
 
@@ -105,6 +103,7 @@ export function useCollaboration(userId: string) {
       type: 'presence_update',
       userId,
       status,
+      timestamp: Date.now(),
     })
   }
 
