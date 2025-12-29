@@ -1,4 +1,5 @@
 import html2canvas from 'html2canvas'
+import type { FileAttachment } from './types'
 
 export interface ScreenshotOptions {
   filename?: string
@@ -13,17 +14,6 @@ export interface ScreenshotResult {
   width: number
   height: number
   size: number
-}
-
-export interface FileAttachment {
-  id: string
-  timestamp: number
-  filename: string
-  dataUrl: string
-  uploadedBy: string
-  userName: string
-  size: number
-  type: string
 }
 
 /**
@@ -122,11 +112,11 @@ export function createAttachmentFromScreenshot(
 ): FileAttachment {
   return {
     id: `screenshot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    timestamp: Date.now(),
-    filename,
+    name: filename,
     dataUrl: result.dataUrl,
     uploadedBy: userId,
-    userName: userName,
+    uploadedByName: userName,
+    uploadedAt: Date.now(),
     size: result.size,
     type: 'image/png'
   }

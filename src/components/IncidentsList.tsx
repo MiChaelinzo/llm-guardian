@@ -32,7 +32,6 @@ export function IncidentsList({
 }: IncidentsListProps) {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null)
   
-  // Ensure incidents is an array to prevent crashes
   const safeIncidents = Array.isArray(incidents) ? incidents : []
   const openIncidents = safeIncidents.filter(i => i.status !== 'resolved')
   const resolvedIncidents = safeIncidents.filter(i => i.status === 'resolved').slice(-5)
@@ -101,34 +100,140 @@ export function IncidentsList({
       />
 
       <div className="space-y-6">
-      {openIncidents.length > 0 && (
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Bug size={20} weight="fill" className="text-destructive" />
-            <h3 className="font-semibold">Open Incidents</h3>
-            <Badge variant="secondary">{openIncidents.length}</Badge>
-            <Badge variant="outline" className="text-xs gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              Datadog
-            </Badge>
-          </div>
-          
-          <ScrollArea className="h-[500px] pr-4">
-            <div className="space-y-4">
-              {openIncidents.map((incident) => (
-                <motion.div
-                  key={incident.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-lg border-l-4 bg-card ${getSeverityColor(incident.severity)} shadow-sm`}
-                >
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold">{incident.title}</h4>
-                        <Badge className={getStatusColor(incident.status)}>
-                          {incident.status}
-                        </Badge>
-                        <Badge variant="outline">{incident.severity}</Badge>
+        {openIncidents.length > 0 && (
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Bug size={20} weight="fill" className="text-destructive" />
+              <h3 className="font-semibold">Open Incidents</h3>
+              <Badge variant="secondary">{openIncidents.length}</Badge>
+              <Badge variant="outline" className="text-xs gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                Datadog
+              </Badge>
+            </div>
+            
+            <ScrollArea className="h-[500px] pr-4">
+              <div className="space-y-4">
+                {openIncidents.map((incident) => (
+                  <motion.div
+                    key={incident.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`p-4 rounded-lg border-l-4 bg-card ${getSeverityColor(incident.severity)} shadow-sm`}
+                  >
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold">{incident.title}</h4>
+                          <Badge className={getStatusColor(incident.status)}>
+                            {incident.status}
+                          </Badge>
+                          <Badge variant="outline">{incident.severity}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{incident.description}</p>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Clock size={14} />
+                            {formatTimestamp(incident.createdAt)}
+                          </div>
+                          {incident.alerts && incident.alerts.length > 0 && (
+                            <div className="flex items-center gap-1">
+                              <Bug size={14} />
+                              {incident.alerts.length} alert{incident.alerts.length > 1 ? 's' : ''}
+                            </div>
+                          )}
+                          {incident.attachments && incident.attachments.length > 0 && (
+                            <div className="flex items-center gap-1">
+                              <FilePdf size={14} />
+                              {incident.attachments.length} file{incident.attachments.length > 1 ? 's' : ''}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">{incident.description}</p>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedIncident(incident)}
+                        >
+                          <ChatCircle size={16} className="mr-1" />
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleExportIncident(incident)}
+                        >
+                          <FilePdf size={16} className="mr-1" />
+                          Export
+                        </Button>
+                        {incident.status !== 'resolved' && (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => onResolve(incident.id)}
+                          >
+                            <CheckCircle size={16} className="mr-1" />
+                            Resolve
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </ScrollArea>
+          </Card>
+        )}
+
+        {resolvedIncidents.length > 0 && (
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle size={20} weight="fill" className="text-success" />
+              <h3 className="font-semibold">Recently Resolved</h3>
+              <Badge variant="secondary">{resolvedIncidents.length}</Badge>
+            </div>
+            
+            <ScrollArea className="h-[300px] pr-4">
+              <div className="space-y-3">
+                {resolvedIncidents.map((incident) => (
+                  <motion.div
+                    key={incident.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="p-3 rounded-lg border bg-card/50 opacity-75"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium text-sm">{incident.title}</h4>
+                          <Badge className={getStatusColor(incident.status)} variant="outline">
+                            {incident.status}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{incident.description}</p>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Clock size={12} />
+                            Resolved {formatTimestamp(incident.resolvedAt || incident.createdAt)}
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setSelectedIncident(incident)}
+                      >
+                        View
+                      </Button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </ScrollArea>
+          </Card>
+        )}
+      </div>
+    </>
+  )
+}

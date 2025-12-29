@@ -1,262 +1,202 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { Camera, Download, Check, X, MonitorPlay, Image as ImageIcon, Lightning } from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { 
-  captureScreenshot, 
-  captureElement, 
-  downloadScreenshot, 
-  createAttachmentFromScreenshot, 
-  formatFileSize, 
-  type ScreenshotResult 
-} from '@/lib/screenshot-capture'
-import type { FileAttachment } from '@/lib/types'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Bug, CheckCircle, Clock, X, FilePdf, ChatCircle } from '@phosphor-icons/react'
+import { formatTimestamp } from '@/lib/metrics'
+import type { Incident, FileAttachment } from '@/lib/types'
+import { IncidentChat } from './IncidentChat'
+import { FileUpload } from './FileUpload'
+import { motion } from 'framer-motion'
 
-interface ScreenshotCaptureProps {
-  onCapture: (attachment: FileAttachment) => void
-  userId: string
-  userName: string
-  autoCapture?: boolean
-  captureMode?: 'full' | 'visible' | 'element'
+interface IncidentDetailDialogProps {
+  incident: Incident | null
+  open: boolean
+  onClose: () => void
+  onResolve: (incidentId: string) => void
+  onAddAttachment: (incidentId: string, file: FileAttachment) => void
+  onRemoveAttachment: (incidentId: string, fileId: string) => void
+  currentUserId?: string
+  currentUserName?: string
+  currentUserAvatar?: string
 }
 
-// Ensure 'export' is used here
-export function ScreenshotCapture({ 
-  onCapture, 
-  userId, 
-  userName, 
-  autoCapture = false, 
-  captureMode = 'visible' 
-}: ScreenshotCaptureProps) {
-  const [capturing, setCapturing] = useState(false)
-  const [preview, setPreview] = useState<ScreenshotResult | null>(null)
-  const [mode, setMode] = useState<'full' | 'visible' | 'element'>(captureMode)
-  const [fullPage, setFullPage] = useState(false)
-  const [elementSelector, setElementSelector] = useState('.container')
-  const [autoDownload, setAutoDownload] = useState(false)
+export function IncidentDetailDialog({
+  incident,
+  open,
+  onClose,
+  onResolve,
+  onAddAttachment,
+  onRemoveAttachment,
+  currentUserId = 'user_default',
+  currentUserName = 'User',
+  currentUserAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
+}: IncidentDetailDialogProps) {
+  const [activeTab, setActiveTab] = useState('details')
 
-  const handleCapture = async () => {
-    setCapturing(true)
-    try {
-      let screenshot: ScreenshotResult
+  if (!incident) return null
 
-      if (mode === 'element' && elementSelector) {
-        screenshot = await captureElement(elementSelector)
-      } else {
-        screenshot = await captureScreenshot({
-          fullPage: mode === 'full' || fullPage,
-        })
-      }
-
-      setPreview(screenshot)
-      toast.success('Screenshot captured successfully!')
-
-      if (autoDownload) {
-        const filename = `voicewatch-screenshot-${Date.now()}.png`
-        await downloadScreenshot(screenshot, filename)
-      }
-    } catch (error) {
-      console.error('Capture error:', error)
-      toast.error('Failed to capture screenshot')
-    } finally {
-      setCapturing(false)
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open':
+        return 'bg-destructive text-destructive-foreground'
+      case 'investigating':
+        return 'bg-warning text-warning-foreground'
+      case 'resolved':
+        return 'bg-success text-success-foreground'
+      default:
+        return 'bg-muted text-muted-foreground'
     }
   }
 
-  const handleSave = () => {
-    if (!preview) return
-
-    const attachment = createAttachmentFromScreenshot(
-      preview,
-      userId,
-      userName,
-      `incident-screenshot-${Date.now()}.png`
-    )
-
-    onCapture(attachment)
-    toast.success('Screenshot attached to incident')
-    setPreview(null)
-  }
-
-  const handleDownload = async () => {
-    if (!preview) return
-    const filename = `voicewatch-screenshot-${Date.now()}.png`
-    await downloadScreenshot(preview, filename)
-    toast.success('Screenshot downloaded')
-  }
-
-  const handleDiscard = () => {
-    setPreview(null)
-    toast.info('Screenshot discarded')
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return 'text-destructive'
+      case 'warning':
+        return 'text-warning'
+      default:
+        return 'text-primary'
+    }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Camera size={20} className="text-primary" />
-          Screenshot Capture
-        </CardTitle>
-        <CardDescription>
-          Capture screenshots for incident documentation
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {!preview ? (
-          <>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="capture-mode">Capture Mode</Label>
-                <Select value={mode} onValueChange={(value) => setMode(value as any)}>
-                  <SelectTrigger id="capture-mode">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="visible">
-                      <div className="flex items-center gap-2">
-                        <MonitorPlay size={16} />
-                        Visible Area
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <DialogTitle className="flex items-center gap-2">
+                <Bug size={20} weight="fill" className={getSeverityColor(incident.severity)} />
+                {incident.title}
+              </DialogTitle>
+              <DialogDescription className="mt-2">
+                {incident.description}
+              </DialogDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge className={getStatusColor(incident.status)}>
+                {incident.status}
+              </Badge>
+              <Badge variant="outline">{incident.severity}</Badge>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="chat">
+              <ChatCircle size={16} className="mr-1" />
+              Chat
+            </TabsTrigger>
+            <TabsTrigger value="files">
+              <FilePdf size={16} className="mr-1" />
+              Files ({incident.attachments?.length || 0})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="flex-1 overflow-auto space-y-4 mt-4">
+            <ScrollArea className="h-full">
+              <div className="space-y-4 pr-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-muted-foreground mb-1">Created</div>
+                    <div className="flex items-center gap-1">
+                      <Clock size={14} />
+                      {formatTimestamp(incident.createdAt)}
+                    </div>
+                  </div>
+                  {incident.resolvedAt && (
+                    <div>
+                      <div className="text-muted-foreground mb-1">Resolved</div>
+                      <div className="flex items-center gap-1">
+                        <CheckCircle size={14} />
+                        {formatTimestamp(incident.resolvedAt)}
                       </div>
-                    </SelectItem>
-                    <SelectItem value="full">
-                      <div className="flex items-center gap-2">
-                        <ImageIcon size={16} />
-                        Full Page
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="element">
-                      <div className="flex items-center gap-2">
-                        <Lightning size={16} />
-                        Specific Element
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                    </div>
+                  )}
+                </div>
+
+                {incident.aiSuggestion && (
+                  <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                    <div className="font-semibold mb-2 text-sm">AI Suggestion</div>
+                    <p className="text-sm text-muted-foreground">{incident.aiSuggestion}</p>
+                  </div>
+                )}
+
+                {incident.alerts && incident.alerts.length > 0 && (
+                  <div>
+                    <div className="font-semibold mb-2 text-sm">Related Alerts ({incident.alerts.length})</div>
+                    <div className="space-y-2">
+                      {incident.alerts.map((alert) => (
+                        <div
+                          key={alert.id}
+                          className="p-3 rounded-lg border bg-card text-sm"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-medium">{alert.ruleName}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {alert.severity}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{alert.message}</p>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {formatTimestamp(alert.timestamp)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {incident.status !== 'resolved' && (
+                  <div className="flex gap-2 pt-4 border-t">
+                    <Button
+                      onClick={() => onResolve(incident.id)}
+                      className="flex-1"
+                    >
+                      <CheckCircle size={16} className="mr-1" />
+                      Resolve Incident
+                    </Button>
+                  </div>
+                )}
               </div>
+            </ScrollArea>
+          </TabsContent>
 
-              {mode === 'element' && (
-                <div className="space-y-2">
-                  <Label htmlFor="element-selector">CSS Selector</Label>
-                  <Input
-                    id="element-selector"
-                    value={elementSelector}
-                    onChange={(e) => setElementSelector(e.target.value)}
-                    placeholder=".container, #main, etc."
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Enter a CSS selector to target a specific element
-                  </p>
-                </div>
-              )}
+          <TabsContent value="chat" className="flex-1 overflow-hidden mt-4">
+            <IncidentChat
+              incident={incident}
+              currentUserId={currentUserId}
+              currentUserName={currentUserName}
+              currentUserAvatar={currentUserAvatar}
+            />
+          </TabsContent>
 
-              {mode === 'visible' && (
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="full-page" className="flex-1">
-                    Capture full scrollable page
-                  </Label>
-                  <Switch
-                    id="full-page"
-                    checked={fullPage}
-                    onCheckedChange={setFullPage}
-                  />
-                </div>
-              )}
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="auto-download" className="flex-1">
-                  Auto-download after capture
-                </Label>
-                <Switch
-                  id="auto-download"
-                  checked={autoDownload}
-                  onCheckedChange={setAutoDownload}
+          <TabsContent value="files" className="flex-1 overflow-auto space-y-4 mt-4">
+            <ScrollArea className="h-full">
+              <div className="space-y-4 pr-4">
+                <FileUpload
+                  onUpload={(file) => onAddAttachment(incident.id, file)}
+                  onRemove={(fileId) => onRemoveAttachment(incident.id, fileId)}
+                  attachments={incident.attachments || []}
+                  currentUserId={currentUserId}
+                  currentUserName={currentUserName}
                 />
               </div>
-            </div>
-
-            <Button
-              onClick={handleCapture}
-              disabled={capturing}
-              className="w-full"
-              size="lg"
-            >
-              {capturing ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Camera size={20} />
-                  </motion.div>
-                  Capturing...
-                </>
-              ) : (
-                <>
-                  <Camera size={20} />
-                  Capture Screenshot
-                </>
-              )}
-            </Button>
-          </>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="space-y-4"
-          >
-            <div className="relative rounded-lg overflow-hidden border-2 border-primary/20 bg-muted">
-              <img
-                src={preview.dataUrl}
-                alt="Screenshot preview"
-                className="w-full h-auto"
-              />
-              <div className="absolute top-2 right-2 flex gap-2">
-                <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
-                  {preview.width} × {preview.height}
-                </Badge>
-                <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
-                  {formatFileSize(preview.size)}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={handleSave}
-                className="flex-1"
-                size="lg"
-              >
-                <Check size={20} />
-                Attach to Incident
-              </Button>
-              <Button
-                onClick={handleDownload}
-                variant="secondary"
-                className="flex-1"
-                size="lg"
-              >
-                <Download size={20} />
-                Download
-              </Button>
-              <Button
-                onClick={handleDiscard}
-                variant="outline"
-                size="lg"
-              >
-                <X size={20} />
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </CardContent>
-    </Card>
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
   )
 }
-
