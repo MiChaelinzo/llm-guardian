@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useKV } from '@github/spark/hooks'
 import { 
   Cloud, 
   Eye, 
@@ -11,7 +12,8 @@ import {
   Shield,
   Key,
   CheckCircle,
-  Trash2
+  Trash2,
+  RefreshCcw
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSecureStorage } from '@/hooks/use-secure-storage'
@@ -98,8 +100,8 @@ const DEFAULT_CONFIG: APIConfig = {
 
 export function Settings() {
   const [config, setConfig] = useSecureStorage<APIConfig>('api-config', DEFAULT_CONFIG)
-  // Fallback to local state if useKV is missing, or ensure useKV is implemented
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(true) 
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding', false)
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(true)
   
   const [showSecrets, setShowSecrets] = useState({
     googleCloud: false,
@@ -169,6 +171,11 @@ export function Settings() {
   const handleImportCredentials = async (data: APIConfig) => {
     await setConfig(data)
     toast.success('Credentials imported and encrypted')
+  }
+
+  const handleResetOnboarding = () => {
+    setHasSeenOnboarding(false)
+    toast.success('Onboarding reset! Refresh the page to see it again.')
   }
 
   return (
@@ -504,6 +511,24 @@ export function Settings() {
         onExport={handleExportCredentials}
         onImport={handleImportCredentials}
       />
+
+      <Card className="border-muted">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <RefreshCcw size={16} className="text-muted-foreground" />
+            Onboarding & Help
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Want to see the welcome guide again? Click the button below to reset the onboarding experience.
+          </p>
+          <Button variant="outline" onClick={handleResetOnboarding}>
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            Show Welcome Guide Again
+          </Button>
+        </CardContent>
+      </Card>
 
       <Card className="border-muted">
         <CardHeader>

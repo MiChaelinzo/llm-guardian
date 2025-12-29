@@ -46,17 +46,24 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
   const [config] = useKV<APIConfig>('api-config', DEFAULT_CONFIG)
   const [step, setStep] = useState(0)
   const [isOpen, setIsOpen] = useState(true)
+  const [isClosing, setIsClosing] = useState(false)
 
   const currentConfig = config || DEFAULT_CONFIG
 
   const handleSkipToDemo = () => {
-    setIsOpen(false)
-    onComplete()
+    setIsClosing(true)
+    setTimeout(() => {
+      setIsOpen(false)
+      onComplete()
+    }, 200)
   }
 
   const handleGoToSettings = () => {
-    setIsOpen(false)
-    onComplete()
+    setIsClosing(true)
+    setTimeout(() => {
+      setIsOpen(false)
+      onComplete()
+    }, 200)
   }
 
   const steps = [
@@ -221,8 +228,13 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+    <Dialog open={isOpen && !isClosing} modal>
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto" 
+        onInteractOutside={(e) => e.preventDefault()} 
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl">{steps[step].title}</DialogTitle>
           <DialogDescription>{steps[step].description}</DialogDescription>

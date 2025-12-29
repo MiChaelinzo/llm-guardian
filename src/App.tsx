@@ -37,9 +37,17 @@ function App() {
   const [aiInsights, setAiInsights] = useKV<string[]>('ai-insights', [])
   const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding', false)
   const [hasEncryptedStorage, setHasEncryptedStorage] = useState(false)
+  const [isOnboardingReady, setIsOnboardingReady] = useState(false)
 
   const [timeRange, setTimeRange] = useState<number>(15 * 60 * 1000)
   const [lastVoiceResponse, setLastVoiceResponse] = useState<string>('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsOnboardingReady(true)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const checkEncryptedStorage = async () => {
@@ -257,9 +265,20 @@ function App() {
 
   const summary = calculateMetrics(metrics || [], timeRange)
 
+  if (!isOnboardingReady && !hasSeenOnboarding) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Waveform size={64} weight="fill" className="text-primary animate-pulse" />
+          <p className="text-muted-foreground">Loading VoiceWatch AI...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
-      {!hasSeenOnboarding && (
+      {isOnboardingReady && !hasSeenOnboarding && (
         <OnboardingDialog
           onComplete={() => setHasSeenOnboarding(true)}
         />
