@@ -1,28 +1,51 @@
 import html2canvas from 'html2canvas'
-import type { FileAttachment } from './types'
 
-export interface CaptureOptions {
-  element?: HTMLElement
-  fullPage?: boolean
+export interface ScreenshotOptions {
   filename?: string
   quality?: number
   backgroundColor?: string
+  fullPage?: boolean
 }
 
 export interface ScreenshotResult {
-  dataUrl: string
   blob: Blob
+  dataUrl: string
   width: number
   height: number
   size: number
 }
 
-export async function captureScreenshot(options: CaptureOptions = {}): Promise<ScreenshotResult> {
+export interface FileAttachment {
+  id: string
+  timestamp: number
+  filename: string
+  dataUrl: string
+  uploadedBy: string
+  userName: string
+  size: number
+  type: string
+}
+
+/**
+ * Captures a specific element or selector
+ */
+export async function captureElement(
+  selectorOrElement: string | HTMLElement, 
+  options: ScreenshotOptions = {}
+): Promise<ScreenshotResult> {
+  
+  const element = typeof selectorOrElement === 'string' 
+    ? document.querySelector(selectorOrElement) as HTMLElement
+    : selectorOrElement
+
+  if (!element) {
+    throw new Error(`Element not found: ${selectorOrElement}`)
+  }
+
   const {
-    element = document.body,
     fullPage = false,
-    quality = 0.92,
-    backgroundColor = '#0a0a0f'
+    quality = 0.95,
+    backgroundColor = '#0a0a0f' // Default to dark theme background
   } = options
 
   try {
@@ -34,7 +57,7 @@ export async function captureScreenshot(options: CaptureOptions = {}): Promise<S
       scrollX: fullPage ? -window.scrollX : 0,
       windowWidth: fullPage ? document.documentElement.scrollWidth : window.innerWidth,
       windowHeight: fullPage ? document.documentElement.scrollHeight : window.innerHeight,
-      scale: 2,
+      scale: 2, // High resolution for Retina displays
       logging: false,
       removeContainer: true,
     })
@@ -52,86 +75,83 @@ export async function captureScreenshot(options: CaptureOptions = {}): Promise<S
     })
 
     return {
-      dataUrl,
       blob,
+      dataUrl,
       width: canvas.width,
       height: canvas.height,
-      size: blob.size,
+      size: blob.size
     }
   } catch (error) {
     console.error('Screenshot capture failed:', error)
-    throw new Error('Failed to capture screenshot')
+    throw error
   }
 }
 
-export async function captureElement(selector: string, options: CaptureOptions = {}): Promise<ScreenshotResult> {
-  const element = document.querySelector(selector) as HTMLElement
+/**
+ * Captures the entire visible body or full page
+ */
+export async function captureScreenshot(options: ScreenshotOptions = {}): Promise<ScreenshotResult> {
+  return captureElement(document.body, options)
+}
+
+/**
+ * Downloads a screenshot result as a file
+ */
+export async function downloadScreenshot(
+  result: ScreenshotResult | string, 
+  filename: string = 'screenshot.png'
+) {
+  const href = typeof result === 'string' ? result : result.dataUrl
   
-  if (!element) {
-    throw new Error(`Element not found: ${selector}`)
-  }
-
-  return captureScreenshot({ ...options, element })
-}
-
-export function createAttachmentFromScreenshot(
-  screenshot: ScreenshotResult,
-  userId: string,
-  userName: string,
-  filename?: string
-): FileAttachment {
-  const timestamp = Date.now()
-  const defaultFilename = `screenshot-${new Date(timestamp).toISOString().replace(/[:.]/g, '-')}.png`
-
-  return {
-    id: `screenshot_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
-    name: filename || defaultFilename,
-    type: 'image/png',
-    size: screenshot.size,
-    dataUrl: screenshot.dataUrl,
-    uploadedAt: timestamp,
-    uploadedBy: userId,
-    uploadedByName: userName,
-  }
-}
-
-export async function downloadScreenshot(screenshot: ScreenshotResult, filename: string): Promise<void> {
   const link = document.createElement('a')
-  link.href = screenshot.dataUrl
+  link.href = href
   link.download = filename
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
 }
 
-export async function captureAndAttach(
+/**
+ * Creates a FileAttachment object from a screenshot result
+ */
+export function createAttachmentFromScreenshot(
+  result: ScreenshotResult,
   userId: string,
   userName: string,
-  options: CaptureOptions = {}
-): Promise<FileAttachment> {
-  const screenshot = await captureScreenshot(options)
-  return createAttachmentFromScreenshot(screenshot, userId, userName, options.filename)
+  filename: string = 'screenshot.png'
+): FileAttachment {
+  return {
+    id: `screenshot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: Date.now(),
+    filename,
+    dataUrl: result.dataUrl,
+    uploadedBy: userId,
+    userName: userName,
+    size: result.size,
+    type: 'image/png'
+  }
 }
 
-export async function captureMultipleElements(
+export async function captureMultiple(
   selectors: string[],
   userId: string,
-  userName: string
+  userName: string,
+  options: ScreenshotOptions = {}
 ): Promise<FileAttachment[]> {
   const attachments: FileAttachment[] = []
 
   for (const selector of selectors) {
     try {
-      const screenshot = await captureElement(selector)
+      const screenshot = await captureElement(selector, options)
       const attachment = createAttachmentFromScreenshot(
-        screenshot,
-        userId,
-        userName,
-        `${selector.replace(/[^a-z0-9]/gi, '-')}-${Date.now()}.png`
+        screenshot, 
+        userId, 
+        userName, 
+        `${options.filename || 'screenshot'}-${Date.now()}.png`
       )
       attachments.push(attachment)
     } catch (error) {
-      console.error(`Failed to capture element ${selector}:`, error)
+      console.warn(`Skipping selector ${selector} due to capture error`)
     }
   }
 
@@ -142,8 +162,9 @@ export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
   
   const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
+

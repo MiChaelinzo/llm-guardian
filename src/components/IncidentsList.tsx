@@ -31,8 +31,11 @@ export function IncidentsList({
   currentUserAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
 }: IncidentsListProps) {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null)
-  const openIncidents = incidents.filter(i => i.status !== 'resolved')
-  const resolvedIncidents = incidents.filter(i => i.status === 'resolved').slice(-5)
+  
+  // Ensure incidents is an array to prevent crashes
+  const safeIncidents = Array.isArray(incidents) ? incidents : []
+  const openIncidents = safeIncidents.filter(i => i.status !== 'resolved')
+  const resolvedIncidents = safeIncidents.filter(i => i.status === 'resolved').slice(-5)
 
   const handleExportIncident = (incident: Incident) => {
     try {
@@ -41,6 +44,7 @@ export function IncidentsList({
         description: 'Your download should start automatically'
       })
     } catch (error) {
+      console.error(error)
       toast.error('Failed to export incident')
     }
   }
@@ -48,13 +52,13 @@ export function IncidentsList({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'open':
-        return 'bg-destructive'
+        return 'bg-destructive text-destructive-foreground'
       case 'investigating':
-        return 'bg-warning'
+        return 'bg-warning text-warning-foreground'
       case 'resolved':
-        return 'bg-success'
+        return 'bg-success text-success-foreground'
       default:
-        return 'bg-muted'
+        return 'bg-muted text-muted-foreground'
     }
   }
 
@@ -104,7 +108,7 @@ export function IncidentsList({
             <h3 className="font-semibold">Open Incidents</h3>
             <Badge variant="secondary">{openIncidents.length}</Badge>
             <Badge variant="outline" className="text-xs gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-cost" />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               Datadog
             </Badge>
           </div>
@@ -116,7 +120,7 @@ export function IncidentsList({
                   key={incident.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-lg border-l-4 bg-card ${getSeverityColor(incident.severity)}`}
+                  className={`p-4 rounded-lg border-l-4 bg-card ${getSeverityColor(incident.severity)} shadow-sm`}
                 >
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
@@ -128,98 +132,3 @@ export function IncidentsList({
                         <Badge variant="outline">{incident.severity}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">{incident.description}</p>
-                    </div>
-                  </div>
-                  
-                  {incident.aiSuggestion && (
-                    <div className="bg-muted/50 rounded p-3 mb-3">
-                      <p className="text-sm font-semibold mb-1 flex items-center gap-2">
-                        <span className="text-primary">AI Recommendation</span>
-                      </p>
-                      <p className="text-sm text-muted-foreground">{incident.aiSuggestion}</p>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock size={14} />
-                      <span className="font-mono">{formatTimestamp(incident.createdAt)}</span>
-                      <span>•</span>
-                      <span>{incident.alerts.length} alert{incident.alerts.length !== 1 ? 's' : ''}</span>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setSelectedIncident(incident)}
-                        className="text-xs h-7 gap-1"
-                      >
-                        <ChatCircle size={14} weight="fill" />
-                        View Details
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleExportIncident(incident)}
-                        className="text-xs h-7 gap-1"
-                      >
-                        <FilePdf size={14} weight="fill" />
-                        Export
-                      </Button>
-                      {incident.status === 'open' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onResolve(incident.id)}
-                          className="text-xs h-7"
-                        >
-                          Start Investigation
-                        </Button>
-                      )}
-                      {incident.status === 'investigating' && (
-                        <Button
-                          size="sm"
-                          onClick={() => onResolve(incident.id)}
-                          className="text-xs h-7"
-                        >
-                          Mark Resolved
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </ScrollArea>
-        </Card>
-      )}
-      
-      {resolvedIncidents.length > 0 && (
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <CheckCircle size={20} weight="fill" className="text-success" />
-            <h3 className="font-semibold">Recently Resolved</h3>
-          </div>
-          
-          <div className="space-y-3">
-            {resolvedIncidents.map((incident) => (
-              <div
-                key={incident.id}
-                className="p-3 rounded-lg bg-muted/30 text-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{incident.title}</span>
-                  <span className="text-xs text-muted-foreground font-mono">
-                    {formatTimestamp(incident.resolvedAt || incident.createdAt)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-    </div>
-    </>
-  )
-}

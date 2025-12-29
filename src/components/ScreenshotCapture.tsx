@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,7 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Camera, Download, Check, X, MonitorPlay, Image as ImageIcon, Lightning } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { captureScreenshot, captureElement, downloadScreenshot, createAttachmentFromScreenshot, formatFileSize, type ScreenshotResult } from '@/lib/screenshot-capture'
+import { 
+  captureScreenshot, 
+  captureElement, 
+  downloadScreenshot, 
+  createAttachmentFromScreenshot, 
+  formatFileSize, 
+  type ScreenshotResult 
+} from '@/lib/screenshot-capture'
 import type { FileAttachment } from '@/lib/types'
 
 interface ScreenshotCaptureProps {
@@ -20,7 +27,13 @@ interface ScreenshotCaptureProps {
   captureMode?: 'full' | 'visible' | 'element'
 }
 
-export function ScreenshotCapture({ onCapture, userId, userName, autoCapture = false, captureMode = 'visible' }: ScreenshotCaptureProps) {
+export function ScreenshotCapture({ 
+  onCapture, 
+  userId, 
+  userName, 
+  autoCapture = false, 
+  captureMode = 'visible' 
+}: ScreenshotCaptureProps) {
   const [capturing, setCapturing] = useState(false)
   const [preview, setPreview] = useState<ScreenshotResult | null>(null)
   const [mode, setMode] = useState<'full' | 'visible' | 'element'>(captureMode)
