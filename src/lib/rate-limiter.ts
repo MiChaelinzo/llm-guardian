@@ -71,14 +71,10 @@ class RateLimiter {
 
 // Initialize the rate limiter with conservative limits to prevent 429 errors
 const llmRateLimiter = new RateLimiter({
-  windowMs: 60 * 1000,
   maxRequests: 10
-});
-
+  maxRequests: 10
 const cache = new Map<string, LLMCacheEntry>();
 
-// FIXED: Added 'export' keyword here so it can be used in google-cloud.ts
-export async function rateLimitedLLMCall(prompt: string, model: string, jsonMode: boolean): Promise<string> {
   const cacheKey = JSON.stringify({ prompt, model, jsonMode });
   const cached = cache.get(cacheKey);
 
