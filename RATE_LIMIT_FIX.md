@@ -1,162 +1,140 @@
-# Rate Limiting Fix - Resolving 429 Errors
+# Rate Limit (429 Error) Fix Summary
 
-## Problem
+## Problem Identified
 
-The application was encountering **HTTP 429 (Too Many Requests)** errors when accessing the deployed URL. This was caused by:
+Your VoiceWatch AI application was experiencing **429 (Too Many Requests)** errors due to excessive LLM API calls being made automatically in the background.
 
-1. **Excessive LLM API calls** - Multiple components making concurrent calls to `spark.llm()`
-2. **Expensive model usage** - Using `gpt-4o` for most operations
-3. **No caching** - Repeated identical requests for the same data
-4. **No rate limiting** - No protection against hitting API limits
-5. **Automatic triggers** - Components automatically running AI analysis on load
+### Root Causes
 
-## Solution Implemented
+1. **Automatic AI Analytics Calls**: The `AdvancedAnalytics` component had a `useEffect` hook that automatically triggered anomaly detection when 50+ metrics were collected, causing repeated LLM calls without user interaction.
 
-### 1. **Intelligent Rate Limiter** (`/src/lib/rate-limiter.ts`)
+2. **Aggressive Rate Limiting**: The rate limiter was configured to allow 20 requests per minute, which was still too high given the automatic background calls.
 
-Created a rate limiting system that:
-- Limits to **10 LLM requests per minute**
-- Tracks request timestamps in a sliding window
-- Returns wait time when limit is reached
-- Provides clear error messages
+## Changes Made
 
+### 1. Removed Automatic LLM Calls (`AdvancedAnalytics.tsx`)
+
+**Before:**
 ```typescript
-const llmRateLimiter = new RateLimiter({
-  maxRequests: 10,
-  windowMs: 60000  // 1 minute
-})
+useEffect(() => {
+  if (metrics.length >= 50 && anomalies.length === 0 && !loading) {
+    const timer = setTimeout(() => {
+      runAnomalyDetection() // Automatic call!
+    }, 5000)
+    return () => clearTimeout(timer)
+  }
+}, [metrics.length])
 ```
 
-### 2. **Response Caching**
+**After:**
+```typescript
+// Removed entirely - all AI analytics now require user action
+```
 
-Implemented a caching layer that:
-- Caches LLM responses for **5 minutes**
-- Uses prompt + model + jsonMode as cache key
-- Automatically evicts old entries
-- Limits cache size to 100 entries
+**Impact:** All AI analytics features (Anomaly Detection, Predictions, Root Cause Analysis, Optimizations) are now **user-initiated only**. Users must click the respective buttons to trigger these analyses.
 
-Benefits:
-- **Eliminates duplicate API calls**
-- **Instant responses for repeated queries**
-- **Significant cost savings**
+### 2. Reduced Rate Limit (`rate-limiter.ts`)
 
-### 3. **Model Optimization**
+**Before:**
+```typescript
+const llmRateLimiter = new RateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 20  // 20 requests per minute
+});
+```
 
-Switched from `gpt-4o` to `gpt-4o-mini` for most operations:
-- **90% cost reduction** per request
-- Maintained quality for the use cases
-- Only affects AI analytics features, not core functionality
+**After:**
+```typescript
+const llmRateLimiter = new RateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 10  // Conservative: 10 requests per minute
+});
+```
 
-### 4. **Graceful Error Handling**
+**Impact:** More conservative rate limiting prevents hitting OpenAI's rate limits. The `RateLimitIndicator` component will show when the limit is reached.
 
-Updated all LLM-calling functions to:
-- Catch and identify rate limit errors specifically
-- Show user-friendly error messages via toast notifications
-- Provide fallback responses when AI is unavailable
-- Continue core functionality even when AI features are limited
+### 3. Fixed Onboarding Dialog Disappearing (`OnboardingDialog.tsx`)
 
-### 5. **Reduced Data Volume**
+**Problem:** The dialog was closing instantly when buttons were clicked or if users accidentally clicked outside.
 
-Modified analytics functions to:
-- Only send last 10-20 metrics instead of entire dataset
-- Aggregate data before sending to LLM
-- Reduce prompt sizes significantly
+**Changes:**
+- Added smooth transition delay (300ms) before completing onboarding
+- Enhanced backdrop blur for better visibility
+- Kept escape key and outside click prevention
 
-### 6. **Deferred Auto-Analysis**
+## How It Works Now
 
-Changed automatic AI analysis to:
-- Wait until 50+ metrics collected (was 20)
-- Add 5-second delay before auto-running
-- Allow manual triggering instead of automatic
+### Rate Limiting Flow
 
-### 7. **Rate Limit Status Indicator**
+1. **Cache Check**: First checks if an identical request was made recently (1-hour cache)
+2. **Rate Limit Check**: Ensures we haven't exceeded 10 requests per minute
+3. **API Call**: Only proceeds if both checks pass
+4. **Error Handling**: Returns helpful error messages if rate limited
 
-Added visual indicator showing:
-- Current API status (Ready vs Rate Limited)
-- Wait time remaining
-- Number of cached responses
-- Located in the app header
+### User Experience
+
+- **AI Features**: Users must explicitly click buttons to use AI analytics
+- **Rate Limit Indicator**: Shows real-time status in the header
+  - ✅ Green "API Ready" when available
+  - ⚠️ Yellow "Rate Limited" when throttled (shows wait time)
+- **Cache**: Identical queries return cached results instantly
+- **Error Messages**: Clear toast notifications when rate limited
+
+## Testing the Fix
+
+1. **Start the app** - Onboarding dialog should appear and stay visible
+2. **Go to AI Analytics tab** - Click "Re-scan" or "Generate" buttons
+3. **Watch Rate Limit Indicator** - Monitor status in header
+4. **Test Multiple Calls** - Try clicking analyze buttons rapidly to see rate limiting in action
+
+## Prevention Tips
+
+To avoid 429 errors in the future:
+
+1. ✅ **Never add automatic `useEffect` calls** that trigger LLM APIs
+2. ✅ **Always gate AI features behind user actions** (button clicks)
+3. ✅ **Use the rate limiter** for all LLM calls via `rateLimitedLLMCall()`
+4. ✅ **Monitor the RateLimitIndicator** to see current status
+5. ✅ **Cache aggressively** - the rate limiter includes 1-hour caching
+
+## Code Examples
+
+### ✅ Correct: User-Initiated
+```typescript
+const handleAnalyze = async () => {
+  setLoading(true)
+  try {
+    const result = await detectAnomalies(metrics)
+    setAnomalies(result)
+  } catch (error) {
+    if (error.message.includes('Rate limit')) {
+      toast.error('Rate limit reached. Please wait.')
+    }
+  } finally {
+    setLoading(false)
+  }
+}
+
+<Button onClick={handleAnalyze}>Analyze</Button>
+```
+
+### ❌ Wrong: Automatic
+```typescript
+useEffect(() => {
+  // DON'T DO THIS!
+  detectAnomalies(metrics)
+}, [metrics])
+```
 
 ## Files Modified
 
-1. **`/src/lib/rate-limiter.ts`** - NEW: Core rate limiting logic
-2. **`/src/lib/google-cloud.ts`** - Updated all functions to use rate limiter
-3. **`/src/lib/voice.ts`** - Updated voice query processing
-4. **`/src/components/AdvancedAnalytics.tsx`** - Added error handling and deferred loading
-5. **`/src/components/RateLimitIndicator.tsx`** - NEW: Visual status indicator
-6. **`/src/App.tsx`** - Added rate limit indicator, improved error handling
-7. **`/README.md`** - Added performance & rate limiting section
+1. `/src/components/AdvancedAnalytics.tsx` - Removed automatic anomaly detection
+2. `/src/lib/rate-limiter.ts` - Reduced rate limit from 20 to 10 requests/minute
+3. `/src/components/OnboardingDialog.tsx` - Fixed instant disappearing issue
 
-## Impact
+## Additional Notes
 
-### Before Fix:
-- ❌ Frequent 429 errors
-- ❌ High API costs
-- ❌ Poor user experience
-- ❌ Automatic failures on page load
-
-### After Fix:
-- ✅ No 429 errors under normal usage
-- ✅ 70-90% reduction in API calls
-- ✅ Smooth user experience
-- ✅ Clear feedback when limits approached
-- ✅ Graceful degradation
-
-## Usage Guidelines
-
-For developers extending this application:
-
-### When making LLM calls, ALWAYS use the rate limiter:
-
-```typescript
-import { rateLimitedLLMCall } from '@/lib/rate-limiter'
-
-// ❌ DON'T do this:
-const response = await window.spark.llm(prompt, 'gpt-4o', true)
-
-// ✅ DO this instead:
-const response = await rateLimitedLLMCall(prompt, 'gpt-4o-mini', true)
-```
-
-### Handle rate limit errors:
-
-```typescript
-try {
-  const response = await rateLimitedLLMCall(prompt, 'gpt-4o-mini', true)
-  // Use response
-} catch (error) {
-  if (error instanceof Error && error.message.includes('Rate limit')) {
-    toast.error('AI temporarily unavailable. Please wait a moment.')
-    // Provide fallback behavior
-  }
-}
-```
-
-### Check rate limit status:
-
-```typescript
-import { getRateLimiterStatus } from '@/lib/rate-limiter'
-
-const { waitTime, cacheSize } = getRateLimiterStatus()
-if (waitTime > 0) {
-  // Rate limited - show message or disable button
-}
-```
-
-## Testing
-
-To verify the fix:
-1. Access the application normally
-2. Navigate through different tabs
-3. Trigger AI analytics features
-4. Observe the rate limit indicator in header
-5. Verify no 429 errors occur
-
-## Future Improvements
-
-Potential enhancements:
-- User-configurable rate limits
-- Per-feature rate limiting
-- Background queue for non-urgent AI tasks
-- Progressive retry with exponential backoff
-- Persistent cache across sessions
+- The rate limiter cache stores up to 100 unique requests
+- Cache entries expire after 1 hour
+- The `RateLimitIndicator` updates every second
+- All LLM calls in the app use `rateLimitedLLMCall()` which enforces these limits

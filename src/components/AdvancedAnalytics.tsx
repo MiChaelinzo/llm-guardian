@@ -163,14 +163,7 @@ export function AdvancedAnalytics({ metrics, alerts }: Props) {
     }).sort((a, b) => a.timestamp - b.timestamp)
   }
 
-  useEffect(() => {
-    if (metrics.length >= 50 && anomalies.length === 0 && !loading) {
-      const timer = setTimeout(() => {
-        runAnomalyDetection()
-      }, 5000)
-      return () => clearTimeout(timer)
-    }
-  }, [metrics.length])
+
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {

@@ -69,10 +69,10 @@ class RateLimiter {
   }
 }
 
-// Initialize the rate limiter (e.g., 20 requests per minute)
+// Initialize the rate limiter with conservative limits to prevent 429 errors
 const llmRateLimiter = new RateLimiter({
   windowMs: 60 * 1000,
-  maxRequests: 20
+  maxRequests: 10
 });
 
 const cache = new Map<string, LLMCacheEntry>();
