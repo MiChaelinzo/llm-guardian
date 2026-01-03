@@ -47,6 +47,26 @@ interface TeamsPayload {
   }>
 }
 
+interface DiscordEmbed {
+  title: string
+  description: string
+  color: number
+  fields: Array<{
+    name: string
+    value: string
+    inline: boolean
+  }>
+  footer: {
+    text: string
+  }
+  timestamp: string
+}
+
+interface DiscordPayload {
+  content: string
+  embeds: DiscordEmbed[]
+}
+
 function getSeverityColor(severity: string): string {
   switch (severity) {
     case 'critical':
@@ -57,6 +77,19 @@ function getSeverityColor(severity: string): string {
       return '#4d8cff'
     default:
       return '#808080'
+  }
+}
+
+function getSeverityColorDecimal(severity: string): number {
+  switch (severity) {
+    case 'critical':
+      return 15158358
+    case 'warning':
+      return 16103746
+    case 'info':
+      return 5087487
+    default:
+      return 8421504
   }
 }
 
@@ -174,6 +207,54 @@ function formatTeamsPayload(alert: Alert): TeamsPayload {
   }
 }
 
+function formatDiscordPayload(alert: Alert): DiscordPayload {
+  const emoji = alert.severity === 'critical' ? '🚨' : alert.severity === 'warning' ? '⚠️' : 'ℹ️'
+  
+  const fields: Array<{ name: string; value: string; inline: boolean }> = [
+    {
+      name: 'Severity',
+      value: alert.severity.toUpperCase(),
+      inline: true
+    },
+    {
+      name: 'Current Value',
+      value: alert.value.toFixed(2),
+      inline: true
+    }
+  ]
+
+  if (alert.metadata) {
+    fields.push(
+      {
+        name: 'Metric',
+        value: alert.metadata.metric,
+        inline: true
+      },
+      {
+        name: 'Threshold',
+        value: `${alert.metadata.condition} ${alert.metadata.threshold}`,
+        inline: true
+      }
+    )
+  }
+
+  const embed: DiscordEmbed = {
+    title: `${emoji} ${alert.ruleName}`,
+    description: alert.message,
+    color: getSeverityColorDecimal(alert.severity),
+    fields,
+    footer: {
+      text: 'VoiceWatch AI'
+    },
+    timestamp: new Date(alert.timestamp).toISOString()
+  }
+
+  return {
+    content: `**VoiceWatch AI Alert**: ${alert.severity === 'critical' ? '@here ' : ''}${alert.ruleName}`,
+    embeds: [embed]
+  }
+}
+
 export async function sendWebhook(webhook: WebhookConfig, alert: Alert): Promise<boolean> {
   if (!webhook.enabled) {
     return false
@@ -196,6 +277,8 @@ export async function sendWebhook(webhook: WebhookConfig, alert: Alert): Promise
 
     if (webhook.provider === 'slack') {
       payload = formatSlackPayload(alert)
+    } else if (webhook.provider === 'discord') {
+      payload = formatDiscordPayload(alert)
     } else if (webhook.provider === 'pagerduty') {
       const routingKey = new URL(webhook.url).searchParams.get('routing_key') || 'unknown'
       payload = formatPagerDutyPayload(alert, routingKey)

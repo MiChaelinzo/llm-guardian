@@ -39,7 +39,8 @@ import { TelemetrySimulator } from '@/lib/simulator'
 import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
 import { emailNotificationService } from '@/lib/email-notifications'
-import type { TelemetryMetric, DetectionRule, Alert, Incident, FileAttachment, EmailNotificationConfig, EmailNotificationLog } from '@/lib/types'
+import { sendWebhook } from '@/lib/webhooks'
+import type { TelemetryMetric, DetectionRule, Alert, Incident, FileAttachment, EmailNotificationConfig, EmailNotificationLog, WebhookConfig } from '@/lib/types'
 
 function App() {
   const { user: authUser, isLoading: authLoading, isAuthenticated, hasCheckedAuth, login, logout } = useAuth()
@@ -52,6 +53,7 @@ function App() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding-v3', false)
   const [emailConfigs] = useKV<EmailNotificationConfig[]>('email-notification-configs', [])
   const [, setEmailLogs] = useKV<EmailNotificationLog[]>('email-notification-logs', [])
+  const [webhooks] = useKV<WebhookConfig[]>('webhooks', [])
   const [hasEncryptedStorage, setHasEncryptedStorage] = useState(false)
   const [isKVLoaded, setIsKVLoaded] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -237,6 +239,17 @@ function App() {
           window.speechSynthesis.speak(utterance)
         }
 
+        if (webhooks && webhooks.length > 0) {
+          const enabledWebhooks = webhooks.filter(w => w.enabled)
+          for (const webhook of enabledWebhooks) {
+            try {
+              await sendWebhook(webhook, alert)
+            } catch (error) {
+              console.error(`Failed to send webhook to ${webhook.name}:`, error)
+            }
+          }
+        }
+
         if (emailConfigs && emailConfigs.length > 0 && alert.severity === 'critical') {
           try {
             const logs = await emailNotificationService.notifyAlert(alert, emailConfigs)
@@ -247,7 +260,7 @@ function App() {
         }
       })
     }
-  }, [metrics, rules, alerts, setAlerts, emailConfigs, setEmailLogs])
+  }, [metrics, rules, alerts, setAlerts, emailConfigs, setEmailLogs, webhooks])
 
   const handleAddRule = useCallback((rule: DetectionRule) => {
     setRules((current) => [...(current || []), rule])

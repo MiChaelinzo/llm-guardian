@@ -82,7 +82,7 @@ export interface Incident {
   attachments?: FileAttachment[]
 }
 
-export type WebhookProvider = 'slack' | 'pagerduty' | 'teams'
+export type WebhookProvider = 'slack' | 'discord' | 'pagerduty' | 'teams'
 
 export interface WebhookConfig {
   id: string

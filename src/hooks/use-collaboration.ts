@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { WebSocketService, CollaborationEvent, CollaborationUser } from '@/lib/websocket'
 
-let wsManager: WebSocketService | null = null
+let wsManager: typeof WebSocketService.prototype | null = null
 
 export function useCollaboration(userId: string) {
   const [users, setUsers] = useState<Map<string, CollaborationUser>>(new Map())
@@ -10,7 +10,7 @@ export function useCollaboration(userId: string) {
 
   useEffect(() => {
     if (!wsManager) {
-      wsManager = new WebSocketService(userId, true)
+      wsManager = new WebSocketService(userId)
     }
 
     const handleEvent = (event: CollaborationEvent) => {
@@ -21,8 +21,11 @@ export function useCollaboration(userId: string) {
           const next = new Map(prev)
           next.set(event.userId, {
             id: event.userId,
+            userId: event.userId,
+            userName: event.userName,
             name: event.userName,
             avatar: event.userAvatar,
+            userAvatar: event.userAvatar,
             status: 'active',
             lastSeen: event.timestamp,
           })

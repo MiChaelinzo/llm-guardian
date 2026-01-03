@@ -23,7 +23,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
   const [testing, setTesting] = useState<string | null>(null)
   const [formData, setFormData] = useState<{
     name: string
-    provider: 'slack' | 'pagerduty' | 'teams'
+    provider: 'slack' | 'discord' | 'pagerduty' | 'teams'
     url: string
     enabled: boolean
     severityFilter: RuleSeverity[]
@@ -98,10 +98,27 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
     switch (formData.provider) {
       case 'slack':
         return 'https://hooks.slack.com/services/...'
+      case 'discord':
+        return 'https://discord.com/api/webhooks/...'
       case 'pagerduty':
         return 'https://events.pagerduty.com/v2/enqueue'
       case 'teams':
         return 'https://outlook.office.com/webhook/...'
+      default:
+        return ''
+    }
+  }
+
+  const getProviderDescription = () => {
+    switch (formData.provider) {
+      case 'slack':
+        return 'Get your Slack webhook URL from: Slack → Workspace → Add apps → Incoming Webhooks'
+      case 'discord':
+        return 'Get your Discord webhook URL from: Server Settings → Integrations → Webhooks → New Webhook'
+      case 'pagerduty':
+        return 'Configure your PagerDuty integration key in the webhook URL parameters'
+      case 'teams':
+        return 'Get your Teams webhook URL from: Channel → Connectors → Incoming Webhook'
       default:
         return ''
     }
@@ -117,7 +134,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
               Webhook Integrations
             </CardTitle>
             <CardDescription className="mt-1">
-              Send alerts to Slack, PagerDuty, or Microsoft Teams
+              Send alerts to Slack, Discord, PagerDuty, or Microsoft Teams
             </CardDescription>
           </div>
           
@@ -151,7 +168,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
                   <Label htmlFor="webhook-provider">Provider</Label>
                   <Select
                     value={formData.provider}
-                    onValueChange={(value: 'slack' | 'pagerduty' | 'teams') =>
+                    onValueChange={(value: 'slack' | 'discord' | 'pagerduty' | 'teams') =>
                       setFormData({ ...formData, provider: value })
                     }
                   >
@@ -160,6 +177,7 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="slack">Slack</SelectItem>
+                      <SelectItem value="discord">Discord</SelectItem>
                       <SelectItem value="pagerduty">PagerDuty</SelectItem>
                       <SelectItem value="teams">Microsoft Teams</SelectItem>
                     </SelectContent>
@@ -175,11 +193,9 @@ export function Webhooks({ onWebhookAdded }: WebhooksProps) {
                     placeholder={getProviderPlaceholder()}
                     onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                   />
-                  {formData.provider === 'slack' && (
-                    <p className="text-xs text-muted-foreground">
-                      Get your Slack webhook URL from: Slack → Workspace → Add apps → Incoming Webhooks
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {getProviderDescription()}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
