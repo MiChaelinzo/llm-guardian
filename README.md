@@ -176,7 +176,36 @@ VoiceWatch AI follows a **mission control aesthetic** - think NASA meets modern 
 
 # Start the development server
 npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build locally
+npm run preview
 ```
+
+## 🚀 Publishing & Deployment
+
+Ready to share VoiceWatch AI with the world? See our comprehensive **[Publishing Guide](./PUBLISHING_GUIDE.md)** for step-by-step instructions on deploying to:
+
+- **GitHub Pages** (Free static hosting)
+- **Vercel** (Zero-config deployment)
+- **Netlify** (Continuous deployment)
+- **Cloudflare Pages** (Global CDN)
+
+Quick deploy with Vercel:
+```bash
+npm install -g vercel
+vercel
+```
+
+Or deploy to GitHub Pages:
+```bash
+npm run build
+# Upload the 'dist' folder to GitHub Pages
+```
+
+**See [PUBLISHING_GUIDE.md](./PUBLISHING_GUIDE.md) for complete instructions!**
 
 ## 🎮 How to Use
 
