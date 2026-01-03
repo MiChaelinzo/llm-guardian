@@ -3,7 +3,9 @@ import { useKV } from '@github/spark/hooks'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChartLine, Bell, Lightning, Bug, Waveform, Flask, Brain, Wrench, ChartBar, Users } from '@phosphor-icons/react'
+import { ChartLine, Bell, Lightning, Bug, Waveform, Flask, Brain, Wrench, ChartBar, Users, SignOut } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MetricCards } from '@/components/MetricCards'
 import { MetricChart } from '@/components/MetricChart'
 import { AIInsights } from '@/components/AIInsights'
@@ -13,6 +15,7 @@ import { Settings } from '@/components/Settings'
 import { AlertsList } from '@/components/AlertsList'
 import { IncidentsList } from '@/components/IncidentsList'
 import { OnboardingDialog } from '@/components/OnboardingDialog'
+import { LoginPage } from '@/components/LoginPage'
 import { SponsorBadges } from '@/components/SponsorBadges'
 import { VoiceButton } from '@/components/VoiceButton'
 import { TrendVisualization } from '@/components/TrendVisualization'
@@ -28,6 +31,7 @@ import { RateLimitIndicator } from '@/components/RateLimitIndicator'
 import { RealtimeCollaboration } from '@/components/RealtimeCollaboration'
 import { PresenceIndicator } from '@/components/PresenceIndicator'
 import { CollaborativeCursors } from '@/components/CollaborativeCursors'
+import { useAuth } from '@/hooks/use-auth'
 import { useCollaboration } from '@/hooks/use-collaboration'
 import { useAutoCapture } from '@/hooks/use-auto-capture'
 import { useDigestScheduler } from '@/hooks/use-digest-scheduler'
@@ -38,6 +42,8 @@ import { emailNotificationService } from '@/lib/email-notifications'
 import type { TelemetryMetric, DetectionRule, Alert, Incident, FileAttachment, EmailNotificationConfig, EmailNotificationLog } from '@/lib/types'
 
 function App() {
+  const { user: authUser, isLoading: authLoading, isAuthenticated, hasCheckedAuth, login, logout } = useAuth()
+  
   const [metrics, setMetrics] = useKV<TelemetryMetric[]>('telemetry-metrics', [])
   const [rules, setRules] = useKV<DetectionRule[]>('detection-rules', [])
   const [alerts, setAlerts] = useKV<Alert[]>('alerts', [])
@@ -79,36 +85,26 @@ function App() {
   })
 
   useEffect(() => {
-    const initUser = async () => {
-      try {
-        const user = await window.spark.user()
-        setCurrentUser({
-          id: user.id,
-          name: user.login,
-          avatar: user.avatarUrl,
-        })
-      } catch (error) {
-        setCurrentUser({
-          id: `user_${Date.now()}`,
-          name: 'Demo User',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
-        })
-      }
+    if (authUser) {
+      setCurrentUser({
+        id: authUser.id,
+        name: authUser.login,
+        avatar: authUser.avatarUrl,
+      })
     }
-    initUser()
-  }, [])
+  }, [authUser])
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsKVLoaded(true)
-      if (!hasSeenOnboarding) {
+      if (isAuthenticated && !hasSeenOnboarding) {
         setTimeout(() => {
           setShowOnboarding(true)
         }, 500)
       }
     }, 100)
     return () => clearTimeout(timer)
-  }, [hasSeenOnboarding])
+  }, [hasSeenOnboarding, isAuthenticated])
 
   useEffect(() => {
     const checkEncryptedStorage = async () => {
@@ -424,7 +420,7 @@ function App() {
 
   const summary = calculateMetrics(metrics || [], timeRange)
 
-  if (!isKVLoaded) {
+  if (authLoading || !isKVLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -433,6 +429,10 @@ function App() {
         </div>
       </div>
     )
+  }
+
+  if (!isAuthenticated || !hasCheckedAuth) {
+    return <LoginPage onLogin={login} isLoading={authLoading} />
   }
 
   return (
@@ -461,6 +461,24 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
+            {authUser && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
+                <Avatar className="w-6 h-6">
+                  <AvatarImage src={authUser.avatarUrl} />
+                  <AvatarFallback>{authUser.login[0].toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium">{authUser.login}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={logout}
+                  className="h-6 w-6 p-0"
+                  title="Sign out"
+                >
+                  <SignOut size={14} />
+                </Button>
+              </div>
+            )}
             {currentUser && <PresenceIndicator userId={currentUser.id} />}
             <RateLimitIndicator />
             <EncryptionStatus hasEncryptedCredentials={hasEncryptedStorage} />

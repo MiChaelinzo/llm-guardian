@@ -5,6 +5,7 @@ A production-ready, voice-driven AI monitoring dashboard that lets developers in
 **Dual Mode Operation**: Works in **Demo Mode** with simulated data for immediate exploration, or **Production Mode** with user-configured API credentials for real integrations. Perfect for hackathon judges to test with their own accounts or demo scenarios.
 
 **NEW FEATURES - Enhanced for Maximum Impact**:
+- **GitHub OAuth Authentication** - Secure user authentication with personalized dashboards and data isolation
 - **Smart Remediation Engine** - AI-powered automatic fixes with one-click deployment
 - **Model Performance Benchmarks** - Real-time comparison across GPT-4o, Claude, Gemini, and Llama models
 - **Enhanced Confluent Stream Visualizer** - Live event stream with partition monitoring and throughput tracking
@@ -16,11 +17,28 @@ A production-ready, voice-driven AI monitoring dashboard that lets developers in
 3. **Collaborative** - Real-time WebSocket-powered multi-user monitoring with live presence indicators, activity feeds, and collaborative cursor tracking for distributed DevOps and SRE teams
 4. **Cost-Conscious** - Advanced cost optimization engine identifies savings opportunities and provides actionable recommendations
 5. **Proactive** - Smart remediation engine automatically suggests and applies fixes for common issues
+6. **Secure** - GitHub OAuth authentication ensures user data isolation and personalized experiences
 
 **Complexity Level**: Complex Application (advanced functionality with multiple views)
-This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis, anomaly detection, predictions, and optimization recommendations; **Datadog** for detection rules and incident management; **Confluent** for real-time telemetry data streaming; and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, multi-modal visualizations, machine learning inference, and secure credential management with onboarding flows.
+This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis, anomaly detection, predictions, and optimization recommendations; **Datadog** for detection rules and incident management; **Confluent** for real-time telemetry data streaming; and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, multi-modal visualizations, machine learning inference, secure credential management with onboarding flows, and user authentication.
 
 ## Essential Features
+
+### GitHub OAuth Authentication (NEW - Security & Personalization)
+- **Functionality**: Secure user authentication using GitHub OAuth with personalized dashboards, user profile display, and sign-out capability
+- **Purpose**: Provide secure access control, user identity management, and data isolation ensuring each user's metrics and configurations are private
+- **Trigger**: App loads → Authentication check → Login screen if not authenticated → GitHub OAuth flow → Access granted
+- **Progression**: User opens app → Auth state checked → Login page displays → User clicks "Continue with GitHub" → OAuth flow completes → User profile loaded → Dashboard accessible → User badge displayed in header → Sign out available
+- **Success criteria**:
+  - Beautiful branded login page with VoiceWatch AI branding and feature highlights
+  - GitHub OAuth integration via spark.user() API
+  - User profile displayed in header with avatar and username
+  - Sign out button clears authentication state
+  - Persistent auth state using useKV hook
+  - Loading states during authentication
+  - Protected routes - dashboard only accessible when authenticated
+  - Smooth transitions between login and authenticated states
+  - User data isolated per GitHub account
 
 ### Smart Remediation Engine (NEW - High Impact Feature)
 - **Functionality**: One-click automated fixes for common LLM issues including caching, model selection, rate limiting, prompt optimization, retry logic, and request batching
