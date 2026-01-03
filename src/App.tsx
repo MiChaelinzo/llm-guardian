@@ -102,7 +102,7 @@ function App() {
       if (isAuthenticated && !hasSeenOnboarding) {
         setTimeout(() => {
           setShowOnboarding(true)
-        }, 500)
+        }, 1000)
       }
     }, 100)
     return () => clearTimeout(timer)

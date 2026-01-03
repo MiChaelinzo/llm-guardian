@@ -23,7 +23,7 @@ export function useCollaboration(userId: string) {
             id: event.userId,
             userId: event.userId,
             userName: event.userName,
-            name: event.userName,
+            name: event.userName || event.userId,
             avatar: event.userAvatar,
             userAvatar: event.userAvatar,
             status: 'active',
@@ -79,7 +79,8 @@ export function useCollaboration(userId: string) {
     }
 
     if (wsManager) {
-      wsManager.on('*', handleEvent)
+      const unsubscribe = wsManager.onEvent(handleEvent)
+      return unsubscribe
     }
     setIsConnected(true)
 

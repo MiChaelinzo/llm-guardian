@@ -135,60 +135,79 @@ export function LoginPage({ onLogin, isLoading = false }: LoginPageProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <Card className="shadow-2xl border-2">
-              <CardHeader className="space-y-3">
+            <Card className="shadow-2xl border-2 bg-gradient-to-br from-card via-card to-primary/5">
+              <CardHeader className="space-y-3 pb-6">
                 <CardTitle className="text-2xl">Welcome Back</CardTitle>
                 <CardDescription className="text-base">
                   Sign in with your GitHub account to access your personalized monitoring dashboard
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <Button
-                  onClick={onLogin}
-                  disabled={isLoading}
-                  className="w-full h-12 text-base gap-3 bg-[#24292e] hover:bg-[#1a1e22] text-white"
-                  size="lg"
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400 }}
                 >
-                  {isLoading ? (
-                    <>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Waveform size={20} weight="bold" />
-                      </motion.div>
-                      Authenticating...
-                    </>
-                  ) : (
-                    <>
-                      <GithubLogo size={24} weight="fill" />
-                      Continue with GitHub
-                    </>
-                  )}
-                </Button>
+                  <Button
+                    onClick={onLogin}
+                    disabled={isLoading}
+                    className="w-full h-14 text-base gap-3 bg-[#24292e] hover:bg-[#1a1e22] text-white shadow-lg hover:shadow-xl transition-shadow"
+                    size="lg"
+                  >
+                    {isLoading ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        >
+                          <Waveform size={20} weight="bold" />
+                        </motion.div>
+                        Authenticating with GitHub...
+                      </>
+                    ) : (
+                      <>
+                        <GithubLogo size={26} weight="fill" />
+                        Sign in with GitHub OAuth
+                      </>
+                    )}
+                  </Button>
+                </motion.div>
 
-                <div className="space-y-3 pt-4 border-t">
-                  <div className="text-xs text-center text-muted-foreground">
-                    By signing in, you agree to access:
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border"></div>
                   </div>
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                      <span>Your GitHub profile information</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                      <span>Secure data storage for your metrics</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                      <span>Real-time collaboration features</span>
-                    </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-card px-3 text-muted-foreground">Secure Authentication</span>
                   </div>
                 </div>
 
-                <div className="text-xs text-center text-muted-foreground pt-2">
-                  No credit card required. Free to use.
+                <div className="space-y-4">
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <GithubLogo size={18} weight="fill" className="text-primary" />
+                      <span>GitHub OAuth Permissions</span>
+                    </div>
+                    <div className="space-y-2 text-xs text-muted-foreground">
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1" />
+                        <span>Your GitHub profile information (name, avatar, email)</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1" />
+                        <span>Secure encrypted data storage for your metrics</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1" />
+                        <span>Real-time collaboration with team members</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-2 text-xs text-center text-muted-foreground">
+                    <Shield size={14} weight="duotone" className="text-success" />
+                    <span>No credit card required • Free to use • Industry-standard OAuth 2.0</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
