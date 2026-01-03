@@ -1,7 +1,7 @@
 export type CollaborationEvent = 
   | { type: 'user_joined'; userId: string; userName: string; userAvatar: string; timestamp: number }
-  | { type: 'user_left'; userId: string; timestamp: number }
-  | { type: 'alert_acknowledged'; userId: string; alertId: string; timestamp: number }
+  | { type: 'rule_created'; userId: string; ruleName: string
+  | { type: 'incident_resolved'; userId: string; incidentId: string; timestamp: number
   | { type: 'rule_created'; userId: string; ruleName: string; timestamp: number }
   | { type: 'rule_updated'; userId: string; ruleName: string; timestamp: number }
   | { type: 'incident_resolved'; userId: string; incidentId: string; timestamp: number }
@@ -11,17 +11,6 @@ export type CollaborationEvent =
   | { type: 'cursor_move'; userId: string; x: number; y: number; timestamp: number }
   | { type: 'chat_message'; userId: string; incidentId: string; message: string; timestamp: number };
 
-export interface CollaborationUser {
-  id: string
-  name: string
-  avatar: string
-  status: 'active' | 'idle' | 'away'
-  cursorPosition?: { x: number; y: number }
-  lastSeen: number
-}
-
-export class WebSocketManager {
-  private ws: WebSocket | null = null
   private userId: string
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
@@ -118,142 +107,89 @@ export class WebSocketManager {
     this.simulationInterval = setInterval(() => {
       const user = simulatedUsers[Math.floor(Math.random() * simulatedUsers.length)]
       const eventTypes = ['alert_acknowledged', 'rule_created', 'rule_updated', 'incident_resolved', 'metric_viewed', 'comment_added']
-      const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)]
-
+      const eventType = event
       let event: CollaborationEvent | null = null
-
       switch (eventType) {
-        case 'alert_acknowledged':
           event = {
-            type: 'alert_acknowledged',
             userId: user.id,
-            alertId: `alert_${Date.now()}`,
-            timestamp: Date.now(),
-          }
-          break
-        case 'rule_created':
-          event = {
-            type: 'rule_created',
-            userId: user.id,
-            ruleName: 'High Latency Alert',
-            timestamp: Date.now(),
-          }
-          break
-        case 'rule_updated':
-          event = {
-            type: 'rule_updated',
-            userId: user.id,
-            ruleName: 'High Latency Alert',
-            timestamp: Date.now(),
-          }
-          break
-        case 'incident_resolved':
-          event = {
-            type: 'incident_resolved',
-            userId: user.id,
-            incidentId: `incident_${Date.now()}`,
-            timestamp: Date.now(),
-          }
-          break
-        case 'metric_viewed':
-          event = {
-            type: 'metric_viewed',
-            userId: user.id,
-            metricType: 'latency',
-            timestamp: Date.now()
-          }
-          break
-        case 'comment_added':
-          event = {
-            type: 'comment_added',
-            userId: user.id,
-            entityId: `evt_${Date.now()}`,
-            comment: 'I am investigating this anomaly.',
-            timestamp: Date.now()
-          }
-          break
-      }
+     
 
+          event = {
+            userId: user.id,
+            timestamp: Date.now(),
+          break
+          event = {
+
+            timestamp: Date.now(),
+
+          event = {
+            userId: user.id,
+            timesta
+          break
+          event = {
+            userId: user.id,
+            timestamp: Date.now()
+          b
+          event
+            userId: user.id,
+            comment
+          }
+      }
       if (event) {
-        this.handleEvent(event)
       }
-    }, 30000 + Math.random() * 30000)
 
-    // Simulate cursor moves - reduced frequency from 1s to 5s and lower probability
-    setInterval(() => {
-      simulatedUsers.forEach((user) => {
-        if (Math.random() > 0.85) {
-          this.handleEvent({
-            type: 'cursor_move',
-            userId: user.id,
-            x: Math.random() * 1000,
-            y: Math.random() * 800,
-            timestamp: Date.now()
-          })
+    setInterval
+        if (Math.random() > 
+            type: '
+            x: Math.random() * 10
+            timestamp: Date.
         }
-      })
     }, 5000)
-  }
 
-  private attemptReconnect() {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log('Max reconnect attempts reached')
+    if (this.re
       return
-    }
 
-    this.reconnectAttempts++
-    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000)
-    
+    const delay = Math.min(1000 * Math
     setTimeout(() => {
-      console.log(`Attempting reconnect ${this.reconnectAttempts}...`)
       this.connect()
-    }, delay)
   }
-
-  private startHeartbeat() {
-    this.stopHeartbeat()
-    this.heartbeatInterval = setInterval(() => {
-      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({ type: 'ping' }))
-      }
+  private s
+    this.heartb
+        this.ws.send(JSON.str
     }, 30000)
-  }
 
-  private stopHeartbeat() {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval)
-      this.heartbeatInterval = null
-    }
+    if (this.heartbeatInterv
+      this.heartbeatInterval = nul
   }
+  on(eventT
+      this.even
+    this.eventHandlers.get(ev
 
-  on(eventType: string, handler: (event: CollaborationEvent) => void) {
-    if (!this.eventHandlers.has(eventType)) {
-      this.eventHandlers.set(eventType, [])
-    }
-    this.eventHandlers.get(eventType)?.push(handler)
-  }
-
-  off(eventType: string, handler: (event: CollaborationEvent) => void) {
-    const handlers = this.eventHandlers.get(eventType)
-    if (handlers) {
-      this.eventHandlers.set(
-        eventType, 
-        handlers.filter(h => h !== handler)
-      )
-    }
-  }
-
-  disconnect() {
-    if (this.simulationInterval) {
-      clearInterval(this.simulationInterval)
-      this.simulationInterval = null
+    const handlers = this.eventHan
+      this.eventHandlers.set
+        handlers.filter(h => h !== handler
     }
 
-    this.stopHeartbeat()
-    
-    if (this.ws) {
-      this.ws.close()
-      this.ws = null
+    if (thi
+      this.simu
+
+
+      this.ws.clos
     }
-  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
