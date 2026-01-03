@@ -43,7 +43,7 @@ function App() {
   const [alerts, setAlerts] = useKV<Alert[]>('alerts', [])
   const [incidents, setIncidents] = useKV<Incident[]>('incidents', [])
   const [aiInsights, setAiInsights] = useKV<string[]>('ai-insights', [])
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding', false)
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding-v2', false)
   const [emailConfigs] = useKV<EmailNotificationConfig[]>('email-notification-configs', [])
   const [, setEmailLogs] = useKV<EmailNotificationLog[]>('email-notification-logs', [])
   const [hasEncryptedStorage, setHasEncryptedStorage] = useState(false)
@@ -100,7 +100,7 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsKVLoaded(true)
-    }, 500)
+    }, 100)
     return () => clearTimeout(timer)
   }, [])
 
