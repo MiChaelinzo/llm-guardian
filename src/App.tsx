@@ -432,7 +432,7 @@ function App() {
   return (
     <>
       {currentUser && <CollaborativeCursors userId={currentUser.id} />}
-      {!hasSeenOnboarding && (
+      {isKVLoaded && !hasSeenOnboarding && (
         <OnboardingDialog
           onComplete={() => setHasSeenOnboarding(true)}
         />

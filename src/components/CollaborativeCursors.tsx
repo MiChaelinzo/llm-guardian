@@ -14,7 +14,7 @@ export function CollaborativeCursors({ userId }: CollaborativeCursorsProps) {
       updateCursor(e.clientX, e.clientY)
     }
 
-    const throttledMouseMove = throttle(handleMouseMove, 100)
+    const throttledMouseMove = throttle(handleMouseMove, 500)
     window.addEventListener('mousemove', throttledMouseMove)
 
     return () => {

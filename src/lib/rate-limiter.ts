@@ -1,4 +1,3 @@
-// Ensure the global window interface is typed if you are using window.spark
 declare global {
   interface Window {
     spark: {
@@ -41,7 +40,6 @@ class RateLimiter {
 
   async checkLimit(): Promise<boolean> {
     const now = Date.now();
-    // Filter out requests older than the window
     this.requests = this.requests.filter(time => now - time < this.config.windowMs);
 
     if (this.requests.length >= this.config.maxRequests) {
@@ -69,42 +67,38 @@ class RateLimiter {
   }
 }
 
-// Initialize the rate limiter with conservative limits to prevent 429 errors
 const llmRateLimiter = new RateLimiter({
-  maxRequests: 10
-  maxRequests: 10
+  windowMs: 60000,
+  maxRequests: 5
+});
+
 const cache = new Map<string, LLMCacheEntry>();
 
+export async function rateLimitedLLMCall(prompt: string, model: string = 'gpt-4o', jsonMode: boolean = false): Promise<string> {
   const cacheKey = JSON.stringify({ prompt, model, jsonMode });
   const cached = cache.get(cacheKey);
 
-  // 1. Check Cache
   if (cached) {
-    // Optional: Cache expiration (e.g., 1 hour)
     if (Date.now() - cached.timestamp < 1000 * 60 * 60) {
       return cached.data;
     }
     cache.delete(cacheKey);
   }
 
-  // 2. Check Rate Limit
   const canProceed = await llmRateLimiter.checkLimit();
   if (!canProceed) {
     const waitTime = llmRateLimiter.getWaitTime();
     throw new Error(`Rate limit reached. Please wait ${Math.ceil(waitTime / 1000)} seconds.`);
   }
 
-  // 3. Perform Request
   try {
     const result = await window.spark.llm(prompt, model, jsonMode);
 
-    // 4. Update Cache
     cache.set(cacheKey, {
       timestamp: Date.now(),
       data: result,
     });
 
-    // Simple LRU-like eviction: if cache grows too big, delete the first item
     if (cache.size > 100) {
       const firstKey = cache.keys().next().value;
       if (firstKey) cache.delete(firstKey);
@@ -113,7 +107,6 @@ const cache = new Map<string, LLMCacheEntry>();
     return result;
 
   } catch (error: any) {
-    // specific handling for 429 errors often returned by AI APIs
     if (error instanceof Error && (error.message.includes('429') || error.message.includes('Rate limit'))) {
       throw new Error('API rate limit reached. Please try again in a minute.');
     }
@@ -137,4 +130,3 @@ export function getRateLimiterStatus() {
     isRateLimited: llmRateLimiter.getWaitTime() > 0
   };
 }
-

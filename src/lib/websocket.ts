@@ -114,7 +114,7 @@ export class WebSocketManager {
       { id: 'user_sim_3', name: 'Carol Kim', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Carol', status: 'idle', lastSeen: Date.now() },
     ]
 
-    // Simulate random events
+    // Simulate random events - reduced frequency from 8-13s to 30-60s
     this.simulationInterval = setInterval(() => {
       const user = simulatedUsers[Math.floor(Math.random() * simulatedUsers.length)]
       const eventTypes = ['alert_acknowledged', 'rule_created', 'rule_updated', 'incident_resolved', 'metric_viewed', 'comment_added']
@@ -177,12 +177,12 @@ export class WebSocketManager {
       if (event) {
         this.handleEvent(event)
       }
-    }, 8000 + Math.random() * 5000)
+    }, 30000 + Math.random() * 30000)
 
-    // Simulate cursor moves
+    // Simulate cursor moves - reduced frequency from 1s to 5s and lower probability
     setInterval(() => {
       simulatedUsers.forEach((user) => {
-        if (Math.random() > 0.7) {
+        if (Math.random() > 0.85) {
           this.handleEvent({
             type: 'cursor_move',
             userId: user.id,
@@ -192,7 +192,7 @@ export class WebSocketManager {
           })
         }
       })
-    }, 1000)
+    }, 5000)
   }
 
   private attemptReconnect() {
