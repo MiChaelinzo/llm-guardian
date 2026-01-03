@@ -43,11 +43,12 @@ function App() {
   const [alerts, setAlerts] = useKV<Alert[]>('alerts', [])
   const [incidents, setIncidents] = useKV<Incident[]>('incidents', [])
   const [aiInsights, setAiInsights] = useKV<string[]>('ai-insights', [])
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding-v2', false)
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding-v3', false)
   const [emailConfigs] = useKV<EmailNotificationConfig[]>('email-notification-configs', [])
   const [, setEmailLogs] = useKV<EmailNotificationLog[]>('email-notification-logs', [])
   const [hasEncryptedStorage, setHasEncryptedStorage] = useState(false)
   const [isKVLoaded, setIsKVLoaded] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [currentUser, setCurrentUser] = useState<{ id: string; name: string; avatar: string } | null>(null)
 
   const [timeRange, setTimeRange] = useState<number>(15 * 60 * 1000)
@@ -100,9 +101,14 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsKVLoaded(true)
+      if (!hasSeenOnboarding) {
+        setTimeout(() => {
+          setShowOnboarding(true)
+        }, 500)
+      }
     }, 100)
     return () => clearTimeout(timer)
-  }, [])
+  }, [hasSeenOnboarding])
 
   useEffect(() => {
     const checkEncryptedStorage = async () => {
@@ -432,9 +438,12 @@ function App() {
   return (
     <>
       {currentUser && <CollaborativeCursors userId={currentUser.id} />}
-      {isKVLoaded && !hasSeenOnboarding && (
+      {showOnboarding && (
         <OnboardingDialog
-          onComplete={() => setHasSeenOnboarding(true)}
+          onComplete={() => {
+            setShowOnboarding(false)
+            setHasSeenOnboarding(true)
+          }}
         />
       )}
       <div className="container mx-auto p-4 md:p-6 max-w-7xl">

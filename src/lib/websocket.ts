@@ -1,35 +1,45 @@
 export type CollaborationEvent = 
   | { type: 'user_joined'; userId: string; userName: string; userAvatar: string; timestamp: number }
+  | { type: 'user_left'; userId: string; timestamp: number }
   | { type: 'rule_created'; userId: string; ruleName: string; timestamp: number }
-  | { type: 'rule_created'; userId: string; ruleName: string; timestamp: number }
-  | { type: 'metric_viewed'; userId: string; metricType: string; timestamp: numbe
+  | { type: 'rule_updated'; userId: string; ruleName: string; timestamp: number }
+  | { type: 'alert_acknowledged'; userId: string; alertId: string; timestamp: number }
   | { type: 'incident_resolved'; userId: string; incidentId: string; timestamp: number }
   | { type: 'metric_viewed'; userId: string; metricType: string; timestamp: number }
   | { type: 'comment_added'; userId: string; entityId: string; comment: string; timestamp: number }
+  | { type: 'cursor_move'; userId: string; x: number; y: number; timestamp: number }
+  | { type: 'presence_update'; userId: string; status: 'active' | 'idle' | 'away'; timestamp: number }
+  | { type: 'chat_message'; userId: string; incidentId: string; message: string; timestamp: number }
+
+export interface UserPresence {
+  userId: string
+  userName: string
+  userAvatar: string
+  lastSeen: number
   status: 'active' | 'idle' | 'away'
 }
+
+export interface CollaborationUser {
+  id: string
+  name: string
+  avatar: string
+  status: 'active' | 'idle' | 'away'
+  lastSeen: number
+  cursorPosition?: { x: number; y: number }
+}
+
 export class WebSocketService {
-
+  private ws: WebSocket | null = null
+  private userId: string
+  private eventHandlers: Map<string, Array<(event: CollaborationEvent) => void>> = new Map()
+  private reconnectAttempts = 0
   private maxReconnectAttempts = 5
-  private ev
-  private simu
-  constructor(us
-    this.isSimulated = useSimulation
-    if (this.isSim
- 
+  private heartbeatInterval: number | null = null
+  private isSimulated: boolean
+  private simulationInterval: number | null = null
 
-    if (this.isSimulated) retur
-    try {
-
-        console.log('WebSocket 
-        this.startHeartbeat()
-          type: 'user_joined', 
-          userName: 'CurrentUser', 
-          timestamp: Date.now(
-      }
-
-          const data = JSON.parse(event.data) as Coll
-        } catch (error) 
+  constructor(userId: string, useSimulation = true) {
+    this.userId = userId
     this.isSimulated = useSimulation
 
     if (this.isSimulated) {
@@ -62,70 +72,71 @@ export class WebSocketService {
           this.handleEvent(data)
         } catch (error) {
           console.error('Failed to parse WebSocket message:', error)
-         
-       
-
-          }
-        case 'rule_updated':
-       
-
-          }
-        case 'incident_resolved':
-            type: 'incident_
-            incidentId: `incide
-       
-        case 'metric_
-            type: 'metric_viewed',
-            metricType: 'late
-     
-   
-
-            entityId: `entity_${Dat
-            timestamp: Date
-          break
-      
-     
-
-    setInterval(() => {
-        if (Math.random() > 0.7) {
-     
-   
-
         }
-    }, 5000)
-
-    if (this.reconnectAttempts >= this.maxReconne
-     
-
-    const delay = Math.min(1000 * Math.pow(2, this.
-    setTimeout(() => {
-      this.connect()
-  }
-  p
-
       }
+
+      this.ws.onerror = (error) => {
+        console.error('WebSocket error:', error)
+      }
+
+      this.ws.onclose = () => {
+        console.log('WebSocket disconnected')
+        this.stopHeartbeat()
+        this.attemptReconnect()
+      }
+    } catch (error) {
+      console.error('Failed to connect WebSocket:', error)
+    }
   }
-  private stopHeartbeat() {
-      clearInterval(this.heartbeatInterval)
+
+  send(event: CollaborationEvent) {
+    if (this.isSimulated) {
+      this.handleEvent(event)
+      return
     }
 
-
-    this.eventHandlers.set(eventType, handlers)
-
-    const handlers = this.eventHandlers.get(eventType)
-      this.eventHandlers.set(
-      
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(event))
     }
+  }
 
-    if (this.simulationInt
-      this.simulationInterval = nu
-
+  private handleEvent(event: CollaborationEvent) {
+    const handlers = this.eventHandlers.get(event.type) || []
+    const anyHandlers = this.eventHandlers.get('*') || []
     
-      this.ws.close()
-    }
-}
+    handlers.forEach(handler => handler(event))
+    anyHandlers.forEach(handler => handler(event))
+  }
 
+  private startSimulation() {
+    const simulatedUsers = [
+      { id: 'user_sim_1', name: 'Alice Chen', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice' },
+      { id: 'user_sim_2', name: 'Bob Martinez', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob' },
+      { id: 'user_sim_3', name: 'Carol Wu', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Carol' }
+    ]
 
+    simulatedUsers.forEach((user, index) => {
+      setTimeout(() => {
+        this.handleEvent({
+          type: 'user_joined',
+          userId: user.id,
+          userName: user.name,
+          userAvatar: user.avatar,
+          timestamp: Date.now()
+        })
+      }, index * 2000)
+    })
+
+    this.simulationInterval = setInterval(() => {
+      const user = simulatedUsers[Math.floor(Math.random() * simulatedUsers.length)]
+      const eventTypes: Array<'rule_created' | 'rule_updated' | 'incident_resolved' | 'metric_viewed' | 'comment_added'> = [
+        'rule_created', 'rule_updated', 'incident_resolved', 'metric_viewed', 'comment_added'
+      ]
+      const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)]
+      
+      let event: CollaborationEvent | null = null
+      
+      switch (eventType) {
         case 'rule_created':
           event = {
             type: 'rule_created',
@@ -172,7 +183,7 @@ export class WebSocketService {
       if (event) {
         this.handleEvent(event)
       }
-    }, 45000)
+    }, 45000) as unknown as number
 
     setInterval(() => {
       simulatedUsers.forEach(user => {
@@ -209,7 +220,7 @@ export class WebSocketService {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ type: 'ping' }))
       }
-    }, 30000)
+    }, 30000) as unknown as number
   }
 
   private stopHeartbeat() {
