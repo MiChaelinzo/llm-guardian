@@ -1,72 +1,84 @@
 export type CollaborationEvent = 
-  | { type: 'user_joined'; userId: string; userName: string; timestamp: number }
-  | { type: 'rule_created'; userId: string; ruleName: string
-  | { type: 'alert_acknowledged'; userId: string; alertId: string; timestamp: num
+  | { type: 'user_joined'; userId: string; userName: string; userAvatar?: string; timestamp: number }
+  | { type: 'user_left'; userId: string; timestamp: number }
+  | { type: 'rule_created'; userId: string; ruleName: string; timestamp: number }
   | { type: 'rule_updated'; userId: string; ruleName: string; timestamp: number }
   | { type: 'alert_acknowledged'; userId: string; alertId: string; timestamp: number }
   | { type: 'incident_resolved'; userId: string; incidentId: string; timestamp: number }
   | { type: 'comment_added'; userId: string; entityId: string; comment: string; timestamp: number }
-  | { type: 'chat_message'; userId: string; incidentId: string; message: string; tim
-export interface CollaborationUser {
+  | { type: 'chat_message'; userId: string; incidentId: string; message: string; timestamp: number }
+  | { type: 'cursor_move'; userId: string; x: number; y: number; timestamp: number }
+  | { type: 'metric_viewed'; userId: string; metricName: string; timestamp: number }
+  | { type: 'presence_update'; userId: string; status: 'active' | 'idle' | 'away'; timestamp: number }
 
+export interface CollaborationUser {
+  id: string
+  userId: string
   name: string
-  userAvatar?: s
-  lastSeen: nu
+  userName: string
+  avatar?: string
+  userAvatar?: string
+  status: 'active' | 'idle' | 'away'
+  lastSeen: number
+  cursorPosition?: { x: number; y: number }
 }
-export interface U
+
+export interface UserPresence {
+  userId: string
   name: string
- 
+  avatar?: string
+  online: boolean
+  lastSeen: number
+}
 
 export class WebSocketManager {
+  private ws: WebSocket | null = null
   private userId: string
-  private maxReconnectAt
-  private heartbeatInterval: nu
+  private reconnectAttempts = 0
+  private maxReconnectAttempts = 5
+  private reconnectDelay = 3000
+  private heartbeatInterval: number | null = null
   private isSimulated = true
+  private simulationInterval: number | null = null
+  private eventHandlers: ((event: CollaborationEvent) => void)[] = []
 
+  constructor(userId: string) {
     this.userId = userId
+    this.startSimulation()
   }
+
   private connect() {
+    try {
       this.ws = new WebSocket('wss://example.com/collaborate')
 
-        this.reconnectAttempts 
-        this.send({ type
-
-   
-
-          console.err
+      this.ws.onopen = () => {
+        this.reconnectAttempts = 0
+        this.send({ type: 'user_joined', userId: this.userId, userName: 'User', timestamp: Date.now() })
+        this.startHeartbeat()
       }
+
+      this.ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          this.handleEvent(data)
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error)
+        }
+      }
+
       this.ws.onerror = (error) => {
-      
-      this.ws.onclose = () => 
-        this.stopHeartbeat()
+        console.error('WebSocket error:', error)
       }
-      console.error('Failed t
-    }
 
-
-      { type: 'rule_created', userId: 
-      { type:
-
-      const randomEvent = simula
-
-        type: 'cursor_move',
-        x
-       
-
-  }
-  private attemptReconnect() {
-      r
-
-      console.error('Max reconn
-    }
-    this.reconnectAttempts++
-      console.log(`Attempting t
-    }, 
+      this.ws.onclose = () => {
+        this.stopHeartbeat()
+        this.attemptReconnect()
+      }
     } catch (error) {
       console.error('Failed to connect WebSocket:', error)
       this.attemptReconnect()
-     
-   
+    }
+  }
 
   private startSimulation() {
     const simulatedEvents: CollaborationEvent[] = [
@@ -123,61 +135,41 @@ export class WebSocketManager {
     }
   }
 
+  private handleEvent(event: CollaborationEvent) {
+    this.eventHandlers.forEach(handler => handler(event))
+  }
+
+  onEvent(handler: (event: CollaborationEvent) => void) {
+    this.eventHandlers.push(handler)
+    return () => {
+      this.eventHandlers = this.eventHandlers.filter(h => h !== handler)
+    }
+  }
+
+  on(eventType: string, handler: (event: CollaborationEvent) => void) {
+    this.eventHandlers.push(handler)
+    return () => {
+      this.eventHandlers = this.eventHandlers.filter(h => h !== handler)
+    }
+  }
+
   send(event: CollaborationEvent) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(event))
     }
   }
 
+  disconnect() {
+    if (this.simulationInterval) {
+      clearInterval(this.simulationInterval)
+      this.simulationInterval = null
+    }
+
+    if (this.ws) {
+      this.ws.close()
       this.ws = null
+    }
+
+    this.stopHeartbeat()
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
