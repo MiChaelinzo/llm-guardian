@@ -41,8 +41,6 @@ export function RealtimeCollaboration({ userId, userName }: RealtimeCollaboratio
         return `${userName} updated rule "${event.ruleName}"`
       case 'incident_resolved':
         return `${userName} resolved an incident`
-      case 'metric_viewed':
-        return `${userName} viewed ${event.metricName} metrics`
       case 'comment_added':
         return `${userName} added a comment`
       case 'cursor_move':

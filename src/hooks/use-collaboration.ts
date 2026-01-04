@@ -21,12 +21,9 @@ export function useCollaboration(userId: string) {
           const next = new Map(prev)
           next.set(event.userId, {
             id: event.userId,
-            userId: event.userId,
-            userName: event.userName,
-            name: event.userName || event.userId,
-            avatar: event.userAvatar,
-            userAvatar: event.userAvatar,
+            name: event.userId,
             status: 'active',
+            online: true,
             lastSeen: event.timestamp,
           })
           return next
@@ -55,9 +52,12 @@ export function useCollaboration(userId: string) {
           const next = new Map(prev)
           const user = next.get(event.userId)
           if (user) {
+            const validStatus = ['active', 'idle', 'offline'].includes(event.status) 
+              ? (event.status as 'active' | 'idle' | 'offline') 
+              : 'active'
             next.set(event.userId, {
               ...user,
-              status: event.status,
+              status: validStatus,
               lastSeen: event.timestamp,
             })
           }
