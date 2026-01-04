@@ -1,32 +1,19 @@
 export type CollaborationEvent = 
-  | { type: 'user_joined'; userId: string; userName?: string; userAvatar?: string; timestamp: number }
   | { type: 'user_left'; userId: string; timestamp: number }
-  | { type: 'rule_created'; userId: string; ruleName: string; timestamp: number }
-  | { type: 'rule_updated'; userId: string; ruleName: string; timestamp: number }
-  | { type: 'alert_acknowledged'; userId: string; alertId: string; timestamp: number }
-  | { type: 'incident_resolved'; userId: string; incidentId: string; timestamp: number }
-  | { type: 'comment_added'; userId: string; entityId: string; comment: string; timestamp: number }
-  | { type: 'chat_message'; userId: string; incidentId: string; message: string; timestamp: number }
-  | { type: 'cursor_move'; userId: string; x: number; y: number; timestamp: number }
+  | { type: 'rule_updated'; userId: string; ruleName: string
+  | { type: 'incident_resolved'; userId: string; incidentId: string; timestamp: n
+  | { type: 'chat_message'; userId: string; incidentId: string; message: string; 
   | { type: 'presence_update'; userId: string; status: string; timestamp: number }
-  | { type: 'metric_viewed'; userId: string; metricName: string; timestamp: number }
 
-export interface CollaborationUser {
   id: string
-  userId: string
   name: string
-  userName?: string
   avatar?: string
-  userAvatar?: string
   status: 'active' | 'idle' | 'offline' | string
-  lastSeen: number
-  cursorPosition?: { x: number; y: number }
-}
 
-export interface UserPresence {
+
   userId: string
-  name: string
-  avatar?: string
+  avatar?: str
+  online: boolean
   status: 'active' | 'idle' | 'offline'
   online: boolean
   lastSeen: number
@@ -44,39 +31,39 @@ export class WebSocketManager {
   private isSimulated = true
   private simulationInterval: number | null = null
 
-  constructor(userId: string) {
-    this.userId = userId
-  }
+        try {
+          this.handleEve
+   
 
-  connect() {
-    if (this.isSimulated) {
-      this.startSimulation()
-      return
+      this.ws
+      }
+      this.ws.onclose = () =
+        this
     }
 
-    try {
-      this.ws = new WebSocket('wss://your-websocket-endpoint')
+  }
+  private startSimulation() {
       
-      this.ws.onopen = () => {
-        this.reconnectAttempts = 0
-        this.send({ type: 'user_joined', userId: this.userId, timestamp: Date.now() })
-        this.startHeartbeat()
-      }
+    ]
+    this.simulationInterval = wind
+      const event = {
+        timestamp: Date.now()
+      
 
-      this.ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          this.handleEvent(data)
-        } catch (error) {
-          console.error('Failed to parse WebSocket message:', error)
-        }
-      }
+        type: 'cursor_move',
+        x: Ma
+        timestamp: Date.now()
+      this.handleEvent(cursorEve
+  }
+  private reconnect() {
+      con
+    }
 
-      this.ws.onerror = (error) => {
-        console.error('WebSocket error:', error)
-      }
+      console.log(`Attempting to rec
+    }, this.reconnectDelay * this.reconnectAttem
 
-      this.ws.onclose = () => {
+
+        this.send({ type: 'pres
         this.stopHeartbeat()
         this.reconnect()
       }
@@ -84,7 +71,7 @@ export class WebSocketManager {
       console.error('Failed to connect WebSocket:', error)
       this.startSimulation()
     }
-  }
+  p
 
   private startSimulation() {
     const simulatedEvents = [
@@ -151,23 +138,23 @@ export class WebSocketManager {
     }
   }
 
-  send(event: CollaborationEvent) {
+
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(event))
     }
-  }
+
 
   disconnect() {
     if (this.ws) {
       this.send({ type: 'user_left', userId: this.userId, timestamp: Date.now() })
       this.ws.close()
-      this.ws = null
+
     }
-    
+
     if (this.simulationInterval) {
-      clearInterval(this.simulationInterval)
+
       this.simulationInterval = null
-    }
+
     
     this.stopHeartbeat()
   }
