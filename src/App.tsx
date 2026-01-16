@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChartLine, Bell, Lightning, Bug, Waveform, Flask, Brain, Wrench, ChartBar, Users, SignOut } from '@phosphor-icons/react'
+import { ChartLine, Bell, Lightning, Bug, Waveform, Flask, Brain, Wrench, ChartBar, Users, SignOut, Target, Gear, FileCode } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MetricCards } from '@/components/MetricCards'
@@ -31,6 +31,10 @@ import { RateLimitIndicator } from '@/components/RateLimitIndicator'
 import { RealtimeCollaboration } from '@/components/RealtimeCollaboration'
 import { PresenceIndicator } from '@/components/PresenceIndicator'
 import { CollaborativeCursors } from '@/components/CollaborativeCursors'
+import { SLOManager } from '@/components/SLOManager'
+import { AdvancedFilters } from '@/components/AdvancedFilters'
+import { NotificationPreferences } from '@/components/NotificationPreferences'
+import { ConfigExportImport } from '@/components/ConfigExportImport'
 import { useAuth } from '@/hooks/use-auth'
 import { useCollaboration } from '@/hooks/use-collaboration'
 import { useAutoCapture } from '@/hooks/use-auto-capture'
@@ -40,7 +44,7 @@ import { processVoiceQuery } from '@/lib/voice'
 import { calculateMetrics } from '@/lib/metrics'
 import { emailNotificationService } from '@/lib/email-notifications'
 import { sendWebhook } from '@/lib/webhooks'
-import type { TelemetryMetric, DetectionRule, Alert, Incident, FileAttachment, EmailNotificationConfig, EmailNotificationLog, WebhookConfig } from '@/lib/types'
+import type { TelemetryMetric, DetectionRule, Alert, Incident, FileAttachment, EmailNotificationConfig, EmailNotificationLog, WebhookConfig, SLO, NotificationPreference } from '@/lib/types'
 
 function App() {
   const { user: authUser, isLoading: authLoading, isAuthenticated, hasCheckedAuth, login, logout } = useAuth()
@@ -48,6 +52,29 @@ function App() {
   const [metrics, setMetrics] = useKV<TelemetryMetric[]>('telemetry-metrics', [])
   const [rules, setRules] = useKV<DetectionRule[]>('detection-rules', [])
   const [alerts, setAlerts] = useKV<Alert[]>('alerts', [])
+  const [slos, setSLOs] = useKV<SLO[]>('slos', [])
+  const [alertFilters, setAlertFilters] = useState<any>({})
+  const [incidentFilters, setIncidentFilters] = useState<any>({})
+  const [notificationPreferences, setNotificationPreferences] = useKV<NotificationPreference>('notification-preferences', {
+    id: 'default',
+    userId: 'default',
+    channels: {
+      email: true,
+      webhook: true,
+      voice: true,
+      inApp: true,
+    },
+    severityThreshold: 'info',
+    quietHours: {
+      enabled: false,
+      start: '22:00',
+      end: '08:00',
+    },
+    grouping: {
+      enabled: false,
+      windowMinutes: 5,
+    },
+  })
   const [incidents, setIncidents] = useKV<Incident[]>('incidents', [])
   const [aiInsights, setAiInsights] = useKV<string[]>('ai-insights', [])
   const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding-v3', false)
@@ -431,6 +458,73 @@ function App() {
     }
   }, [metrics, alerts, timeRange])
 
+  const handleConfigImport = useCallback((config: {
+    rules?: DetectionRule[]
+    slos?: SLO[]
+    webhooks?: WebhookConfig[]
+    preferences?: NotificationPreference
+  }) => {
+    if (config.rules) {
+      setRules((current) => [...(current || []), ...config.rules!])
+    }
+    if (config.slos) {
+      setSLOs((current) => [...(current || []), ...config.slos!])
+    }
+    if (config.preferences) {
+      setNotificationPreferences(config.preferences)
+    }
+  }, [setRules, setSLOs, setNotificationPreferences])
+
+  const filteredAlerts = useMemo(() => {
+    let filtered = alerts || []
+    
+    if (alertFilters.severity?.length > 0) {
+      filtered = filtered.filter(a => alertFilters.severity.includes(a.severity))
+    }
+    
+    if (alertFilters.searchQuery) {
+      const query = alertFilters.searchQuery.toLowerCase()
+      filtered = filtered.filter(a => 
+        a.message.toLowerCase().includes(query) || 
+        a.ruleName.toLowerCase().includes(query)
+      )
+    }
+    
+    if (alertFilters.timeRange) {
+      const cutoff = Date.now() - alertFilters.timeRange
+      filtered = filtered.filter(a => a.timestamp > cutoff)
+    }
+    
+    return filtered
+  }, [alerts, alertFilters])
+
+  const filteredIncidents = useMemo(() => {
+    let filtered = incidents || []
+    
+    if (incidentFilters.severity?.length > 0) {
+      filtered = filtered.filter(i => incidentFilters.severity.includes(i.severity))
+    }
+    
+    if (incidentFilters.status?.length > 0) {
+      filtered = filtered.filter(i => incidentFilters.status.includes(i.status))
+    }
+    
+    if (incidentFilters.searchQuery) {
+      const query = incidentFilters.searchQuery.toLowerCase()
+      filtered = filtered.filter(i => 
+        i.title.toLowerCase().includes(query) || 
+        i.description.toLowerCase().includes(query)
+      )
+    }
+    
+    if (incidentFilters.timeRange) {
+      const cutoff = Date.now() - incidentFilters.timeRange
+      filtered = filtered.filter(i => i.createdAt > cutoff)
+    }
+    
+    return filtered
+  }, [incidents, incidentFilters])
+
   const summary = calculateMetrics(metrics || [], timeRange)
 
   if (authLoading || !isKVLoaded) {
@@ -555,6 +649,18 @@ function App() {
               <Flask size={18} />
               Testing
             </TabsTrigger>
+            <TabsTrigger value="slo" className="gap-2">
+              <Target size={18} />
+              SLO
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="gap-2">
+              <Gear size={18} />
+              Preferences
+            </TabsTrigger>
+            <TabsTrigger value="config" className="gap-2">
+              <FileCode size={18} />
+              Config
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Waveform size={18} />
               Settings
@@ -674,12 +780,19 @@ function App() {
           </TabsContent>
 
           <TabsContent value="alerts" className="space-y-4">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Active Alerts</h2>
-              <p className="text-muted-foreground">Real-time monitoring alerts from detection rules</p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Active Alerts</h2>
+                <p className="text-muted-foreground">Real-time monitoring alerts from detection rules</p>
+              </div>
+              <AdvancedFilters
+                type="alert"
+                filters={alertFilters}
+                onFiltersChange={setAlertFilters}
+              />
             </div>
             <AlertsList
-              alerts={alerts || []}
+              alerts={filteredAlerts || []}
               onAcknowledge={handleAcknowledgeAlert}
               onCreateIncident={(alert) => handleCreateIncident(alert.id)}
             />
@@ -700,12 +813,19 @@ function App() {
           </TabsContent>
 
           <TabsContent value="incidents" className="space-y-4">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Incident Management</h2>
-              <p className="text-muted-foreground">Track and resolve critical issues with team chat and file sharing</p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Incident Management</h2>
+                <p className="text-muted-foreground">Track and resolve critical issues with team chat and file sharing</p>
+              </div>
+              <AdvancedFilters
+                type="incident"
+                filters={incidentFilters}
+                onFiltersChange={setIncidentFilters}
+              />
             </div>
             <IncidentsList
-              incidents={incidents || []}
+              incidents={filteredIncidents || []}
               onResolve={(incidentId) => handleUpdateIncident(incidentId, { status: 'resolved', resolvedAt: Date.now() })}
               onAddAttachment={handleAddAttachment}
               onRemoveAttachment={handleRemoveAttachment}
@@ -721,6 +841,47 @@ function App() {
               <p className="text-muted-foreground">Test and validate webhook endpoints in real-time</p>
             </div>
             <WebhookTestingPanel />
+          </TabsContent>
+
+          <TabsContent value="slo" className="space-y-4">
+            <SLOManager
+              slos={slos || []}
+              onAddSLO={(slo) => setSLOs((current) => [...(current || []), slo])}
+              onToggleSLO={(id) => setSLOs((current) => (current || []).map(s => s.id === id ? { ...s, enabled: !s.enabled } : s))}
+              onDeleteSLO={(id) => setSLOs((current) => (current || []).filter(s => s.id !== id))}
+              summary={summary}
+            />
+          </TabsContent>
+
+          <TabsContent value="preferences" className="space-y-4">
+            <NotificationPreferences
+              preferences={notificationPreferences || {
+                id: 'default',
+                userId: 'default',
+                channels: { email: true, webhook: true, voice: true, inApp: true },
+                severityThreshold: 'info',
+                quietHours: { enabled: false, start: '22:00', end: '08:00' },
+                grouping: { enabled: false, windowMinutes: 5 },
+              }}
+              onUpdate={setNotificationPreferences}
+            />
+          </TabsContent>
+
+          <TabsContent value="config" className="space-y-4">
+            <ConfigExportImport
+              rules={rules || []}
+              slos={slos || []}
+              webhooks={webhooks || []}
+              preferences={notificationPreferences || {
+                id: 'default',
+                userId: 'default',
+                channels: { email: true, webhook: true, voice: true, inApp: true },
+                severityThreshold: 'info',
+                quietHours: { enabled: false, start: '22:00', end: '08:00' },
+                grouping: { enabled: false, windowMinutes: 5 },
+              }}
+              onImport={handleConfigImport}
+            />
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">

@@ -10,6 +10,10 @@ A production-ready, voice-driven AI monitoring dashboard that lets developers in
 - **Model Performance Benchmarks** - Real-time comparison across GPT-4o, Claude, Gemini, and Llama models
 - **Enhanced Confluent Stream Visualizer** - Live event stream with partition monitoring and throughput tracking
 - **Advanced AI Analytics Suite** - Powered by Google Cloud Gemini with anomaly detection, predictive forecasting, and root cause analysis
+- **SLA/SLO Tracking** (NEW) - Define and monitor service level objectives with compliance tracking and breach detection
+- **Advanced Filtering** (NEW) - Powerful search and filter capabilities across alerts, incidents, and metrics
+- **Notification Preferences** (NEW) - Granular control over notification channels, quiet hours, and alert grouping
+- **Configuration Export/Import** (NEW) - Share detection rules, SLOs, and settings across teams with JSON backup
 
 **Experience Qualities**:
 1. **Conversational** - Natural voice interactions make complex monitoring accessible and intuitive
@@ -18,6 +22,7 @@ A production-ready, voice-driven AI monitoring dashboard that lets developers in
 4. **Cost-Conscious** - Advanced cost optimization engine identifies savings opportunities and provides actionable recommendations
 5. **Proactive** - Smart remediation engine automatically suggests and applies fixes for common issues
 6. **Secure** - GitHub OAuth authentication ensures user data isolation and personalized experiences
+7. **Customizable** (NEW) - Advanced filtering, SLO tracking, and configuration management enable teams to tailor the platform to their needs
 
 **Complexity Level**: Complex Application (advanced functionality with multiple views)
 This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis, anomaly detection, predictions, and optimization recommendations; **Datadog** for detection rules and incident management; **Confluent** for real-time telemetry data streaming; and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, multi-modal visualizations, machine learning inference, secure credential management with onboarding flows, and user authentication.
@@ -231,6 +236,74 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
 - **Trigger**: First app launch or manual settings access
 - **Progression**: Welcome screen → Mode selection → API configuration (optional) → Dashboard launch
 - **Success criteria**: Users can configure all four sponsor APIs with credential validation and masked input fields
+
+### SLA/SLO Tracking (NEW - High Value Enterprise Feature)
+- **Functionality**: Define service level objectives with target thresholds, monitor compliance in real-time, track breaches, and visualize performance against goals
+- **Purpose**: Enable teams to enforce service commitments, demonstrate reliability to stakeholders, and identify areas requiring improvement before SLA violations occur
+- **Trigger**: User navigates to SLO tab, automatic compliance monitoring runs continuously
+- **Progression**: Create SLO → Define metric and target → Set time window → Monitor compliance → Receive breach alerts → Take corrective action
+- **Success criteria**:
+  - Create unlimited SLOs for any tracked metric (latency, error rate, cost, etc.)
+  - Real-time compliance percentage calculation and visualization
+  - Clear breach indicators with visual warnings
+  - Target vs. current value comparison with trends
+  - Enable/disable SLOs without deletion
+  - Time window configuration (1 hour, 24 hours, 7 days, 30 days)
+  - Color-coded status badges (compliant/breach)
+  - Progress bars showing compliance percentage
+  - Integration with alerting system for automatic breach notifications
+
+### Advanced Filtering & Search (NEW - Productivity Enhancement)
+- **Functionality**: Powerful filtering system for alerts, incidents, and metrics with multi-criteria selection, time range filters, keyword search, and saved filter presets
+- **Purpose**: Enable users to quickly find relevant information in large datasets, reduce noise, and focus on what matters most
+- **Trigger**: Available on Alerts and Incidents tabs via filter button, search is always visible
+- **Progression**: Open filters → Select criteria (severity, status, time range) → Enter search query → Apply → Save as preset (optional) → View filtered results
+- **Success criteria**:
+  - Real-time search across alert messages and rule names
+  - Multi-select severity filters (critical, warning, info)
+  - Multi-select status filters for incidents (open, investigating, resolved)
+  - Time range filtering (5 min, 15 min, 1 hour, 24 hours, 7 days)
+  - Active filter count badge on filter button
+  - Quick clear all filters action
+  - Instant results without page reload
+  - Filter persistence during session
+  - Save filter presets with custom names for reuse
+  - Smooth animations and responsive UI
+
+### Notification Preferences (NEW - Customization & Control)
+- **Functionality**: Granular control over notification channels (email, webhook, voice, in-app), severity thresholds, quiet hours scheduling, and alert grouping to reduce noise
+- **Purpose**: Prevent notification fatigue, respect team members' work-life balance, and ensure critical alerts reach the right people via preferred channels
+- **Trigger**: User navigates to Preferences tab, settings apply to all future notifications
+- **Progression**: Configure channels → Set severity threshold → Enable quiet hours → Configure grouping → Save preferences → Notifications filtered accordingly
+- **Success criteria**:
+  - Toggle individual notification channels on/off (4 channels: email, webhook, voice, in-app)
+  - Visual channel cards with icons and descriptions
+  - Severity threshold selection (info+, warning+, critical only)
+  - Quiet hours configuration with start/end time pickers
+  - Alert grouping with configurable time window (1-60 minutes)
+  - Clear explanation of what each setting does
+  - Instant save with toast confirmation
+  - Settings persist across sessions
+  - Quiet hours automatically suppress non-critical notifications
+  - Grouping combines multiple alerts within window into single notification
+
+### Configuration Export/Import (NEW - Team Collaboration Feature)
+- **Functionality**: Export current configuration (rules, SLOs, webhooks, preferences) as JSON file, import configurations from other team members or backups, validate JSON before import
+- **Purpose**: Enable teams to share best practices, standardize monitoring across environments, backup configurations, and migrate settings between instances
+- **Trigger**: User navigates to Config tab, clicks export or import button
+- **Progression**: Export: Click export → File downloads → Import: Upload file or paste JSON → Validate → Review summary → Import with new IDs → Success confirmation
+- **Success criteria**:
+  - One-click export of complete configuration to JSON file
+  - Webhook URLs automatically redacted for security (must be reconfigured after import)
+  - File naming with timestamp (voicewatch-config-2024-01-15.json)
+  - Configuration summary showing counts (rules, SLOs, webhooks, channels)
+  - JSON validation with clear error messages
+  - Visual validation status (valid/invalid with icons and descriptions)
+  - File upload or paste JSON text input
+  - Import preview showing what will be added
+  - New unique IDs generated for imported items to avoid conflicts
+  - Success notification with import summary (counts of each item type)
+  - Beautiful error handling for malformed JSON
 
 ### Settings & API Management
 - **Functionality**: Comprehensive settings interface for managing Google Cloud, Datadog, Confluent, and ElevenLabs API credentials with AES-256-GCM encryption

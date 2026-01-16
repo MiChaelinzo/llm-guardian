@@ -94,6 +94,70 @@ export interface WebhookConfig {
   createdAt: number
 }
 
+export interface SLO {
+  id: string
+  name: string
+  description: string
+  metric: MetricType
+  target: number
+  timeWindow: number
+  enabled: boolean
+  currentValue?: number
+  compliancePercentage?: number
+  breaches?: number
+  createdAt: number
+}
+
+export interface DashboardWidget {
+  id: string
+  type: 'metrics' | 'chart' | 'alerts' | 'incidents' | 'slo' | 'stream'
+  title: string
+  position: { x: number; y: number }
+  size: { width: number; height: number }
+  config?: Record<string, any>
+}
+
+export interface DashboardLayout {
+  id: string
+  name: string
+  isDefault: boolean
+  widgets: DashboardWidget[]
+  createdAt: number
+}
+
+export interface FilterPreset {
+  id: string
+  name: string
+  type: 'alert' | 'incident' | 'metric'
+  filters: {
+    severity?: RuleSeverity[]
+    status?: IncidentStatus[]
+    timeRange?: number
+    searchQuery?: string
+  }
+}
+
+export interface NotificationPreference {
+  id: string
+  userId: string
+  channels: {
+    email: boolean
+    webhook: boolean
+    voice: boolean
+    inApp: boolean
+  }
+  severityThreshold: RuleSeverity
+  quietHours?: {
+    enabled: boolean
+    start: string
+    end: string
+  }
+  grouping: {
+    enabled: boolean
+    windowMinutes: number
+  }
+}
+
 export interface APIConfig {
   googleCloud: {
     projectId: string
