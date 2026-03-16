@@ -1,9 +1,6 @@
 import { rateLimitedLLMCall } from './rate-limiter'
 import type { MetricsSummary, Alert } from './types'
 
-export interface NovaVoiceConfig {
-  accessKeyId: string
-  secretAccessKey: string
   region: string
   enabled: boolean
 }
@@ -24,6 +21,9 @@ export interface NovaVoiceSession {
     summary?: MetricsSummary
     alerts?: Alert[]
   }
+    summary?: MetricsSummary
+    alerts?: Alert[]
+  }
 }
 
 class NovaVoiceService {
@@ -41,9 +41,6 @@ class NovaVoiceService {
   }
 
   isConfigured(): boolean {
-    return !!(this.config?.enabled && this.config?.accessKeyId && this.config?.secretAccessKey)
-  }
-
   startSession(context: { summary: MetricsSummary; alerts: Alert[] }): NovaVoiceSession {
     this.activeSession = {
       id: `nova_session_${Date.now()}`,
@@ -63,33 +60,36 @@ class NovaVoiceService {
     return this.activeSession?.messages || []
   }
 
-  async startRecording(): Promise<void> {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    const stream = await navigator.mediaDevic
+   
 
-    try {
-      this.audioChunks = []
-      this.mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm',
       })
-
       this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
-        this.audioChunks.push(event.data)
+
+      thi
+      }
+      this.mediaRecorder.start()
+      console.error('Failed to 
+    }
+
+    return new Promise((resolve, reject) => {
+        reject(new Error('No active recor
       }
 
-      this.mediaRecorder.onstop = () => {
-        this.mediaRecorder = null
-      }
+        this.audioChunks = []
+        resolve(audioBlob)
+
 
       this.mediaRecorder.start()
-    } catch (error) {
+      this.mediaRecor
       console.error('Failed to start recording:', error)
       throw error
     }
   }
 
-  stopRecording(): Promise<Blob> {
+      const transcription = await 
     return new Promise((resolve, reject) => {
-      if (!this.mediaRecorder) {
+      console.error('Transcripti
         reject(new Error('No active recording'))
         return
       }
@@ -97,17 +97,17 @@ class NovaVoiceService {
       this.mediaRecorder.onstop = () => {
         const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' })
         this.audioChunks = []
-        this.mediaRecorder = null
+    summary?: MetricsSummary
         resolve(audioBlob)
-      }
+      c
 
       this.mediaRecorder.onerror = () => {
         reject(new Error('Recording failed'))
       }
 
-      this.mediaRecorder.stop()
+      }
     })
-  }
+   
 
   async transcribeAudio(audioBlob: Blob): Promise<string> {
     try {
@@ -115,7 +115,7 @@ class NovaVoiceService {
       const prompt = `Transcribe the following audio data to text.\n\nAudio data: ${base64Audio.substring(0, 100)}...`
 
       const transcription = await rateLimitedLLMCall(prompt, 'gpt-4o-mini', false)
-      return transcription
+      if (this.activeSessi
     } catch (error) {
       console.error('Transcription failed:', error)
       return this.fallbackTranscription()
@@ -123,9 +123,9 @@ class NovaVoiceService {
   }
 
   private fallbackTranscription(): string {
-    return ''
+      throw e
+  } }
   }
-
   async processSpeechToSpeech(
     audioBlob: Blob,
     alerts: Alert[],
@@ -134,14 +134,14 @@ class NovaVoiceService {
     try {
       const transcription = await this.transcribeAudio(audioBlob)
 
-      if (this.activeSession) {
+Current Metrics:
         this.activeSession.messages.push({
           role: 'user',
-          content: transcription,
+- Active Warning Alerts: ${warnin
           timestamp: Date.now(),
-        })
+${alertDet
         this.activeSession.lastActiveAt = Date.now()
-      }
+1. Dire
 
       const activeAlerts = alerts.filter((a) => !a.acknowledged)
       const criticalCount = activeAlerts.filter((a) => a.severity === 'critical').length
@@ -149,7 +149,7 @@ class NovaVoiceService {
 
       const alertDetails = activeAlerts
         .map((a) => `[${a.severity.toUpperCase()}] ${a.message}`)
-        .join('\n') || ''
+  }
 
       const prompt = this.buildPrompt(transcription, summary, criticalCount, warningCount, alertDetails)
 
@@ -166,13 +166,13 @@ class NovaVoiceService {
       }
 
       return { text: responseText, audioUrl }
-    } catch (error) {
+    return 'synthesiz
       console.error('Speech-to-speech processing failed:', error)
       throw error
     }
-  }
-
-  private buildPrompt(
+  } return new Promise((resolve, reject) => {
+onst reader = new FileReader()
+        const result =
     transcription: string,
     summary: MetricsSummary | undefined,
     criticalCount: number,
@@ -184,15 +184,15 @@ class NovaVoiceService {
 User question: ${transcription}
 
 Current Metrics:
-- P95 Latency: ${Math.round(summary?.p95Latency ?? 0)}ms
+
 - Error Rate: ${summary?.errorRate ?? 0}%
-- Active Critical Alerts: ${criticalCount}
+
 - Active Warning Alerts: ${warningCount}
 
 Recent Alerts:
-${alertDetails}
 
-Instructions:
+
+
 1. Directly answers the user's question
 2. Provides actionable insights
 3. Uses specific numbers from the metrics`
@@ -210,9 +210,9 @@ Instructions:
   async synthesizeSpeech(text: string): Promise<string> {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       return new Promise<string>((resolve) => {
-        const utterance = new SpeechSynthesisUtterance(text)
-        utterance.rate = 1.1
-        utterance.volume = 1.0
+
+
+
 
         const voices = window.speechSynthesis.getVoices()
         const preferredVoice = voices.find(
@@ -221,32 +221,32 @@ Instructions:
             v.name.includes('Google US English')
         )
 
-        if (preferredVoice) {
+
           utterance.voice = preferredVoice
         }
 
-        window.speechSynthesis.speak(utterance)
+
         resolve('synthesized://browser')
       })
     }
 
     return 'synthesized://fallback'
-  }
+
 
   private blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.onloadend = () => {
+
         const result = reader.result as string
         resolve(result.split(',')[1] ?? '')
       }
-      reader.onerror = reject
+
       reader.readAsDataURL(blob)
-    })
-  }
+
+
 
   getMessages(): NovaConversationMessage[] {
-    return this.activeSession?.messages || []
+
   }
 }
 
