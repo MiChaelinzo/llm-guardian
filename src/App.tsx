@@ -82,7 +82,7 @@ function App() {
   })
   const [incidents, setIncidents] = useKV<Incident[]>('incidents', [])
   const [aiInsights, setAiInsights] = useKV<string[]>('ai-insights', [])
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding-v3', false)
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding-v4-aws-nova', false)
   const [emailConfigs] = useKV<EmailNotificationConfig[]>('email-notification-configs', [])
   const [, setEmailLogs] = useKV<EmailNotificationLog[]>('email-notification-logs', [])
   const [webhooks] = useKV<WebhookConfig[]>('webhooks', [])

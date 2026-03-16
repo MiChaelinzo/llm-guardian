@@ -24,7 +24,7 @@ interface SettingsProps {
 }
 
 export function Settings({ incidents = [], alerts = [], metrics = [] }: SettingsProps = {}) {
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding-v3', false)
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useKV<boolean>('has-seen-onboarding-v4-aws-nova', false)
 
   const handleResetOnboarding = () => {
     setHasSeenOnboarding(false)

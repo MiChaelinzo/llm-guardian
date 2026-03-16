@@ -81,41 +81,21 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
           
           <div className="space-y-4">
             <p className="text-center text-muted-foreground">
-              VoiceWatch AI combines the power of all four hackathon sponsors to create an intelligent, 
-              voice-driven observability solution for LLM applications.
+              VoiceWatch AI is a generative AI application built with <strong>Amazon Nova</strong> on AWS, 
+              providing intelligent, voice-driven observability for LLM applications with real-time monitoring, 
+              anomaly detection, and conversational AI insights.
             </p>
             
-            <div className="grid grid-cols-2 gap-3">
-              <Card className="p-4 border-primary/30">
+            <div className="grid grid-cols-1 gap-3">
+              <Card className="p-4 border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10">
                 <div className="flex items-center gap-2 mb-2">
-                  <Cloud size={20} weight="fill" className="text-primary" />
-                  <span className="font-semibold text-sm">Google Cloud</span>
+                  <Cloud size={24} weight="fill" className="text-primary" />
+                  <span className="font-semibold">AWS AI with Amazon Nova</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Gemini AI for intelligent insights</p>
-              </Card>
-              
-              <Card className="p-4 border-cost/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <ChartBar size={20} weight="fill" className="text-cost" />
-                  <span className="font-semibold text-sm">Datadog</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Detection rules & incidents</p>
-              </Card>
-              
-              <Card className="p-4 border-success/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Database size={20} weight="fill" className="text-success" />
-                  <span className="font-semibold text-sm">Confluent</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Real-time data streaming</p>
-              </Card>
-              
-              <Card className="p-4 border-accent/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Waveform size={20} weight="fill" className="text-accent" />
-                  <span className="font-semibold text-sm">ElevenLabs</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Voice agent interface</p>
+                <p className="text-sm text-muted-foreground">
+                  Powered by <strong>AWS Bedrock</strong> and <strong>Amazon Nova 2 Sonic</strong> for ultra-low latency speech-to-speech AI, 
+                  intelligent insights, anomaly detection, and predictive forecasting.
+                </p>
               </Card>
             </div>
           </div>
@@ -123,100 +103,58 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
       )
     },
     {
-      title: 'Choose Your Experience',
-      description: 'Demo mode or configure your own APIs',
+      title: 'Get Started',
+      description: 'Explore VoiceWatch AI now',
       content: (
         <div className="space-y-6">
-          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Sparkle size={24} weight="fill" className="text-primary" />
-                <CardTitle>Demo Mode</CardTitle>
+                <CardTitle>Demo Mode Active</CardTitle>
               </div>
               <CardDescription>
-                Perfect for exploring features with simulated data
+                Explore all features with simulated data immediately
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <ul className="space-y-2 text-sm">
+            <CardContent className="space-y-4">
+              <ul className="space-y-3 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckCircle size={16} weight="fill" className="text-success" />
-                  Simulated real-time telemetry data
+                  <CheckCircle size={18} weight="fill" className="text-success" />
+                  <span><strong>Real-time Monitoring:</strong> Live telemetry data and metrics visualization</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle size={16} weight="fill" className="text-success" />
-                  Pre-configured detection rules
+                  <CheckCircle size={18} weight="fill" className="text-success" />
+                  <span><strong>AWS Nova AI:</strong> Speech-to-speech conversational AI for hands-free monitoring</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle size={16} weight="fill" className="text-success" />
-                  AI-generated insights using built-in LLM
+                  <CheckCircle size={18} weight="fill" className="text-success" />
+                  <span><strong>Smart Alerts:</strong> Pre-configured detection rules with intelligent insights</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle size={16} weight="fill" className="text-success" />
-                  Voice interaction with Web Speech API
+                  <CheckCircle size={18} weight="fill" className="text-success" />
+                  <span><strong>AI Analytics:</strong> Anomaly detection, predictions, and optimization recommendations</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle size={18} weight="fill" className="text-success" />
+                  <span><strong>Team Collaboration:</strong> Real-time multi-user monitoring and incident chat</span>
                 </li>
               </ul>
-              <Button onClick={handleSkipToDemo} className="w-full gap-2">
-                <Sparkle size={16} weight="fill" />
-                Start with Demo Mode
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-accent/30">
-            <CardHeader>
-              <CardTitle>Production Mode</CardTitle>
-              <CardDescription>
-                Connect your own API credentials for real integrations
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <Cloud size={16} className="text-primary" />
-                    Google Cloud
-                  </span>
-                  <Badge variant={currentConfig.googleCloud.enabled ? 'default' : 'outline'} className="text-xs">
-                    {currentConfig.googleCloud.enabled ? 'Configured' : 'Not configured'}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <ChartBar size={16} className="text-cost" />
-                    Datadog
-                  </span>
-                  <Badge variant={currentConfig.datadog.enabled ? 'default' : 'outline'} className="text-xs">
-                    {currentConfig.datadog.enabled ? 'Configured' : 'Not configured'}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <Database size={16} className="text-success" />
-                    Confluent
-                  </span>
-                  <Badge variant={currentConfig.confluent.enabled ? 'default' : 'outline'} className="text-xs">
-                    {currentConfig.confluent.enabled ? 'Configured' : 'Not configured'}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <Waveform size={16} className="text-accent" />
-                    ElevenLabs
-                  </span>
-                  <Badge variant={currentConfig.elevenLabs.enabled ? 'default' : 'outline'} className="text-xs">
-                    {currentConfig.elevenLabs.enabled ? 'Configured' : 'Not configured'}
-                  </Badge>
-                </div>
+              
+              <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground mb-3">
+                  <strong>Optional:</strong> Configure AWS Bedrock credentials in Settings to enable production Nova AI features
+                </p>
+                <Button onClick={handleSkipToDemo} className="w-full gap-2" size="lg">
+                  <Sparkle size={18} weight="fill" />
+                  Start Exploring
+                </Button>
               </div>
-              <Button onClick={handleGoToSettings} variant="outline" className="w-full">
-                Configure API Credentials
-              </Button>
             </CardContent>
           </Card>
 
           <p className="text-xs text-center text-muted-foreground">
-            You can always change these settings later in the Settings tab
+            You can configure AWS Nova credentials anytime in the Settings tab for production use
           </p>
         </div>
       )

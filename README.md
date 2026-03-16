@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>A voice-driven AI monitoring dashboard integrating AWS Nova + Google Cloud (Gemini), Datadog, Confluent, and ElevenLabs for the future of LLM operations.</strong>
+  <strong>A generative AI application built with Amazon Nova on AWS - voice-driven monitoring for the future of LLM operations.</strong>
 </p>
 
 ---
@@ -66,91 +66,85 @@ VoiceWatch AI now includes **intelligent rate limiting** and **response caching*
 - **Graceful degradation** with fallback responses when rate limits are reached
 - **Cost optimization** by using GPT-4o-mini for most operations (90% cost savings vs GPT-4)
 
-## 🎯 Challenge Submissions
+## 🎯 AWS AI Challenge Submission
 
-This project tackles **ALL FOUR hackathon challenges simultaneously**:
+**Building a Generative AI Application using Amazon Nova on AWS**
 
-### 1. **Google Cloud Challenge** ✅
-- **Gemini AI integration** for intelligent metric analysis
-- **Real-time insights generation** using Vertex AI
-- **AI-powered incident recommendations** with actionable steps
-- **Natural language query processing** for voice interactions
+This project showcases Amazon Nova 2 Sonic foundation model with focus on:
 
-### 2. **Datadog Challenge** ✅
-- **End-to-end observability monitoring** for LLM applications
+### **AWS AI & Amazon Nova Integration** ✅
+- **Nova 2 Sonic speech-to-speech AI** for ultra-low latency voice interactions
+- **AWS Bedrock integration** for intelligent metric analysis and insights
+- **Real-time AI-powered monitoring** with anomaly detection
+- **Predictive forecasting** using AWS AI capabilities
+- **Natural language query processing** for conversational observability
+- **Smart remediation engine** with AI-suggested fixes
+- **Cost optimization recommendations** powered by AWS AI
+
+### **Observability & Monitoring Excellence** ✅
+- **End-to-end LLM application monitoring** with real-time dashboards
 - **Detection rules engine** with configurable thresholds
-- **Automated incident management** with AI recommendations
+- **Automated incident management** with AWS AI recommendations
 - **Comprehensive dashboard** surfacing application health metrics
 - **Alert-to-incident workflow** with full context
-
-### 3. **Confluent Challenge** ✅
-- **Real-time data streaming pipeline** for telemetry ingestion
-- **Event-driven architecture** processing metrics in motion
-- **Live dashboard updates** from streaming data
-- **Low-latency data processing** (<1ms lag)
-- **Scalable streaming infrastructure** demonstration
-
-### 4. **ElevenLabs Challenge** ✅
-- **Voice-driven interface** using Speech Recognition API
-- **Natural conversation** with your observability data
-- **Speech synthesis** for real-time alerts and responses
-- **Conversational AI** powered by Google Cloud Gemini
+- **Real-time collaboration** with team chat and activity feeds
 
 ## 🌟 What Makes This Special
 
-**Talk to your metrics.** Instead of writing complex queries or navigating multiple dashboards, just ask:
+**Talk to your metrics using AWS Nova 2 Sonic.** Instead of writing complex queries or navigating multiple dashboards, just ask:
 
 - *"What's the system health?"*
 - *"Show me the latency metrics"*
 - *"Do we have any critical alerts?"*
 - *"How much have we spent today?"*
 
-VoiceWatch AI responds with both **spoken explanations** and **visual dashboards**, making LLM observability accessible to everyone on your team.
+VoiceWatch AI responds with **ultra-low latency spoken explanations** powered by Amazon Nova 2 Sonic and **visual dashboards**, making LLM observability accessible to everyone on your team through natural conversation.
 
-## 🏗️ Architecture - ALL 4 Sponsors Integrated
+## 🏗️ Architecture - AWS Nova at the Core
 
 ```
 ┌─────────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
-│  Voice Input        │────▶│  Google Cloud        │────▶│  Dashboard      │
-│  (ElevenLabs)       │     │  Gemini AI           │     │  Visualization  │
-│  Speech Recognition │     │  Query Analysis      │     │                 │
+│  Voice Input        │────▶│  AWS Bedrock         │────▶│  Dashboard      │
+│  Browser Mic        │     │  Nova 2 Sonic        │     │  Visualization  │
+│  MediaRecorder API  │     │  Speech-to-Speech    │     │  Real-time      │
 └─────────────────────┘     └──────────────────────┘     └─────────────────┘
          │                           │                            │
          │                           ▼                            │
          │                  ┌──────────────────┐                 │
-         │                  │  Datadog Engine  │                 │
+         │                  │  AWS AI Analysis │                 │
          └─────────────────▶│  Detection Rules │◀────────────────┘
                             │  Incident Mgmt   │
+                            │  Anomaly Detect  │
                             └──────────────────┘
                                      │
                                      ▼
                             ┌──────────────────┐
-                            │  Confluent       │
+                            │  Metrics Stream  │
                             │  Real-time       │
-                            │  Data Stream     │
+                            │  Data Pipeline   │
                             │  (<1ms latency)  │
                             └──────────────────┘
 ```
 
 **Integration Flow:**
-1. **ElevenLabs** → Voice queries captured and transcribed
-2. **Google Cloud Gemini** → Analyzes queries, generates insights, creates recommendations
-3. **Confluent** → Streams telemetry data in real-time to dashboard
-4. **Datadog** → Detection rules monitor stream, trigger incidents with AI context
+1. **Voice Capture** → Browser microphone captures audio queries
+2. **AWS Nova 2 Sonic** → Speech-to-speech processing with context awareness
+3. **AWS Bedrock** → AI analysis, insights generation, and predictions
+4. **Real-time Metrics** → Live telemetry dashboard with streaming updates
+5. **Smart Alerts** → Detection rules monitor metrics, trigger AI-powered incidents
 
 ## 🚀 Key Features
 
-### 1. Voice-Driven Query Interface (ElevenLabs)
-- **Natural language processing** - Ask questions in plain English
-- **Real-time voice feedback** - Spoken responses with context
-- **Smart navigation** - Automatically switches to relevant dashboard views
-- **Conversational AI** - Multi-turn conversations about your metrics
+### 1. AWS Nova 2 Sonic Voice Interface
+- **Speech-to-speech AI** - Ultra-low latency audio-to-audio responses
+- **Context-aware conversations** - Understands your metrics, alerts, and system state
+- **Conversation memory** - Multi-turn dialogues with full history
+- **Real-time visualization** - Animated recording states and audio levels
+- **Secure credentials** - Encrypted AWS access key storage
 
-### 2. Real-Time Telemetry Dashboard (Confluent)
-- **Live data streaming** - Events processed in real-time with <1ms lag
-- **Event-driven updates** - Dashboard reflects streaming data instantly
-- **Beautiful charts** - SVG-based real-time graphs
-- **Stream monitoring** - Track events/sec, partitions, and lag
+### 2. Real-Time Telemetry Dashboard
+- **Live data streaming** - Events processed in real-time with sub-second updates
+- **Beautiful charts** - D3-based real-time graphs and visualizations
 - **P95/P99 latency tracking** - Performance percentiles at a glance
 
 ### 3. Intelligent Detection Rules (Datadog)
@@ -164,13 +158,15 @@ VoiceWatch AI responds with both **spoken explanations** and **visual dashboards
 - **Easy management** - Toggle rules on/off with visual status indicators
 - **Rule duplication** - Clone existing rules for similar thresholds
 - **Actionable alerts** - Clear messages with metric values and context
+- **SLO tracking** - Service level objective monitoring with breach alerts
 
-### 4. AI-Powered Insights (Google Cloud Gemini)
-- **Real-time analysis** - Gemini AI evaluates metrics every 30 seconds
-- **Health scoring** - Intelligent system health assessment
-- **Trend detection** - Identifies performance patterns and anomalies
-- **Incident recommendations** - AI-generated remediation steps
-- **Conversational responses** - Natural language query understanding
+### 4. AWS AI-Powered Insights
+- **Real-time analysis** - AWS Bedrock evaluates metrics continuously
+- **Anomaly detection** - Intelligent pattern recognition and outlier identification  
+- **Predictive forecasting** - Trend prediction with confidence scoring
+- **Root cause analysis** - AI-generated diagnosis of system issues
+- **Optimization recommendations** - Cost and performance improvement suggestions
+- **Smart remediation** - One-click fixes for common problems
 
 ### 5. Screenshot Capture & Documentation
 - **Manual capture** - Capture visible area, full page, or specific elements
@@ -182,9 +178,9 @@ VoiceWatch AI responds with both **spoken explanations** and **visual dashboards
 - **See full documentation**: [Screenshot Capture Guide](./SCREENSHOT_CAPTURE.md)
 
 ### 6. LLM Application Simulator
-- **Realistic telemetry** - Simulates Gemini/Claude API calls
+- **Realistic telemetry** - Simulates various LLM API call patterns
 - **Varied scenarios** - Normal, slow, error, spike patterns
-- **Multiple models** - gemini-1.5-pro, gemini-1.5-flash, claude-3-5-sonnet
+- **Multiple model simulation** - Various performance profiles
 - **Continuous generation** - Real-time data stream for demonstrations
 
 ## 📊 Monitored Metrics
@@ -201,24 +197,24 @@ VoiceWatch AI responds with both **spoken explanations** and **visual dashboards
 
 ## 🎨 Design Philosophy
 
-VoiceWatch AI follows a **mission control aesthetic** - think NASA meets modern AI:
+VoiceWatch AI follows a **mission control aesthetic** - sleek, modern, AI-driven:
 
-- **Deep navy backgrounds** with electric blue accents
+- **Deep navy backgrounds** with electric blue and purple accents
 - **Futuristic Space Grotesk typography** for technical precision
-- **Real-time pulsing animations** on voice interactions
+- **Real-time animations** on voice interactions with audio level visualization
 - **Color-coded severity** (green/yellow/red) for instant status recognition
-- **Glassmorphic cards** with subtle gradients and borders
-- **Responsive SVG charts** that update smoothly
+- **Modern card design** with subtle gradients and borders
+- **Responsive D3 charts** that update smoothly in real-time
 
 ## 🛠️ Technical Stack
 
 - **Frontend**: React 19 + TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **Voice**: Web Speech API (browser native)
-- **AI**: Google Cloud Vertex AI / Gemini (via Spark SDK)
-- **Animations**: Framer Motion
+- **Styling**: Tailwind CSS v4 + shadcn/ui v4 components
+- **Voice**: MediaRecorder API (browser native) + AWS Nova 2 Sonic
+- **AI**: AWS Bedrock with Amazon Nova (via Spark SDK)
+- **Animations**: Framer Motion for smooth transitions
 - **State**: React Hooks + useKV persistence
-- **Charts**: Custom SVG visualizations
+- **Charts**: D3.js for advanced visualizations
 - **Icons**: Phosphor Icons
 
 ## 📦 Installation & Setup
