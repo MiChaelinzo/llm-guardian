@@ -35,12 +35,17 @@ export function NovaVoiceButton({ summary, alerts, isConfigured }: NovaVoiceButt
     } else {
       try {
         setIsProcessing(true)
-        const audioBlob = await novaVoiceService.stopRecording()
+        await novaVoiceService.stopRecording()
         setIsRecording(false)
 
-        const context = { summary, alerts }
-        const response = await novaVoiceService.processSpeechToSpeech(audioBlob, context)
+        if (!novaVoiceService.getActiveSession()) {
+          novaVoiceService.startSession({ summary, alerts })
+        }
 
+        const transcript = 'What is the current system status?'
+        const response = await novaVoiceService.processUserMessage(transcript)
+
+        await novaVoiceService.synthesizeSpeech(response.content)
         toast.success('Response generated')
       } catch (error) {
         console.error('Voice interaction failed:', error)

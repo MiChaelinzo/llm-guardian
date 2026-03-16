@@ -15,7 +15,7 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs'
-import { Waveform, Webhook, Screenshot, Envelope, CalendarDots } from '@phosphor-icons/react'
+import { Waveform, Globe, Screencast, Envelope, CalendarDots } from '@phosphor-icons/react'
 
 interface SettingsProps {
   incidents?: Incident[]
@@ -52,15 +52,15 @@ export function Settings({ incidents = [], alerts = [], metrics = [] }: Settings
             AWS Nova
           </TabsTrigger>
           <TabsTrigger value="webhooks" className="gap-2">
-            <Webhook size={16} />
+            <Globe size={16} />
             Webhooks
           </TabsTrigger>
           <TabsTrigger value="webhook-status" className="gap-2">
-            <Webhook size={16} />
+            <Globe size={16} />
             Status
           </TabsTrigger>
           <TabsTrigger value="capture" className="gap-2">
-            <Screenshot size={16} />
+            <Screencast size={16} />
             Capture
           </TabsTrigger>
           <TabsTrigger value="email" className="gap-2">
@@ -120,10 +120,7 @@ export function Settings({ incidents = [], alerts = [], metrics = [] }: Settings
               Configure email recipients and notification preferences for alerts and incidents
             </p>
           </div>
-          <EmailNotifications
-            incidents={incidents}
-            alerts={alerts}
-          />
+          <EmailNotifications />
         </TabsContent>
 
         <TabsContent value="digest" className="space-y-4">

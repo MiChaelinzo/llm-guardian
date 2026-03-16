@@ -1,19 +1,20 @@
 import { rateLimitedLLMCall } from './rate-limiter'
+import type { MetricsSummary, Alert } from './types'
 
-
+export interface NovaVoiceConfig {
+  accessKeyId: string
+  secretAccessKey: string
   region: string
-}
-export interface NovaConv
-  region: string
-  audioUrl?: strin
+  enabled: boolean
 }
 
-  startedAt: number
-  context: {
+export interface NovaConversationMessage {
+  id: string
+  role: 'user' | 'assistant'
   content: string
   timestamp: number
   audioUrl?: string
- 
+}
 
 export interface NovaVoiceSession {
   id: string
@@ -24,7 +25,7 @@ export interface NovaVoiceSession {
     summary?: MetricsSummary
     alerts?: Alert[]
   }
- 
+}
 
 class NovaVoiceService {
   private mediaRecorder: MediaRecorder | null = null
@@ -34,16 +35,16 @@ class NovaVoiceService {
 
   setConfig(config: NovaVoiceConfig): void {
     this.config = config
-
+  }
 
   getConfig(): NovaVoiceConfig | null {
     return this.config
-   
+  }
 
   isConfigured(): boolean {
     return this.config !== null && this.config.enabled && 
            !!this.config.accessKeyId && !!this.config.secretAccessKey
-   
+  }
 
   startSession(context: { summary: MetricsSummary; alerts: Alert[] }): NovaVoiceSession {
     this.activeSession = {
@@ -54,15 +55,59 @@ class NovaVoiceService {
       context
     }
     return this.activeSession
-   
+  }
 
-          role: 'user',
+  getActiveSession(): NovaVoiceSession | null {
     return this.activeSession
-   
+  }
 
-      console.error('Transcription failed:', error
+  endSession(): void {
+    this.activeSession = null
+  }
+
+  async processUserMessage(transcript: string): Promise<NovaConversationMessage> {
+    if (!this.activeSession) {
+      throw new Error('No active session')
+    }
+
+    const userMessage: NovaConversationMessage = {
+      id: `msg_${Date.now()}_user`,
+      role: 'user',
+      content: transcript,
+      timestamp: Date.now()
+    }
+
+    this.activeSession.messages.push(userMessage)
+    this.activeSession.lastActiveAt = Date.now()
+
+    const criticalAlerts = this.activeSession.context.alerts?.filter(a => a.severity === 'critical') || []
+    const warningAlerts = this.activeSession.context.alerts?.filter(a => a.severity === 'warning') || []
+    
+    const prompt = this.buildPrompt(
+      transcript,
+      this.activeSession.context.summary,
+      criticalAlerts.length,
+      warningAlerts.length
+    )
+
+    const responseText = await this.generateResponse(prompt, criticalAlerts.length)
+
+    const assistantMessage: NovaConversationMessage = {
+      id: `msg_${Date.now()}_assistant`,
+      role: 'assistant',
+      content: responseText,
+      timestamp: Date.now()
+    }
+
+    this.activeSession.messages.push(assistantMessage)
+    this.activeSession.lastActiveAt = Date.now()
+
+    return assistantMessage
+  }
+
+  getSessionHistory(): NovaConversationMessage[] {
     return this.activeSession?.messages || []
-
+  }
 
   async startRecording(): Promise<void> {
     try {
@@ -74,7 +119,7 @@ class NovaVoiceService {
       this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
         if (event.data.size > 0) {
           this.audioChunks.push(event.data)
-      con
+        }
       }
 
       this.mediaRecorder.start()
@@ -82,115 +127,52 @@ class NovaVoiceService {
       console.error('Failed to start recording:', error)
       throw error
     }
-   
+  }
 
-  private buildPrompt(
+  async stopRecording(): Promise<string> {
     return new Promise((resolve, reject) => {
-    warningCount: number,
+      if (!this.mediaRecorder) {
         reject(new Error('No active recording'))
         return
       }
 
       this.mediaRecorder.onstop = () => {
-- Active Critical Alerts: ${criticalCount}
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' })
         this.audioChunks = []
-${alertDetails || 'No acti
-Provide
-
-  }
-  private async generateResponse(prompt: stri
-      c
-
-    }
-
-   
-
-        const voices = window.speechSynthesis.getVoices()
-         
-            v.name.includes('Google US English')
-
-
-
-      
-    }
-    return 'synthesized://fallback'
-
-    return new Promise((resolve, 
-
-        co
+        
+        this.blobToBase64(audioBlob).then(resolve).catch(reject)
       }
-      
-      }
-      reader.readAsDa
+
+      this.mediaRecorder.stop()
+      this.mediaRecorder.stream.getTracks().forEach(track => track.stop())
+    })
   }
-  getMessages(): NovaConversationMessage[
-  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-${alertDetails || 'No active alerts'}
+  private buildPrompt(
+    userQuery: string,
+    summary: MetricsSummary | undefined,
+    criticalCount: number,
+    warningCount: number
+  ): string {
+    const alertDetails = criticalCount > 0 || warningCount > 0
+      ? `- Critical: ${criticalCount}\n- Warning: ${warningCount}`
+      : 'No active alerts'
+
+    return `You are an AI observability assistant monitoring AWS-based LLM systems.
+
+Current System Status:
+- Total Requests: ${summary?.totalRequests || 0}
+- Average Latency: ${summary?.avgLatency || 0}ms
+- P99 Latency: ${summary?.p99Latency || 0}ms
+- Error Rate: ${summary?.errorRate || 0}%
+- Total Cost: $${summary?.totalCost || 0}
+- Active Critical Alerts: ${criticalCount}
+- Active Warning Alerts: ${warningCount}
+
+Alert Status:
+${alertDetails}
+
+User Query: "${userQuery}"
 
 Provide a response that:
 1. Directly answers the user's question
