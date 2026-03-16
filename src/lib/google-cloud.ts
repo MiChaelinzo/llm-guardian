@@ -38,7 +38,7 @@ export async function detectAnomalies(
   try {
     const recentData = metricsData.slice(-20)
     const dataStr = JSON.stringify(recentData);
-    const promptText = `Analyze the provided metrics data for anomalies.
+    const promptText = spark.llmPrompt`Analyze the provided metrics data for anomalies using AWS Bedrock.
 Data: ${dataStr}
 
 Focus on:
@@ -70,7 +70,7 @@ export async function generatePredictiveInsights(
   try {
     const recentData = metricsData.slice(-15)
     const dataStr = JSON.stringify(recentData);
-    const promptText = `Analyze these metrics and predict future trends.
+    const promptText = spark.llmPrompt`Analyze these metrics and predict future trends using AWS Bedrock.
 Data: ${dataStr}
 
 For each metric provide:
@@ -100,7 +100,7 @@ export async function analyzeRootCause(
   try {
     const recentData = metricsData.slice(-10)
     const dataStr = JSON.stringify(recentData);
-    const promptText = `Analyze the root cause of the system status based on these metrics.
+    const promptText = spark.llmPrompt`Analyze the root cause of the system status based on these metrics using AWS Bedrock.
 Metrics: ${dataStr}
 
 Provide:
@@ -135,7 +135,7 @@ export async function getOptimizationRecommendations(
   try {
     const recentData = metrics.slice(-15)
     const dataStr = JSON.stringify(recentData);
-    const promptText = `Based on the provided metrics, suggest optimization strategies.
+    const promptText = spark.llmPrompt`Based on the provided metrics, suggest optimization strategies using AWS Bedrock.
 Data: ${dataStr}
 
 Focus on:
@@ -163,7 +163,7 @@ export async function analyzeConversationQuality(
 ): Promise<ConversationQuality | null> {
   try {
     const truncatedText = conversationText.slice(0, 1000)
-    const promptText = `You are an expert in conversational AI quality analysis.
+    const promptText = spark.llmPrompt`You are an expert in conversational AI quality analysis using AWS Bedrock.
 Analyze this conversation:
 
 ${truncatedText}

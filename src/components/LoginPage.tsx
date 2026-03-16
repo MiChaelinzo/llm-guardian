@@ -63,7 +63,7 @@ export function LoginPage({ onLogin, isLoading = false }: LoginPageProps) {
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                   VoiceWatch AI
                 </h1>
-                <p className="text-lg text-muted-foreground">Conversational LLM Observability</p>
+                <p className="text-lg text-muted-foreground">AWS-Native LLM Observability</p>
               </div>
             </div>
 

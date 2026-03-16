@@ -592,7 +592,7 @@ function App() {
               <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                 VoiceWatch AI
               </h1>
-              <p className="text-sm text-muted-foreground">Conversational LLM Observability Platform</p>
+              <p className="text-sm text-muted-foreground">AWS-Native LLM Observability Platform</p>
             </div>
           </div>
 
@@ -765,7 +765,7 @@ function App() {
           <TabsContent value="analytics" className="space-y-4">
             <div>
               <h2 className="text-2xl font-bold mb-2">Advanced AI Analytics</h2>
-              <p className="text-muted-foreground">Powered by Google Cloud Gemini for intelligent anomaly detection, predictions, and optimization</p>
+              <p className="text-muted-foreground">Powered by AWS Bedrock for intelligent anomaly detection, predictions, and optimization</p>
             </div>
             <AdvancedAnalytics
               metrics={metrics || []}
@@ -793,7 +793,7 @@ function App() {
           <TabsContent value="collaboration" className="space-y-4">
             <div>
               <h2 className="text-2xl font-bold mb-2">Real-Time Collaboration</h2>
-              <p className="text-muted-foreground">Multi-user monitoring with WebSocket support and team chat for distributed teams</p>
+              <p className="text-muted-foreground">Multi-user monitoring with real-time activity feeds and team chat for distributed teams</p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
