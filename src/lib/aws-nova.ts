@@ -1,5 +1,5 @@
 import { rateLimitedLLMCall } from './rate-limiter'
-import type { MetricsSummary, Alert } from './types'
+
 
 export interface NovaVoiceConfig {
   accessKeyId: string
@@ -62,38 +62,38 @@ class NovaVoiceService {
   getSessionHistory(): NovaConversationMessage[] {
     return this.activeSession?.messages || []
   }
-
   async startRecording(): Promise<void> {
+  async startRecording(): Promise<void> {})
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-    try {
-      this.audioChunks = []
+    try {[]
+      this.audioChunks = []stream, {
       this.mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm',
       })
-
+e = (event: BlobEvent) => {
       this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
         this.audioChunks.push(event.data)
       }
-
+     this.mediaRecorder.onstop = () => {
       this.mediaRecorder.onstop = () => {
         this.mediaRecorder = null
       }
 
       this.mediaRecorder.start()
-    } catch (error) {
+    } catch (error) {ing:', error)
       console.error('Failed to start recording:', error)
       throw error
     }
-  }
 
-  stopRecording(): Promise<Blob> {
+ stopRecording(): Promise<Blob> {
+  stopRecording(): Promise<Blob> {eject) => {
     return new Promise((resolve, reject) => {
       if (!this.mediaRecorder) {
         reject(new Error('No active recording'))
         return
       }
-
+      this.mediaRecorder.onstop = () => {
       this.mediaRecorder.onstop = () => {
         const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' })
         this.audioChunks = []
@@ -107,10 +107,10 @@ class NovaVoiceService {
 
       this.mediaRecorder.stop()
     })
-  }
 
   async transcribeAudio(audioBlob: Blob): Promise<string> {
-    try {
+  async transcribeAudio(audioBlob: Blob): Promise<string> {
+    try { this.blobToBase64(audioBlob)
       const base64Audio = await this.blobToBase64(audioBlob)
       const prompt = `Transcribe the following audio data to text.\n\nAudio data: ${base64Audio.substring(0, 100)}...`
 
@@ -120,114 +120,91 @@ class NovaVoiceService {
       console.error('Transcription failed:', error)
       return this.fallbackTranscription()
     }
-  }
 
   private fallbackTranscription(): string {
+  private fallbackTranscription(): string {
     return ''
-  }
 
   async processSpeechToSpeech(
+  async processSpeechToSpeech(
     audioBlob: Blob,
-    context: { summary: MetricsSummary; alerts: Alert[] }
+    alerts: Alert[],
+    summary?: MetricsSummary> {
   ): Promise<{ text: string; audioUrl: string }> {
-    if (!this.isConfigured()) {
-      return this.fallbackSpeechToSpeech(context)
-    }
-
-    try {
+    try {ranscribeAudio(audioBlob)
       const transcription = await this.transcribeAudio(audioBlob)
 
       if (this.activeSession) {
         this.activeSession.messages.push({
-          role: 'user',
           content: transcription,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
         this.activeSession.lastActiveAt = Date.now()
       }
 
-      const responseText = await this.generateResponse(transcription, context)
+      const activeAlerts = alerts.filter((a) => a.active)
+      const criticalCount = activeAlerts.filter((a) => a.severity === 'critical').length
+      const warningCount = activeAlerts.filter((a) => a.severity === 'warning').length
+
+      const alertDetails = activeAlerts
+        .map((a) => `[${a.severity.toUpperCase()}] ${a.message}`)
+        .join('\n') || ''
+
+      const prompt = this.buildPrompt(transcription, summary, criticalCount, warningCount, alertDetails)
+
+      const responseText = await this.generateResponse(prompt, criticalCount)
       const audioUrl = await this.synthesizeSpeech(responseText)
 
       if (this.activeSession) {
         this.activeSession.messages.push({
-          role: 'assistant',
           content: responseText,
           timestamp: Date.now(),
-          audioUrl
+          audioUrl,
         })
-        this.activeSession.lastActiveAt = Date.now()
       }
 
       return { text: responseText, audioUrl }
     } catch (error) {
       console.error('Speech-to-speech processing failed:', error)
-      return this.fallbackSpeechToSpeech(context)
-    }
+      throw error
+  }
   }
 
-  async generateResponse(
-    userQuery: string,
-    context: { summary: MetricsSummary; alerts: Alert[] }
-  ): Promise<string> {
-    const { summary, alerts } = context
-    const activeAlerts = alerts.filter(a => !a.acknowledged)
-    const criticalCount = activeAlerts.filter(a => a.severity === 'critical').length
-    const warningCount = activeAlerts.filter(a => a.severity === 'warning').length
+  private buildPrompt(
+    transcription: string,
+    summary: MetricsSummary | undefined,
+    criticalCount: number,
+    warningCount: number,
+    alertDetails: string
+  ): string {
+    return `You help engineers monitor their systems.
 
-    const conversationHistory = this.activeSession?.messages.slice(-6).map(m =>
-      `${m.role}: ${m.content}`
-    ).join('\n') || ''
+User question: ${transcription}
 
-    const prompt = window.spark.llmPrompt`You are an AI assistant powered by AWS Nova 2 Sonic for VoiceWatch AI.
-
-You help engineers monitor their AI applications through natural voice conversations.
-
-Current System Metrics:
-- Average Latency: ${Math.round(summary.avgLatency)}ms
-- P95 Latency: ${Math.round(summary.p95Latency)}ms
-- P99 Latency: ${Math.round(summary.p99Latency)}ms
-- Error Rate: ${summary.errorRate.toFixed(2)}%
-- Total Requests: ${summary.totalRequests}
-- Total Cost: $${summary.totalCost.toFixed(4)}
+Current Metrics:
+- P95 Latency: ${Math.round(summary?.p95Latency ?? 0)}ms
+- Error Rate: ${summary?.errorRate ?? 0}%
 - Active Critical Alerts: ${criticalCount}
 - Active Warning Alerts: ${warningCount}
 
-Recent Conversation:
-${conversationHistory}
+Recent Alerts:
+${alertDetails}
 
-User Query: ${userQuery}
-
-Provide a concise, natural, conversational response (2-4 sentences) that:
+Instructions:
 1. Directly answers the user's question
-2. Highlights any urgent issues if present
-3. Uses specific numbers from the metrics
-4. Sounds natural when spoken aloud
+2. Provides actionable insights
+3. Uses specific numbers from the metrics`
 
-Response:`
-
-    try {
-      const response = await rateLimitedLLMCall(prompt, 'gpt-4o', false)
-      return response.trim()
+  private async generateResponse(prompt: string, criticalCount: number): Promise<string> {
+  private async generateResponse(prompt: string, criticalCount: number): Promise<string> {
+    try {edLLMCall(prompt, 'gpt-4o-mini', false)
+      const response = await rateLimitedLLMCall(prompt, 'gpt-4o-mini', false)
+      return response
     } catch (error) {
-      if (error instanceof Error && error.message.includes('Rate limit')) {
-        return `I'm currently rate limited. Here's a quick summary: Your system has ${criticalCount} critical alerts and ${warningCount} warnings. Average latency is ${Math.round(summary.avgLatency)}ms.`
-      }
-      return `System overview: ${criticalCount} critical alerts, ${warningCount} warnings. Average latency: ${Math.round(summary.avgLatency)}ms. Error rate: ${summary.errorRate.toFixed(2)}%.`
+      return `Rate limiting active. Current status: ${criticalCount} critical alert(s). Please try again shortly.`
     }
-  }
 
-  private fallbackSpeechToSpeech(context: { summary: MetricsSummary; alerts: Alert[] }): { text: string; audioUrl: string } {
-    const { summary, alerts } = context
-    const criticalCount = alerts.filter(a => a.severity === 'critical' && !a.acknowledged).length
-
-    const text = criticalCount > 0
-      ? `Attention: ${criticalCount} critical alerts detected. Average latency is ${Math.round(summary.avgLatency)}ms with a ${summary.errorRate.toFixed(1)}% error rate.`
-      : `System is running normally. Average latency: ${Math.round(summary.avgLatency)}ms. Error rate: ${summary.errorRate.toFixed(1)}%.`
-
-    return { text, audioUrl: 'synthesized://fallback' }
-  }
-
+  async synthesizeSpeech(text: string): Promise<string> {
   async synthesizeSpeech(text: string): Promise<string> {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       return new Promise<string>((resolve) => {
@@ -267,8 +244,10 @@ Response:`
   }
 
   getMessages(): NovaConversationMessage[] {
-    return this.activeSession?.messages || []
   }
 }
+}
+
+export const novaVoiceService = new NovaVoiceService()
 
 export const novaVoiceService = new NovaVoiceService()
