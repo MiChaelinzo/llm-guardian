@@ -26,14 +26,18 @@ export interface NovaVoiceSession {
   }
 }
 
-export class NovaVoiceService {
-  private config: NovaVoiceConfig | null = null
-  private activeSession: NovaVoiceSession | null = null
+class NovaVoiceService {
   private mediaRecorder: MediaRecorder | null = null
   private audioChunks: Blob[] = []
+  private activeSession: NovaVoiceSession | null = null
+  private config: NovaVoiceConfig | null = null
 
-  setConfig(config: NovaVoiceConfig) {
+  setConfig(config: NovaVoiceConfig): void {
     this.config = config
+  }
+
+  getConfig(): NovaVoiceConfig | null {
+    return this.config
   }
 
   isConfigured(): boolean {
@@ -55,29 +59,35 @@ export class NovaVoiceService {
     return this.activeSession
   }
 
+  getSessionHistory(): NovaConversationMessage[] {
+    return this.activeSession?.messages || []
+  }
+
   async startRecording(): Promise<void> {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      
       this.audioChunks = []
       this.mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: 'audio/webm',
       })
 
-      this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          this.audioChunks.push(event.data)
-        }
+      this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
+        this.audioChunks.push(event.data)
+      }
+
+      this.mediaRecorder.onstop = () => {
+        this.mediaRecorder = null
       }
 
       this.mediaRecorder.start()
     } catch (error) {
       console.error('Failed to start recording:', error)
-      throw new Error('Microphone access denied or unavailable')
+      throw error
     }
   }
 
-  async stopRecording(): Promise<Blob> {
+  stopRecording(): Promise<Blob> {
     return new Promise((resolve, reject) => {
       if (!this.mediaRecorder) {
         reject(new Error('No active recording'))
@@ -85,13 +95,14 @@ export class NovaVoiceService {
       }
 
       this.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm;codecs=opus' })
-        
-        this.mediaRecorder?.stream.getTracks().forEach(track => track.stop())
-        this.mediaRecorder = null
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' })
         this.audioChunks = []
-        
+        this.mediaRecorder = null
         resolve(audioBlob)
+      }
+
+      this.mediaRecorder.onerror = () => {
+        reject(new Error('Recording failed'))
       }
 
       this.mediaRecorder.stop()
@@ -99,29 +110,20 @@ export class NovaVoiceService {
   }
 
   async transcribeAudio(audioBlob: Blob): Promise<string> {
-    if (!this.isConfigured()) {
-      return this.fallbackTranscription()
-    }
-
     try {
       const base64Audio = await this.blobToBase64(audioBlob)
-      
-      const prompt = spark.llmPrompt`You are transcribing audio for an AI observability platform voice assistant.
-The user is speaking about their LLM application metrics, alerts, or system health.
-
-Transcribe the following audio and return only the transcribed text without any additional commentary.
-If you cannot transcribe, return a likely query about system health or metrics.
-
-Audio data: ${base64Audio.substring(0, 100)}... (truncated for demo)
-
-Return only the transcribed text.`
+      const prompt = `Transcribe the following audio data to text.\n\nAudio data: ${base64Audio.substring(0, 100)}...`
 
       const transcription = await rateLimitedLLMCall(prompt, 'gpt-4o-mini', false)
-      return transcription.trim()
+      return transcription
     } catch (error) {
       console.error('Transcription failed:', error)
       return this.fallbackTranscription()
     }
+  }
+
+  private fallbackTranscription(): string {
+    return ''
   }
 
   async processSpeechToSpeech(
@@ -134,7 +136,7 @@ Return only the transcribed text.`
 
     try {
       const transcription = await this.transcribeAudio(audioBlob)
-      
+
       if (this.activeSession) {
         this.activeSession.messages.push({
           role: 'user',
@@ -145,7 +147,6 @@ Return only the transcribed text.`
       }
 
       const responseText = await this.generateResponse(transcription, context)
-      
       const audioUrl = await this.synthesizeSpeech(responseText)
 
       if (this.activeSession) {
@@ -174,11 +175,11 @@ Return only the transcribed text.`
     const criticalCount = activeAlerts.filter(a => a.severity === 'critical').length
     const warningCount = activeAlerts.filter(a => a.severity === 'warning').length
 
-    const conversationHistory = this.activeSession?.messages.slice(-6).map(m => 
+    const conversationHistory = this.activeSession?.messages.slice(-6).map(m =>
       `${m.role}: ${m.content}`
     ).join('\n') || ''
 
-    const prompt = spark.llmPrompt`You are an AI assistant powered by AWS Nova 2 Sonic for VoiceWatch AI, a conversational LLM observability platform.
+    const prompt = window.spark.llmPrompt`You are an AI assistant powered by AWS Nova 2 Sonic for VoiceWatch AI.
 
 You help engineers monitor their AI applications through natural voice conversations.
 
@@ -210,86 +211,62 @@ Response:`
       return response.trim()
     } catch (error) {
       if (error instanceof Error && error.message.includes('Rate limit')) {
-        return `Rate limiting active. Current status: ${criticalCount > 0 ? 'Critical alerts detected' : 'System operating normally'}. Average latency ${Math.round(summary.avgLatency)} milliseconds.`
+        return `I'm currently rate limited. Here's a quick summary: Your system has ${criticalCount} critical alerts and ${warningCount} warnings. Average latency is ${Math.round(summary.avgLatency)}ms.`
       }
-      throw error
+      return `System overview: ${criticalCount} critical alerts, ${warningCount} warnings. Average latency: ${Math.round(summary.avgLatency)}ms. Error rate: ${summary.errorRate.toFixed(2)}%.`
     }
   }
 
+  private fallbackSpeechToSpeech(context: { summary: MetricsSummary; alerts: Alert[] }): { text: string; audioUrl: string } {
+    const { summary, alerts } = context
+    const criticalCount = alerts.filter(a => a.severity === 'critical' && !a.acknowledged).length
+
+    const text = criticalCount > 0
+      ? `Attention: ${criticalCount} critical alerts detected. Average latency is ${Math.round(summary.avgLatency)}ms with a ${summary.errorRate.toFixed(1)}% error rate.`
+      : `System is running normally. Average latency: ${Math.round(summary.avgLatency)}ms. Error rate: ${summary.errorRate.toFixed(1)}%.`
+
+    return { text, audioUrl: 'synthesized://fallback' }
+  }
+
   async synthesizeSpeech(text: string): Promise<string> {
-    if ('speechSynthesis' in window) {
-      return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      return new Promise<string>((resolve) => {
         const utterance = new SpeechSynthesisUtterance(text)
         utterance.rate = 1.1
-        utterance.pitch = 1.0
         utterance.volume = 1.0
-        
+
         const voices = window.speechSynthesis.getVoices()
-        const preferredVoice = voices.find(v => 
-          v.name.includes('Samantha') || 
-          v.name.includes('Google US English') ||
-          v.name.includes('Microsoft Zira')
+        const preferredVoice = voices.find(
+          (v) =>
+            v.name.includes('Samantha') ||
+            v.name.includes('Google US English')
         )
+
         if (preferredVoice) {
           utterance.voice = preferredVoice
         }
 
         window.speechSynthesis.speak(utterance)
-        
-        resolve('synthesized://browser-tts')
+        resolve('synthesized://browser')
       })
     }
 
     return 'synthesized://fallback'
   }
 
-  private async blobToBase64(blob: Blob): Promise<string> {
+  private blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onloadend = () => {
-        const base64 = reader.result as string
-        resolve(base64.split(',')[1] || base64)
+        const result = reader.result as string
+        resolve(result.split(',')[1] ?? '')
       }
       reader.onerror = reject
       reader.readAsDataURL(blob)
     })
   }
 
-  private fallbackTranscription(): string {
-    const queries = [
-      "What's the system health status?",
-      "Show me current latency metrics",
-      "Are there any active alerts?",
-      "What's the error rate?",
-      "Tell me about the recent incidents"
-    ]
-    return queries[Math.floor(Math.random() * queries.length)]
-  }
-
-  private async fallbackSpeechToSpeech(
-    context: { summary: MetricsSummary; alerts: Alert[] }
-  ): Promise<{ text: string; audioUrl: string }> {
-    const { summary, alerts } = context
-    const activeAlerts = alerts.filter(a => !a.acknowledged)
-    const criticalCount = activeAlerts.filter(a => a.severity === 'critical').length
-    
-    let text: string
-    if (criticalCount > 0) {
-      text = `Critical alert detected. You have ${criticalCount} critical issues requiring attention. Average latency is ${Math.round(summary.avgLatency)} milliseconds with ${summary.errorRate.toFixed(1)}% error rate.`
-    } else {
-      text = `System is operating normally. Average latency ${Math.round(summary.avgLatency)} milliseconds across ${summary.totalRequests} requests. Error rate is ${summary.errorRate.toFixed(1)}%.`
-    }
-
-    const audioUrl = await this.synthesizeSpeech(text)
-    
-    return { text, audioUrl }
-  }
-
-  endSession() {
-    this.activeSession = null
-  }
-
-  getSessionHistory(): NovaConversationMessage[] {
+  getMessages(): NovaConversationMessage[] {
     return this.activeSession?.messages || []
   }
 }
