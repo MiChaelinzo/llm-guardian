@@ -1,11 +1,11 @@
 export interface TelemetryMetric {
-  id: string
+  timestamp:
   timestamp: number
   type: 'request' | 'latency' | 'error' | 'tokens' | 'cost'
-  value: number
-  metadata: {
-    model: string
-    endpoint: string
+    statusCode:
+    errorType
+}
+export interface Met
     statusCode: number
     userId: string
     errorType?: string
@@ -14,54 +14,54 @@ export interface TelemetryMetric {
 
 export interface MetricsSummary {
   totalRequests: number
-  errorRate: number
-  avgLatency: number
-  p95Latency: number
-  p99Latency: number
-  totalCost: number
-  totalTokens: number
-}
-
-export type MetricType = 'avgLatency' | 'p95Latency' | 'p99Latency' | 'errorRate' | 'totalCost' | 'totalTokens' | 'totalRequests'
-
-export type RuleCondition = 'gt' | 'lt' | 'eq' | 'gte' | 'lte'
-export type RuleSeverity = 'info' | 'warning' | 'critical'
-export type RuleAction = 'alert' | 'incident' | 'notify'
-
-export interface DetectionRule {
-  id: string
   name: string
-  description: string
   metric: MetricType
-  condition: RuleCondition
   threshold: number
-  severity: RuleSeverity
   enabled: boolean
-  actions: RuleAction[]
 }
+export interface Aler
+ 
 
-export interface Alert {
-  id: string
-  ruleId: string
-  ruleName: string
-  message: string
-  severity: RuleSeverity
   timestamp: number
-  value: number
-  metadata?: {
-    metric: MetricType
+
     threshold: number
-    condition: RuleCondition
   }
-  acknowledged: boolean
 }
 
-export type IncidentStatus = 'open' | 'investigating' | 'resolved'
+export interface FileAttachment 
+  name: stri
+  size: number
+  uploadedAt: number
+  uploadedByName: st
 
-export interface FileAttachment {
   id: string
+  description: string
+  status: Incident
+  resolvedAt?: number
+ 
+
+export type WebhookProvi
+export inter
   name: string
-  type: string
+  enabled: boolean
+  severityFilter:
+}
+export interface SL
+  name: string
+  metric: Metr
+  timeWindow: number
+  currentValue?: numb
+  breaches?: number
+}
+export interface Dashbo
+ 
+
+  config?: Record<string, any>
+
+  id: string
+  isDefault:
+  createdAt: n
+
   size: number
   dataUrl: string
   uploadedAt: number
@@ -70,7 +70,7 @@ export interface FileAttachment {
 }
 
 export interface Incident {
-  id: string
+  }
   title: string
   description: string
   severity: RuleSeverity
@@ -134,13 +134,13 @@ export interface FilterPreset {
     status?: IncidentStatus[]
     timeRange?: number
     searchQuery?: string
-  }
+   
 }
 
 export interface NotificationPreference {
   id: string
   userId: string
-  channels: {
+  createdAt: 
     email: boolean
     webhook: boolean
     voice: boolean
@@ -148,69 +148,69 @@ export interface NotificationPreference {
   }
   severityThreshold: RuleSeverity
   quietHours?: {
-    enabled: boolean
+  notifyOnIncidentRe
     start: string
-    end: string
+}
   }
-  grouping: {
+  id: string
     enabled: boolean
     windowMinutes: number
   }
-}
+ 
 
 export interface APIConfig {
   googleCloud: {
-    projectId: string
+
     apiKey: string
     enabled: boolean
   }
   datadog: {
     apiKey: string
-    appKey: string
+
     site: string
     enabled: boolean
   }
-  confluent: {
+
     apiKey: string
     apiSecret: string
     bootstrapServer: string
     enabled: boolean
   }
-  elevenLabs: {
+
     apiKey: string
     agentId: string
     enabled: boolean
-  }
+
 }
 
 export interface UserProfile {
-  userId: string
+
   email: string
   displayName: string
   organization?: string
   createdAt: number
   apiConfig: APIConfig
-}
+
 
 export interface ChatMessage {
   id: string
   incidentId: string
   userId: string
-  userName: string
+
   userAvatar: string
-  content: string
+
   timestamp: number
   type: 'message' | 'system' | 'action'
   metadata?: {
-    action?: string
+
     relatedAlertId?: string
-  }
+
 }
 
 export interface ChatChannel {
-  id: string
+
   incidentId: string
-  name: string
+
   createdAt: number
   participantIds: string[]
   lastMessageAt?: number
@@ -218,24 +218,24 @@ export interface ChatChannel {
 }
 
 export interface EmailNotificationConfig {
-  id: string
+
   email: string
   enabled: boolean
   severityFilter: RuleSeverity[]
-  notifyOnIncidentCreated: boolean
+
   notifyOnIncidentResolved: boolean
   notifyOnAlerts: boolean
   createdAt: number
-}
 
-export interface EmailNotificationLog {
+
+
   id: string
-  email: string
+
   subject: string
   body: string
   sentAt: number
   status: 'sent' | 'failed' | 'pending'
   relatedIncidentId?: string
-  relatedAlertId?: string
+
   errorMessage?: string
-}
+
