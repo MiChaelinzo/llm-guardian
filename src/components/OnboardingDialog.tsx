@@ -2,18 +2,18 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, Sparkle, Cloud, Waveform, Lightning } from '@phosphor-icons/react'
-
-interface OnboardingDialogProps {
-  onComplete: () => void
 }
 
-export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
-  const [isOpen, setIsOpen] = useState(true)
-  const [currentStep, setCurrentStep] = useState(0)
+  const [currentStep, setCurrentS
+  const handleNext = () 
+ 
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
+  }
+  const handleComplete = () => {
+    setTimeout(() => {
+
+
+    {
       setCurrentStep(currentStep + 1)
     } else {
       handleComplete()
@@ -30,38 +30,38 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
   const steps = [
     {
       title: 'Welcome to VoiceWatch AI',
-      description: 'Your conversational LLM observability platform',
-      content: (
-        <div className="space-y-6">
-          <div className="flex items-center justify-center py-8">
-            <div className="relative">
-              <Waveform size={80} weight="fill" className="text-accent animate-pulse-glow" />
-              <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full" />
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            <p className="text-center text-muted-foreground">
-              VoiceWatch AI is a generative AI application built with <strong>Amazon Nova</strong> on AWS, 
-              providing intelligent, voice-driven observability for LLM applications with real-time monitoring, 
-              anomaly detection, and conversational AI insights.
-            </p>
-            
-            <div className="grid grid-cols-1 gap-3">
-              <Card className="p-4 border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <Cloud size={24} weight="fill" className="text-primary" />
-                  <span className="font-semibold">AWS AI with Amazon Nova</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Powered by <strong>AWS Bedrock</strong> and <strong>Amazon Nova 2 Sonic</strong> for ultra-low latency speech-to-speech AI, 
-                  intelligent insights, anomaly detection, and predictive forecasting.
+                  <span className="font-semibold">Voice-Driven Insig
+                
                 </p>
-              </Card>
+            </div>
+        </div>
+    },
+      title: 'Real-Time Monitoring',
+      content: (
+          <p cla
+          
+            <div className="flex item
+              <div>
+                <div className="text-sm text-muted-foreground">Track average, P99, and max response times</
+            </div>
+              <CheckCircle size={20} weight="fill" className="te
+                
+            
+            <div className="flex items-start gap-3 p
+              <div>
+                <div className="text-sm text-muted-foreground"
+            </div>
+        </div>
+    },
+      title: 'AI-Powered Detection',
+      content: (
+          <p className="text-muted-foreground">
+          </p>
+            <Card cla
               
-              <Card className="p-4 border-accent/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Waveform size={24} weight="fill" className="text-accent" />
+              </div>
+                Set threshold-based rules for metrics like lat
+            </Card>
                   <span className="font-semibold">Voice-Driven Insights</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -117,13 +117,13 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
           </p>
           <div className="space-y-3">
             <Card className="p-4 border-primary/30">
-              <div className="flex items-center gap-2 mb-2">
+
                 <Sparkle size={20} weight="fill" className="text-primary" />
                 <span className="font-semibold">Smart Rules Engine</span>
               </div>
-              <p className="text-sm text-muted-foreground">
+          <DialogDescription>{currentStepData.description}<
                 Set threshold-based rules for metrics like latency, error rate, and cost
-              </p>
+        <div class
             </Card>
             <Card className="p-4 border-accent/30">
               <div className="flex items-center gap-2 mb-2">
@@ -134,11 +134,11 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
                 Get notified via voice alerts, webhooks, and email when issues arise
               </p>
             </Card>
-          </div>
+              </
         </div>
-      )
+       
     },
-    {
+     
       title: 'Get Started',
       description: 'Start monitoring your LLM applications',
       content: (
@@ -150,7 +150,7 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
             <div className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/30">
               <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
                 1
-              </div>
+}
               <div>
                 <div className="font-medium">Explore the Dashboard</div>
                 <div className="text-sm text-muted-foreground">View real-time metrics and charts</div>
@@ -158,53 +158,53 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
               <div className="w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
-                2
+
               </div>
-              <div>
+
                 <div className="font-medium">Configure Detection Rules</div>
                 <div className="text-sm text-muted-foreground">Set up custom alerts for your needs</div>
               </div>
-            </div>
+
             <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
               <div className="w-6 h-6 rounded-full bg-success text-success-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
                 3
-              </div>
+
               <div>
                 <div className="font-medium">Try Voice Commands</div>
                 <div className="text-sm text-muted-foreground">Click the microphone to ask questions</div>
-              </div>
+
             </div>
-          </div>
+
         </div>
-      )
+
     }
-  ]
 
-  const currentStepData = steps[currentStep]
 
-  return (
+
+
+
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{currentStepData.title}</DialogTitle>
+
           <DialogDescription>{currentStepData.description}</DialogDescription>
-        </DialogHeader>
+
         
         <div className="py-4">
           {currentStepData.content}
-        </div>
 
-        <div className="flex items-center justify-between pt-4 border-t">
+
+
           <div className="flex items-center gap-2">
-            {currentStep > 0 && (
+
               <Button
                 variant="outline"
                 onClick={() => setCurrentStep(currentStep - 1)}
-              >
+
                 Back
-              </Button>
+
             )}
-          </div>
+
           
           <div className="flex items-center gap-4">
             <div className="flex gap-1">
@@ -220,10 +220,10 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
             
             <Button onClick={handleNext}>
               {currentStep < steps.length - 1 ? 'Next' : 'Get Started'}
-            </Button>
+
           </div>
-        </div>
+
       </DialogContent>
-    </Dialog>
-  )
-}
+
+
+
