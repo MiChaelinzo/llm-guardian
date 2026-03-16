@@ -32,7 +32,10 @@ export function calculateMetrics(metrics: TelemetryMetric[], timeRange: number):
     totalRequests,
     errorRate,
     totalCost,
+    cost: totalCost,
     totalTokens,
+    tokens: totalTokens,
+    requests: totalRequests,
     p95Latency,
     p99Latency,
     requestsPerMinute

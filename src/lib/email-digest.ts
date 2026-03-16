@@ -171,7 +171,10 @@ export class EmailDigestService {
           p95Latency: 0,
           p99Latency: 0,
           totalCost: 0,
+          cost: 0,
           totalTokens: 0,
+          tokens: 0,
+          requests: 0,
           requestsPerMinute: 0
         },
         trends,

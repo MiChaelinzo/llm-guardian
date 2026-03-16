@@ -1,11 +1,15 @@
 export type CollaborationEvent = 
   | { type: 'user_joined'; userId: string; timestamp: number }
   | { type: 'user_left'; userId: string; timestamp: number }
-  | { type: 'presence_update'; userId: string; status: 'active' | 'idle' | 'offline'; timestamp: number }
+  | { type: 'presence_update'; userId: string; status: 'active' | 'idle' | 'offline' | 'away'; timestamp: number }
+  | { type: 'rule_created'; userId: string; ruleName: string; timestamp: number }
   | { type: 'rule_updated'; userId: string; ruleName: string; timestamp: number }
   | { type: 'rule_deleted'; userId: string; ruleName: string; timestamp: number }
   | { type: 'alert_acknowledged'; userId: string; alertId: string; timestamp: number }
   | { type: 'incident_created'; userId: string; incidentId: string; timestamp: number }
+  | { type: 'incident_resolved'; userId: string; incidentId: string; timestamp: number }
+  | { type: 'comment_added'; userId: string; entityId: string; comment: string; timestamp: number }
+  | { type: 'chat_message'; userId: string; incidentId: string; message: string; timestamp: number }
   | { type: 'cursor_move'; userId: string; x: number; y: number; timestamp: number };
 
 export interface CollaborationUser {

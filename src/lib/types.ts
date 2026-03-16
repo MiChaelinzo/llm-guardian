@@ -20,7 +20,10 @@ export interface MetricsSummary {
   p99Latency: number
   errorRate: number
   totalCost: number
+  cost: number
   totalTokens: number
+  tokens: number
+  requests: number
   requestsPerMinute: number
 }
 

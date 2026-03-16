@@ -318,7 +318,11 @@ function App() {
     }
   }, [metrics, rules, alerts, setAlerts, emailConfigs, setEmailLogs, webhooks])
 
-  const handleAddRule = useCallback((rule: DetectionRule) => {
+  const handleAddRule = useCallback((ruleData: Omit<DetectionRule, 'id'>) => {
+    const rule: DetectionRule = {
+      ...ruleData,
+      id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    }
     setRules((current) => [...(current || []), rule])
     toast.success('Detection rule created')
     if (currentUser) {
