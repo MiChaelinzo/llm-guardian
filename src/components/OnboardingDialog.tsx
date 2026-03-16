@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Card } from '@/components/ui/card'
 import { CheckCircle, Sparkle, Lightning } from '@phosphor-icons/react'
 
 interface OnboardingDialogProps {
   onComplete: () => void
-}
+e
 
 export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
   const [currentStep, setCurrentStep] = useState(0)
@@ -18,167 +18,167 @@ export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
     } else {
       handleComplete()
     }
-  }
 
-  const handleComplete = () => {
+
+      title: 'Welcome to VoiceWa
     setIsOpen(false)
-    setTimeout(() => {
+        <div className
       onComplete()
     }, 300)
   }
 
   const steps = [
-    {
+     
       title: 'Welcome to VoiceWatch AI',
       description: 'AWS-Native LLM Observability Platform',
-      content: (
+          </div>
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+    },
             VoiceWatch AI helps you monitor, analyze, and optimize your LLM applications with real-time insights and intelligent alerts.
-          </p>
+      descript
           <div className="space-y-3">
             <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
               <CheckCircle size={20} weight="fill" className="text-success flex-shrink-0 mt-0.5" />
-              <div>
+            <div cl
                 <div className="font-medium">Latency & Performance</div>
                 <div className="text-sm text-muted-foreground">Monitor response times and throughput</div>
               </div>
-            </div>
+                <d
             <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
               <CheckCircle size={20} weight="fill" className="text-success flex-shrink-0 mt-0.5" />
               <div>
                 <div className="font-medium">Error Detection</div>
                 <div className="text-sm text-muted-foreground">Monitor failures and anomalies</div>
-              </div>
+                <div
             </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
+              <div className="w-6 h-6 rounded-full bg-success text-success-foreground flex items
               <CheckCircle size={20} weight="fill" className="text-success flex-shrink-0 mt-0.5" />
               <div>
                 <div className="font-medium">Cost Analytics</div>
                 <div className="text-sm text-muted-foreground">Track spending and optimize usage</div>
               </div>
-            </div>
-          </div>
-        </div>
       )
-    },
-    {
-      title: 'AI-Powered Detection',
-      description: 'Smart alerts and anomaly detection',
-      content: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            Configure detection rules to automatically identify issues and receive intelligent alerts:
-          </p>
-          <div className="space-y-3">
-            <Card className="p-4 border-primary/30">
+    <Dialog open
+        <Dialo
+       
+      
+     
+
+          <div className="flex items-center gap-2">
+              <B
+                onClick={() => setC
+                Back
+            )}
+          
+            <div className="flex gap-
+                <div
               <div className="flex items-center gap-2 mb-2">
-                <Sparkle size={20} weight="fill" className="text-primary" />
-                <span className="font-semibold">Smart Rules Engine</span>
-              </div>
+                  }`}
+              ))}
+            
               <p className="text-sm text-muted-foreground">
-                Set threshold-based rules for metrics like latency, error rate, and cost
-              </p>
-            </Card>
-            <Card className="p-4 border-accent/30">
-              <div className="flex items-center gap-2 mb-2">
-                <Lightning size={20} weight="fill" className="text-accent" />
-                <span className="font-semibold">Instant Notifications</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Get notified via voice alerts, webhooks, and email when issues arise
-              </p>
-            </Card>
           </div>
-        </div>
+              </p>
+  )
+
+
+
+
+
+
+
+
+
+          </div>
+
       )
-    },
+
     {
-      title: 'Get Started',
-      description: 'Start monitoring your LLM applications',
-      content: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            You're all set! Here's what to do next:
-          </p>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/30">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
-                1
+
+
+
+
+
+
+
+
+
+
+
               </div>
-              <div>
-                <div className="font-medium">Explore the Dashboard</div>
-                <div className="text-sm text-muted-foreground">View real-time metrics and charts</div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
-              <div className="w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
+
+
+
+
+
+
+
                 2
-              </div>
+
               <div>
-                <div className="font-medium">Configure Detection Rules</div>
-                <div className="text-sm text-muted-foreground">Set up custom alerts for your needs</div>
-              </div>
+
+
+
             </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
-              <div className="w-6 h-6 rounded-full bg-success text-success-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
-                3
+
+
+
               </div>
-              <div>
-                <div className="font-medium">Try Voice Commands</div>
-                <div className="text-sm text-muted-foreground">Click the microphone to ask questions</div>
+
+
+
               </div>
-            </div>
+
           </div>
-        </div>
+
       )
-    }
+
   ]
 
   const currentStepData = steps[currentStep]
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+
+
+
           <DialogTitle>{currentStepData.title}</DialogTitle>
-          <DialogDescription>{currentStepData.description}</DialogDescription>
+
         </DialogHeader>
-        
-        <div className="py-4">
-          {currentStepData.content}
+
+
+
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+
             {currentStep > 0 && (
-              <Button
-                variant="outline"
-                onClick={() => setCurrentStep(currentStep - 1)}
+
+
+
               >
-                Back
+
               </Button>
-            )}
+
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="flex gap-1">
-              {steps.map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-2 w-2 rounded-full transition-colors ${
-                    index === currentStep ? 'bg-primary' : 'bg-muted'
-                  }`}
-                />
-              ))}
-            </div>
-            
-            <Button onClick={handleNext}>
-              {currentStep < steps.length - 1 ? 'Next' : 'Get Started'}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             </Button>
-          </div>
+
         </div>
-      </DialogContent>
+
     </Dialog>
   )
 }
