@@ -1,11 +1,9 @@
 export interface TelemetryMetric {
-  timestamp:
   timestamp: number
   type: 'request' | 'latency' | 'error' | 'tokens' | 'cost'
-    statusCode:
-    errorType
-}
-export interface Met
+  value: number
+  metadata: {
+    model?: string
     statusCode: number
     userId: string
     errorType?: string
@@ -14,54 +12,53 @@ export interface Met
 
 export interface MetricsSummary {
   totalRequests: number
-  name: string
-  metric: MetricType
-  threshold: number
-  enabled: boolean
+  avgLatency: number
+  p95Latency: number
+  p99Latency: number
+  errorRate: number
+  totalCost: number
+  totalTokens: number
+  requestsPerMinute: number
 }
-export interface Aler
- 
 
+export type MetricType = 'avgLatency' | 'p95Latency' | 'p99Latency' | 'errorRate' | 'cost' | 'tokens' | 'requests'
+export type RuleCondition = 'gt' | 'lt' | 'gte' | 'lte' | 'eq'
+export type RuleSeverity = 'info' | 'warning' | 'critical'
+export type RuleAction = 'alert' | 'incident' | 'notify'
+export type IncidentStatus = 'open' | 'investigating' | 'resolved'
+
+export interface DetectionRule {
+  id: string
+  name: string
+  description: string
+  metric: MetricType
+  condition: RuleCondition
+  threshold: number
+  severity: RuleSeverity
+  enabled: boolean
+  actions: RuleAction[]
+}
+
+export interface Alert {
+  id: string
+  ruleId: string
+  ruleName: string
+  message: string
+  severity: RuleSeverity
   timestamp: number
-
+  value: number
+  acknowledged: boolean
+  metadata: {
+    metric: MetricType
     threshold: number
+    condition: RuleCondition
   }
 }
 
-export interface FileAttachment 
-  name: stri
-  size: number
-  uploadedAt: number
-  uploadedByName: st
-
+export interface FileAttachment {
   id: string
-  description: string
-  status: Incident
-  resolvedAt?: number
- 
-
-export type WebhookProvi
-export inter
   name: string
-  enabled: boolean
-  severityFilter:
-}
-export interface SL
-  name: string
-  metric: Metr
-  timeWindow: number
-  currentValue?: numb
-  breaches?: number
-}
-export interface Dashbo
- 
-
-  config?: Record<string, any>
-
-  id: string
-  isDefault:
-  createdAt: n
-
+  type: string
   size: number
   dataUrl: string
   uploadedAt: number
@@ -70,7 +67,7 @@ export interface Dashbo
 }
 
 export interface Incident {
-  }
+  id: string
   title: string
   description: string
   severity: RuleSeverity
@@ -80,6 +77,7 @@ export interface Incident {
   alerts: Alert[]
   aiSuggestion?: string
   attachments?: FileAttachment[]
+  correlationGroupId?: string
 }
 
 export type WebhookProvider = 'slack' | 'discord' | 'pagerduty' | 'teams'
@@ -134,13 +132,14 @@ export interface FilterPreset {
     status?: IncidentStatus[]
     timeRange?: number
     searchQuery?: string
-   
+  }
+  createdAt: number
 }
 
 export interface NotificationPreference {
   id: string
   userId: string
-  createdAt: 
+  channels: {
     email: boolean
     webhook: boolean
     voice: boolean
@@ -148,69 +147,70 @@ export interface NotificationPreference {
   }
   severityThreshold: RuleSeverity
   quietHours?: {
-  notifyOnIncidentRe
+    enabled: boolean
     start: string
-}
+    end: string
   }
-  id: string
+  grouping?: {
     enabled: boolean
     windowMinutes: number
   }
- 
+  createdAt?: number
+}
 
 export interface APIConfig {
   googleCloud: {
-
+    projectId: string
     apiKey: string
     enabled: boolean
   }
   datadog: {
     apiKey: string
-
+    appKey: string
     site: string
     enabled: boolean
   }
-
+  confluent: {
     apiKey: string
     apiSecret: string
     bootstrapServer: string
     enabled: boolean
   }
-
+  elevenlabs: {
     apiKey: string
     agentId: string
     enabled: boolean
-
+  }
 }
 
 export interface UserProfile {
-
+  id: string
   email: string
   displayName: string
   organization?: string
   createdAt: number
   apiConfig: APIConfig
-
+}
 
 export interface ChatMessage {
   id: string
   incidentId: string
   userId: string
-
+  userName: string
   userAvatar: string
-
+  message: string
   timestamp: number
   type: 'message' | 'system' | 'action'
   metadata?: {
-
+    actionType?: string
     relatedAlertId?: string
-
+  }
 }
 
 export interface ChatChannel {
-
+  id: string
   incidentId: string
-
+  name: string
   createdAt: number
   participantIds: string[]
   lastMessageAt?: number
@@ -218,24 +218,58 @@ export interface ChatChannel {
 }
 
 export interface EmailNotificationConfig {
-
+  id: string
   email: string
   enabled: boolean
   severityFilter: RuleSeverity[]
-
+  notifyOnIncidentCreated: boolean
   notifyOnIncidentResolved: boolean
   notifyOnAlerts: boolean
   createdAt: number
+}
 
-
-
+export interface EmailNotificationLog {
   id: string
-
+  recipient: string
   subject: string
   body: string
   sentAt: number
   status: 'sent' | 'failed' | 'pending'
   relatedIncidentId?: string
-
+  relatedAlertId?: string
   errorMessage?: string
+}
 
+export interface CorrelationGroup {
+  id: string
+  name: string
+  description: string
+  createdAt: number
+  updatedAt: number
+  severity: RuleSeverity
+  status: 'active' | 'resolved'
+  incidentIds: string[]
+  alertIds: string[]
+  rootCause?: string
+  correlationScore: number
+  correlationFactors: CorrelationFactor[]
+}
+
+export interface CorrelationFactor {
+  type: 'temporal' | 'metric' | 'severity' | 'pattern'
+  score: number
+  description: string
+}
+
+export interface CorrelationRule {
+  id: string
+  name: string
+  enabled: boolean
+  timeWindowMs: number
+  minAlerts: number
+  scoreThreshold: number
+  autoCreateIncident: boolean
+  groupBySeverity: boolean
+  groupByMetric: boolean
+  createdAt: number
+}

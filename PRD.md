@@ -45,6 +45,26 @@ This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intellige
   - Smooth transitions between login and authenticated states
   - User data isolated per GitHub account
 
+### Alert Correlation Engine (NEW - Intelligent Incident Grouping)
+- **Functionality**: Automatically groups related alerts based on temporal proximity, metric similarity, severity matching, and pattern recognition to reduce alert fatigue and accelerate incident response
+- **Purpose**: Transform alert noise into actionable incident groups, enabling faster root cause identification and reducing time spent triaging individual alerts
+- **Trigger**: Automatic continuous analysis as alerts are generated, visible in dedicated Correlation tab
+- **Progression**: Alerts generated → Correlation engine analyzes → Groups related alerts → Calculates confidence score → Suggests root cause → Creates incident (if configured) → Team notified
+- **Success criteria**:
+  - Automatic grouping of 2+ related alerts within configurable time windows (2-15 minutes)
+  - Four correlation factors: temporal (time-based), metric (same monitoring target), severity (matching levels), pattern (repeated rule triggers)
+  - Correlation confidence score (0-100%) with visual progress indicators
+  - AI-generated root cause suggestions for each correlation group
+  - Configurable correlation rules with multiple strategies (strict temporal, relaxed temporal, pattern-based)
+  - Auto-incident creation for high-confidence groups (configurable threshold)
+  - Visual correlation group cards showing grouped alerts, confidence, factors, and suggested root cause
+  - One-click incident creation from correlation groups
+  - Active and resolved correlation group tracking
+  - Statistics dashboard showing active groups, correlated alerts count, and auto-created incidents
+  - Dismissal capability for false-positive groupings
+  - Integration with existing incident management workflow
+  - Rule configuration UI for tuning correlation sensitivity
+
 ### Smart Remediation Engine (NEW - High Impact Feature)
 - **Functionality**: One-click automated fixes for common LLM issues including caching, model selection, rate limiting, prompt optimization, retry logic, and request batching
 - **Purpose**: Reduce MTTR (Mean Time To Resolution) from hours to minutes by providing pre-validated solutions that can be applied instantly
