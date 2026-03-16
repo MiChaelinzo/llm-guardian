@@ -1,10 +1,18 @@
 # VoiceWatch AI - Conversational LLM Observability Platform
 
-A production-ready, voice-driven AI monitoring dashboard that lets developers interact with their LLM telemetry through natural conversation. This hackathon project integrates **all four sponsor technologies**: Google Cloud (Gemini AI for intelligent analysis), Datadog (detection rules & incident management), Confluent (real-time data streaming), and ElevenLabs (conversational voice interface). Developers can ask questions about their AI application health, get real-time alerts, and diagnose issues—all through natural speech.
+A production-ready, voice-driven AI monitoring dashboard that lets developers interact with their LLM telemetry through natural conversation. This hackathon project integrates **AWS Nova 2 Sonic** for ultra-low latency speech-to-speech conversational AI, plus **Google Cloud (Gemini AI for intelligent analysis)**, **Datadog (detection rules & incident management)**, **Confluent (real-time data streaming)**, and **ElevenLabs (conversational voice interface)**. Developers can ask questions about their AI application health, get real-time alerts, and diagnose issues—all through natural speech powered by AWS Nova.
 
 **Dual Mode Operation**: Works in **Demo Mode** with simulated data for immediate exploration, or **Production Mode** with user-configured API credentials for real integrations. Perfect for hackathon judges to test with their own accounts or demo scenarios.
 
-**NEW FEATURES - Enhanced for Maximum Impact**:
+**NEW FEATURES - AWS Nova 2 Sonic Integration**:
+- **Speech-to-Speech AI** - Direct audio-to-audio conversations using AWS Nova 2 Sonic for ultra-low latency responses
+- **Context-Aware Conversations** - Nova understands your current metrics, alerts, and system health for intelligent responses
+- **Conversation Memory** - Maintains full conversation history with response time tracking
+- **Beautiful Voice Interface** - Animated recording states with real-time audio level visualization
+- **Conversation Panel** - Dedicated tab showing full Nova conversation history with timestamps and response times
+- **AWS Integration Settings** - Secure credential management for AWS Bedrock with Nova model access
+
+**PREVIOUS FEATURES**:
 - **GitHub OAuth Authentication** - Secure user authentication with personalized dashboards and data isolation
 - **Smart Remediation Engine** - AI-powered automatic fixes with one-click deployment
 - **Model Performance Benchmarks** - Real-time comparison across GPT-4o, Claude, Gemini, and Llama models
@@ -16,7 +24,7 @@ A production-ready, voice-driven AI monitoring dashboard that lets developers in
 - **Configuration Export/Import** (NEW) - Share detection rules, SLOs, and settings across teams with JSON backup
 
 **Experience Qualities**:
-1. **Conversational** - Natural voice interactions make complex monitoring accessible and intuitive
+1. **Conversational** - Natural voice interactions powered by AWS Nova 2 Sonic make complex monitoring accessible and intuitive with ultra-low latency speech-to-speech AI
 2. **Intelligent** - AI-powered analysis surfaces insights from telemetry data automatically, predicts future trends, and recommends optimizations
 3. **Collaborative** - Real-time WebSocket-powered multi-user monitoring with live presence indicators, activity feeds, and collaborative cursor tracking for distributed DevOps and SRE teams
 4. **Cost-Conscious** - Advanced cost optimization engine identifies savings opportunities and provides actionable recommendations
@@ -25,11 +33,36 @@ A production-ready, voice-driven AI monitoring dashboard that lets developers in
 7. **Customizable** (NEW) - Advanced filtering, SLO tracking, and configuration management enable teams to tailor the platform to their needs
 
 **Complexity Level**: Complex Application (advanced functionality with multiple views)
-This integrates FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis, anomaly detection, predictions, and optimization recommendations; **Datadog** for detection rules and incident management; **Confluent** for real-time telemetry data streaming; and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, multi-modal visualizations, machine learning inference, secure credential management with onboarding flows, and user authentication.
+This integrates **AWS Nova 2 Sonic** for speech-to-speech AI, plus FOUR major platforms: **Google Cloud (Gemini AI)** for intelligent metric analysis, anomaly detection, predictions, and optimization recommendations; **Datadog** for detection rules and incident management; **Confluent** for real-time telemetry data streaming; and **ElevenLabs** for conversational voice interactions. It requires sophisticated state management, API orchestration, real-time data pipelines, multi-modal visualizations, machine learning inference, secure credential management with onboarding flows, and user authentication.
 
 ## Essential Features
 
-### GitHub OAuth Authentication (NEW - Security & Personalization)
+### AWS Nova 2 Sonic Speech-to-Speech AI (NEW - Core Hackathon Feature)
+- **Functionality**: Real-time speech-to-speech conversational AI using AWS Nova 2 Sonic for ultra-low latency voice interactions about system metrics, alerts, and observability data
+- **Purpose**: Enable natural, hands-free monitoring through direct audio-to-audio conversations without intermediate text processing, perfect for DevOps engineers monitoring dashboards or investigating incidents
+- **Trigger**: User clicks Nova voice button (gradient purple/blue animated button), speaks query, receives spoken response
+- **Progression**: Click Nova button → Browser requests microphone → User speaks query → Audio recorded → Sent to Nova → Transcription + context analysis → Response generated → Audio synthesized → Response spoken + displayed → Conversation history updated
+- **Success criteria**:
+  - Ultra-low latency audio recording with MediaRecorder API
+  - Real-time audio level visualization during recording (5 animated bars)
+  - Context-aware responses that reference current metrics (latency, errors, costs, alerts)
+  - Conversation memory maintaining last 6+ message pairs for follow-up questions
+  - Beautiful conversation panel showing full history with timestamps
+  - Response time tracking (e.g., "2.3s" badges showing processing duration)
+  - AWS Bedrock integration with Nova 2 Sonic model access
+  - Secure credential storage for AWS access keys with encryption
+  - Graceful fallback to browser speech synthesis if Nova unavailable
+  - Visual indicators: active session badge, configuration status, recording animations
+  - Dedicated "Nova AI" tab showing conversation history with user/assistant message bubbles
+  - Integration with existing metrics context (summary, alerts) for intelligent responses
+  - One-click test connection to validate AWS credentials
+  - Animated gradient button (primary → accent → primary) with pulsing recording state
+  - Floating conversation popup with real-time message updates
+  - Auto-scroll to latest messages in conversation view
+  - Message attribution (user vs Nova) with distinct styling
+  - Support for multi-turn conversations with context preservation
+
+### GitHub OAuth Authentication (Security & Personalization)
 - **Functionality**: Secure user authentication using GitHub OAuth with personalized dashboards, user profile display, and sign-out capability
 - **Purpose**: Provide secure access control, user identity management, and data isolation ensuring each user's metrics and configurations are private
 - **Trigger**: App loads → Authentication check → Login screen if not authenticated → GitHub OAuth flow → Access granted

@@ -24,6 +24,7 @@ import { WebhookStatus } from '@/components/WebhookStatus'
 import { AutoCaptureSettings } from '@/components/AutoCaptureSettings'
 import { EmailNotifications } from '@/components/EmailNotifications'
 import { EmailDigestSettings } from '@/components/EmailDigestSettings'
+import { AWSNovaSettings } from '@/components/AWSNovaSettings'
 import type { Incident, Alert as AlertType, TelemetryMetric } from '@/lib/types'
 
 import { Input } from '@/components/ui/input'
@@ -221,7 +222,7 @@ export function Settings({ incidents = [], alerts = [], metrics = [] }: Settings
       </div>
 
       <Tabs defaultValue="googleCloud" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="googleCloud" className="gap-2">
             <Cloud className="h-4 w-4" />
             <span className="hidden sm:inline">Google Cloud</span>
@@ -237,6 +238,10 @@ export function Settings({ incidents = [], alerts = [], metrics = [] }: Settings
           <TabsTrigger value="elevenLabs" className="gap-2">
             <AudioWaveform className="h-4 w-4" />
             <span className="hidden sm:inline">ElevenLabs</span>
+          </TabsTrigger>
+          <TabsTrigger value="awsNova" className="gap-2">
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">AWS Nova</span>
           </TabsTrigger>
         </TabsList>
 
@@ -507,6 +512,11 @@ export function Settings({ incidents = [], alerts = [], metrics = [] }: Settings
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* AWS NOVA TAB */}
+        <TabsContent value="awsNova">
+          <AWSNovaSettings />
         </TabsContent>
 
       </Tabs>

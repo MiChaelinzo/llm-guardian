@@ -1,8 +1,38 @@
 # VoiceWatch AI - Conversational LLM Observability Platform
 
 <p align="center">
-  <strong>A voice-driven AI monitoring dashboard integrating ALL FOUR sponsor technologies: Google Cloud (Gemini), Datadog, Confluent, and ElevenLabs for the future of LLM operations.</strong>
+  <strong>🎙️ Powered by AWS Nova 2 Sonic for ultra-low latency speech-to-speech AI conversations about your LLM metrics, alerts, and system health.</strong>
 </p>
+
+<p align="center">
+  <strong>A voice-driven AI monitoring dashboard integrating AWS Nova + Google Cloud (Gemini), Datadog, Confluent, and ElevenLabs for the future of LLM operations.</strong>
+</p>
+
+---
+
+## 🌟 NEW: AWS Nova 2 Sonic Integration
+
+**Real-time speech-to-speech AI for conversational observability monitoring**
+
+VoiceWatch AI now features **AWS Nova 2 Sonic** - Amazon's cutting-edge foundation model that enables natural voice conversations about your system health, metrics, and alerts without intermediate text conversion.
+
+### Key Features
+- ✨ **Ultra-Low Latency**: Sub-second speech-to-speech responses
+- 🎯 **Context-Aware**: Understands your current metrics, alerts, and system state
+- 💬 **Conversation Memory**: Maintains dialogue history for follow-up questions
+- 🎨 **Beautiful UI**: Animated recording states with real-time audio visualization
+- 📊 **Full History**: Dedicated tab showing complete conversation timeline
+- 🔒 **Secure**: Encrypted AWS credential storage with one-click testing
+
+**[📖 Read the Complete Nova Integration Guide →](./AWS_NOVA_GUIDE.md)**
+
+### Quick Start with Nova
+1. Navigate to **Settings → AWS Nova** tab
+2. Add your AWS access keys (IAM user with Bedrock access)
+3. Enable the integration and test connection
+4. Click the gradient Nova button in the header
+5. Speak naturally: "What's the current system health?"
+6. Get instant spoken responses with full context awareness
 
 ---
 

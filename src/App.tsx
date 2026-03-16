@@ -18,6 +18,8 @@ import { OnboardingDialog } from '@/components/OnboardingDialog'
 import { LoginPage } from '@/components/LoginPage'
 import { SponsorBadges } from '@/components/SponsorBadges'
 import { VoiceButton } from '@/components/VoiceButton'
+import { NovaVoiceButton } from '@/components/NovaVoiceButton'
+import { NovaConversationPanel } from '@/components/NovaConversationPanel'
 import { TrendVisualization } from '@/components/TrendVisualization'
 import { WebhookTestingPanel } from '@/components/WebhookTestingPanel'
 import { AdvancedAnalytics } from '@/components/AdvancedAnalytics'
@@ -46,6 +48,7 @@ import { calculateMetrics } from '@/lib/metrics'
 import { emailNotificationService } from '@/lib/email-notifications'
 import { sendWebhook } from '@/lib/webhooks'
 import { AlertCorrelationEngine, createDefaultCorrelationRules } from '@/lib/alert-correlation'
+import { novaVoiceService, type NovaVoiceConfig } from '@/lib/aws-nova'
 import type { TelemetryMetric, DetectionRule, Alert, Incident, FileAttachment, EmailNotificationConfig, EmailNotificationLog, WebhookConfig, SLO, NotificationPreference, CorrelationGroup, CorrelationRule } from '@/lib/types'
 
 function App() {
@@ -90,6 +93,14 @@ function App() {
 
   const [timeRange, setTimeRange] = useState<number>(15 * 60 * 1000)
   const [lastVoiceResponse, setLastVoiceResponse] = useState<string>('')
+  const [novaConfig] = useKV<NovaVoiceConfig>('aws-nova-config', {
+    accessKeyId: '',
+    secretAccessKey: '',
+    region: 'us-east-1',
+    enabled: false
+  })
+  const [novaConversationHistory, setNovaConversationHistory] = useState<any[]>([])
+  const [isNovaConfigured, setIsNovaConfigured] = useState(false)
 
   const { broadcastEvent } = useCollaboration(currentUser?.id || '')
 
@@ -124,6 +135,22 @@ function App() {
       })
     }
   }, [authUser])
+
+  useEffect(() => {
+    if (novaConfig) {
+      novaVoiceService.setConfig(novaConfig)
+      setIsNovaConfigured(novaConfig.enabled && !!novaConfig.accessKeyId && !!novaConfig.secretAccessKey)
+      
+      const interval = setInterval(() => {
+        const history = novaVoiceService.getSessionHistory()
+        if (history.length > 0) {
+          setNovaConversationHistory(history)
+        }
+      }, 1000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [novaConfig])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -591,6 +618,11 @@ function App() {
             {currentUser && <PresenceIndicator userId={currentUser.id} />}
             <RateLimitIndicator />
             <EncryptionStatus hasEncryptedCredentials={hasEncryptedStorage} />
+            <NovaVoiceButton 
+              summary={summary}
+              alerts={alerts || []}
+              isConfigured={isNovaConfigured}
+            />
             <VoiceButton onTranscript={handleVoiceTranscript} />
           </div>
         </header>
@@ -634,6 +666,10 @@ function App() {
             <TabsTrigger value="collaboration" className="gap-2">
               <Users size={18} />
               Collaboration
+            </TabsTrigger>
+            <TabsTrigger value="nova" className="gap-2">
+              <Lightning size={18} weight="fill" />
+              Nova AI
             </TabsTrigger>
             <TabsTrigger value="alerts" className="gap-2">
               <Bell size={18} />
@@ -779,6 +815,22 @@ function App() {
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="nova" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary via-accent to-primary flex items-center justify-center">
+                  <Lightning size={20} weight="fill" className="text-primary-foreground" />
+                </div>
+                AWS Nova 2 Sonic Conversations
+              </h2>
+              <p className="text-muted-foreground">Real-time speech-to-speech AI for conversational observability monitoring</p>
+            </div>
+            <NovaConversationPanel 
+              messages={novaConversationHistory}
+              isActive={isNovaConfigured && novaVoiceService.getActiveSession() !== null}
+            />
           </TabsContent>
 
           <TabsContent value="alerts" className="space-y-4">
