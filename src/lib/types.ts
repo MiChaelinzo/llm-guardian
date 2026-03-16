@@ -24,7 +24,7 @@ export interface MetricsSummary {
   requestsPerMinute: number
 }
 
-export type MetricType = 'avgLatency' | 'p95Latency' | 'p99Latency' | 'errorRate' | 'cost' | 'tokens' | 'requests'
+export type MetricType = 'avgLatency' | 'p95Latency' | 'p99Latency' | 'errorRate' | 'cost' | 'tokens' | 'requests' | 'totalCost' | 'totalTokens' | 'totalRequests'
 export type RuleCondition = 'gt' | 'lt' | 'gte' | 'lte' | 'eq'
 export type RuleSeverity = 'info' | 'warning' | 'critical'
 export type RuleAction = 'alert' | 'incident' | 'notify'
@@ -68,7 +68,9 @@ export interface FileAttachment {
   size: number
   dataUrl: string
   uploadedAt: number
-  description: string
+  uploadedBy?: string
+  uploadedByName?: string
+  description?: string
   aiSuggestion?: string
 }
 
@@ -117,6 +119,7 @@ export interface Incident {
   alerts: Alert[]
   attachments?: FileAttachment[]
   aiSuggestion?: string
+  correlationGroupId?: string
 }
 
 // Chat related types
@@ -184,6 +187,7 @@ export interface EmailNotificationLog {
   id: string
   email: string
   subject: string
+  body?: string
   sentAt: number
   relatedIncidentId?: string
   relatedAlertId?: string

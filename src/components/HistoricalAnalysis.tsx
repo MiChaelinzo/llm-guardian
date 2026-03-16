@@ -204,9 +204,12 @@ function TrendCard({ trend, comparison }: TrendCardProps) {
       p95Latency: 'P95 Latency',
       p99Latency: 'P99 Latency',
       errorRate: 'Error Rate',
+      cost: 'Cost',
+      tokens: 'Tokens',
+      requests: 'Requests',
       totalCost: 'Total Cost',
-      totalTokens: 'Tokens',
-      totalRequests: 'Requests'
+      totalTokens: 'Total Tokens',
+      totalRequests: 'Total Requests'
     }
     return names[metric] || metric
   }
