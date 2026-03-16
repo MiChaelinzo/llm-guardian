@@ -1,67 +1,28 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/but
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-  Dialog, 
-import { 
-  DialogDe
-  DialogOverlay,
-} from '@/compo
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog'
-import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { cn } from "@/lib/utils"
-import { CheckCircle, Sparkle, Cloud, ChartBar, Database, Waveform } from '@phosphor-icons/react'
-import type { APIConfig } from '@/lib/types'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { CheckCircle, Sparkle, Cloud, Waveform } from '@phosphor-icons/react'
 
 interface OnboardingDialogProps {
   onComplete: () => void
- 
+}
 
-const DEFAULT_CONFIG: APIConfig = {
-  googleCloud: {
-    apiSecret: '',
-    apiKey: '',
-  const currentCon
-  co
-    setTimeo
-    }, 300)
+export function OnboardingDialog({ onComplete }: OnboardingDialogProps) {
+  const [isOpen, setIsOpen] = useState(true)
+  const [currentStep, setCurrentStep] = useState(0)
 
-    setIsOpen(false)
-      onComplete()
-  }
-  const steps 
-      title: 'W
-      content: (
-          <div className
-              <Wav
-    
-          
-            <p 
-              pr
-            </p>
-   
- 
-
-                <p className="text-sm text-muted-foreground">
-                  intelligent insights, anomaly detection, and pr
-              </Card>
-          </div>
-
-    {
-
-        <div className="space-y-6"
-            <CardHea
-                <Spark
-              </di
-    }, 300)
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1)
+    } else {
+      handleComplete()
+    }
   }
 
-  const handleGoToSettings = () => {
-    setIsOpen(false)
+  const handleComplete = () => {
     setTimeout(() => {
+      setIsOpen(false)
       onComplete()
     }, 300)
   }
@@ -122,133 +83,81 @@ const DEFAULT_CONFIG: APIConfig = {
                 <li className="flex items-center gap-2">
                   <CheckCircle size={16} weight="fill" className="text-success" />
                   Simulated real-time telemetry data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle size={16} weight="fill" className="text-success" />
+                  Pre-configured detection rules
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle size={16} weight="fill" className="text-success" />
+                  AI-powered insights and analytics
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle size={16} weight="fill" className="text-success" />
+                  Voice commands and speech synthesis
+                </li>
+              </ul>
+              <Button 
+                onClick={handleComplete} 
+                className="w-full mt-4"
+              >
+                Continue with Demo Mode
+              </Button>
+            </CardContent>
+          </Card>
+
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-2">
+              Want to use your own AWS credentials?
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={handleComplete}
+            >
+              Configure in Settings Later
+            </Button>
+          </div>
+        </div>
+      )
+    }
+  ]
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{steps[currentStep].title}</DialogTitle>
+          <DialogDescription>{steps[currentStep].description}</DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4">
+          {steps[currentStep].content}
+        </div>
+
+        {currentStep > 0 && (
+          <div className="flex justify-between items-center pt-4 border-t">
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentStep(currentStep - 1)}
+            >
+              Back
+            </Button>
+            <div className="flex gap-1">
+              {steps.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-2 w-2 rounded-full transition-colors ${
+                    idx === currentStep ? 'bg-primary' : 'bg-muted'
+                  }`}
+                />
+              ))}
+            </div>
+            <Button onClick={handleNext}>
+              {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }
