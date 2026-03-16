@@ -24,6 +24,9 @@ export function calculateMetrics(metrics: TelemetryMetric[], timeRange: number):
   const p95Latency = sortedLatencies[p95Index] || 0
   const p99Latency = sortedLatencies[p99Index] || 0
   
+  const timeRangeMinutes = timeRange / (60 * 1000)
+  const requestsPerMinute = timeRangeMinutes > 0 ? totalRequests / timeRangeMinutes : 0
+  
   return {
     avgLatency,
     totalRequests,
@@ -31,7 +34,8 @@ export function calculateMetrics(metrics: TelemetryMetric[], timeRange: number):
     totalCost,
     totalTokens,
     p95Latency,
-    p99Latency
+    p99Latency,
+    requestsPerMinute
   }
 }
 

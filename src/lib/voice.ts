@@ -97,7 +97,7 @@ export async function processVoiceQuery(
 }
 
 export async function generateIncidentSuggestion(alert: Alert): Promise<string> {
-  const promptText = spark.llmPrompt`You are an AWS Bedrock-powered AI operations assistant analyzing an LLM application alert.
+  const promptText = window.spark.llmPrompt`You are an AWS Bedrock-powered AI operations assistant analyzing an LLM application alert.
 
 Alert Details:
 - Rule: ${alert.ruleName}
@@ -119,7 +119,7 @@ Provide a concise 2-3 sentence recommendation for an AI engineer to resolve this
 }
 
 export async function generateAIInsights(summary: MetricsSummary, alerts: Alert[]): Promise<string[]> {
-  const promptText = spark.llmPrompt`You are an AI observability assistant analyzing LLM application metrics powered by AWS Bedrock.
+  const promptText = window.spark.llmPrompt`You are an AI observability assistant analyzing LLM application metrics powered by AWS Bedrock.
 
 Current Metrics:
 - Average Latency: ${Math.round(summary.avgLatency)}ms

@@ -1,7 +1,7 @@
 import type { TelemetryMetric } from './types'
 
 export class TelemetrySimulator {
-  private intervalId: NodeJS.Timeout | null = null
+  private intervalId: number | null = null
   private callback: ((metric: TelemetryMetric) => void) | null = null
   
   start(callback: (metric: TelemetryMetric) => void) {
