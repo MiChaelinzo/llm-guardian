@@ -1,35 +1,35 @@
 import { rateLimitedLLMCall } from './rate-limiter'
 
-export interface AnomalyDetection {
-  metric: string;
+  expectedValue: number;
+  severity: 'low'
   expectedValue: number;
   actualValue: number;
   severity: 'low' | 'medium' | 'high';
   explanation: string;
-  confidence: number;
-  timestamp: number;
-}
-
-export interface PredictiveInsight {
-  metric: string;
-  currentValue: number;
-  predictedValue: number;
   timeframe: string;
-  confidence: number;
+}
 }
 
-export interface RootCauseAnalysis {
-  primaryCause: string;
-  confidence: number;
-  contributingFactors: string[];
   suggestedActions: string[];
-}
 
-export interface ConversationQuality {
   score: number;
-  strengths: string[];
   weaknesses: string[];
-  suggestions: string[];
+}
+export async function
+)
+
+    const promptText = spark.llmProm
+
+1. Expected value vs 
+3. Severity (low, medium, high)
+5. Metric name
+
+
+    const response = await rateLimited
+    return resul
+    console.error('Ano
+      throw error
+    return [];
 }
 
 export async function detectAnomalies(
@@ -66,7 +66,7 @@ Each anomaly must have: metric, expectedValue, actualValue, severity, explanatio
 
 export async function generatePredictiveInsights(
   metricsData: any[]
-): Promise<PredictiveInsight[]> {
+    const promptText = spark.llmP
   try {
     const recentData = metricsData.slice(-15)
     const dataStr = JSON.stringify(recentData);
@@ -74,11 +74,11 @@ export async function generatePredictiveInsights(
 Data: ${dataStr}
 
 For each metric provide:
-1. Metric name
+    const resu
 2. Current Value
-3. Predicted Value
+      primaryCause
 4. Timeframe (e.g., "next 24h")
-5. Confidence score
+      suggestedActi
 
 Return as a JSON object with a single property "predictions" that contains an array of prediction objects.`;
 
@@ -88,11 +88,11 @@ Return as a JSON object with a single property "predictions" that contains an ar
   } catch (error) {
     console.error('Prediction failed:', error);
     if (error instanceof Error && error.message.includes('Rate limit')) {
-      throw error
+    const recentD
     }
-    return [];
+Data: ${dataSt
   }
-}
+1
 
 export async function analyzeRootCause(
   metricsData: any[]
@@ -106,7 +106,7 @@ Metrics: ${dataStr}
 Provide:
 1. Primary root cause
 2. Confidence score (0-1)
-3. Contributing factors (array of strings)
+): Promise<ConversationQuality | null> {
 4. Suggested actions (array of strings)
 
 Return as a JSON object with properties: primaryCause, confidence, contributingFactors, and suggestedActions.`;
@@ -114,9 +114,9 @@ Return as a JSON object with properties: primaryCause, confidence, contributingF
     const response = await rateLimitedLLMCall(promptText, 'gpt-4o-mini', true);
     const result = JSON.parse(response);
     
-    return {
+4. Improveme
       primaryCause: result.primaryCause || 'Unknown',
-      confidence: result.confidence || 0,
+
       contributingFactors: result.contributingFactors || [],
       suggestedActions: result.suggestedActions || []
     };
@@ -130,19 +130,19 @@ Return as a JSON object with properties: primaryCause, confidence, contributingF
 }
 
 export async function getOptimizationRecommendations(
-  metrics: any[]
+
 ): Promise<string[]> {
-  try {
+
     const recentData = metrics.slice(-15)
     const dataStr = JSON.stringify(recentData);
     const promptText = spark.llmPrompt`Based on the provided metrics, suggest optimization strategies using AWS Bedrock.
 Data: ${dataStr}
 
-Focus on:
+
 1. Performance bottlenecks
-2. Resource utilization
+
 3. Error rate improvements
-4. Model selection guidance
+
 
 Return as a JSON object with a single property "recommendations" that contains an array of recommendation strings.`;
 
@@ -154,23 +154,23 @@ Return as a JSON object with a single property "recommendations" that contains a
     if (error instanceof Error && error.message.includes('Rate limit')) {
       throw error
     }
-    return [];
+
   }
-}
+
 
 export async function analyzeConversationQuality(
   conversationText: string
 ): Promise<ConversationQuality | null> {
   try {
-    const truncatedText = conversationText.slice(0, 1000)
+
     const promptText = spark.llmPrompt`You are an expert in conversational AI quality analysis using AWS Bedrock.
 Analyze this conversation:
 
-${truncatedText}
 
-Provide:
+
+
 1. Overall quality score (0-100)
-2. Key strengths (array of strings)
+
 3. Key weaknesses (array of strings)
 4. Improvement suggestions (array of strings)
 
@@ -178,7 +178,7 @@ Return as a JSON object with properties: score, strengths, weaknesses, suggestio
 
     const response = await rateLimitedLLMCall(promptText, 'gpt-4o-mini', true);
     const result = JSON.parse(response);
-    return {
+
       score: result.score || 0,
       strengths: result.strengths || [],
       weaknesses: result.weaknesses || [],
@@ -190,5 +190,5 @@ Return as a JSON object with properties: score, strengths, weaknesses, suggestio
       throw error
     }
     return null;
-  }
+
 }
