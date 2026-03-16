@@ -62,38 +62,38 @@ class NovaVoiceService {
   getSessionHistory(): NovaConversationMessage[] {
     return this.activeSession?.messages || []
   }
+
   async startRecording(): Promise<void> {
-  async startRecording(): Promise<void> {})
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-    try {[]
-      this.audioChunks = []stream, {
+    try {
+      this.audioChunks = []
       this.mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm',
       })
-e = (event: BlobEvent) => {
+
       this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
         this.audioChunks.push(event.data)
       }
-     this.mediaRecorder.onstop = () => {
+
       this.mediaRecorder.onstop = () => {
         this.mediaRecorder = null
       }
 
       this.mediaRecorder.start()
-    } catch (error) {ing:', error)
+    } catch (error) {
       console.error('Failed to start recording:', error)
       throw error
     }
+  }
 
- stopRecording(): Promise<Blob> {
-  stopRecording(): Promise<Blob> {eject) => {
+  stopRecording(): Promise<Blob> {
     return new Promise((resolve, reject) => {
       if (!this.mediaRecorder) {
         reject(new Error('No active recording'))
         return
       }
-      this.mediaRecorder.onstop = () => {
+
       this.mediaRecorder.onstop = () => {
         const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' })
         this.audioChunks = []
@@ -107,10 +107,10 @@ e = (event: BlobEvent) => {
 
       this.mediaRecorder.stop()
     })
+  }
 
   async transcribeAudio(audioBlob: Blob): Promise<string> {
-  async transcribeAudio(audioBlob: Blob): Promise<string> {
-    try { this.blobToBase64(audioBlob)
+    try {
       const base64Audio = await this.blobToBase64(audioBlob)
       const prompt = `Transcribe the following audio data to text.\n\nAudio data: ${base64Audio.substring(0, 100)}...`
 
@@ -120,10 +120,11 @@ e = (event: BlobEvent) => {
       console.error('Transcription failed:', error)
       return this.fallbackTranscription()
     }
+  }
 
   private fallbackTranscription(): string {
-  private fallbackTranscription(): string {
     return ''
+  }
 
   async processSpeechToSpeech(
   async processSpeechToSpeech(
