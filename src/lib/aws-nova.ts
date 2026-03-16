@@ -1,5 +1,5 @@
 import { rateLimitedLLMCall } from './rate-limiter'
-
+import type { MetricsSummary, Alert } from './types'
 
 export interface NovaVoiceConfig {
   accessKeyId: string
@@ -127,23 +127,23 @@ class NovaVoiceService {
   }
 
   async processSpeechToSpeech(
-  async processSpeechToSpeech(
     audioBlob: Blob,
     alerts: Alert[],
-    summary?: MetricsSummary> {
+    summary?: MetricsSummary
   ): Promise<{ text: string; audioUrl: string }> {
-    try {ranscribeAudio(audioBlob)
+    try {
       const transcription = await this.transcribeAudio(audioBlob)
 
       if (this.activeSession) {
         this.activeSession.messages.push({
+          role: 'user',
           content: transcription,
           timestamp: Date.now(),
         })
         this.activeSession.lastActiveAt = Date.now()
       }
 
-      const activeAlerts = alerts.filter((a) => a.active)
+      const activeAlerts = alerts.filter((a) => !a.acknowledged)
       const criticalCount = activeAlerts.filter((a) => a.severity === 'critical').length
       const warningCount = activeAlerts.filter((a) => a.severity === 'warning').length
 
@@ -158,6 +158,7 @@ class NovaVoiceService {
 
       if (this.activeSession) {
         this.activeSession.messages.push({
+          role: 'assistant',
           content: responseText,
           timestamp: Date.now(),
           audioUrl,
@@ -168,7 +169,7 @@ class NovaVoiceService {
     } catch (error) {
       console.error('Speech-to-speech processing failed:', error)
       throw error
-  }
+    }
   }
 
   private buildPrompt(
@@ -195,17 +196,17 @@ Instructions:
 1. Directly answers the user's question
 2. Provides actionable insights
 3. Uses specific numbers from the metrics`
+  }
 
   private async generateResponse(prompt: string, criticalCount: number): Promise<string> {
-  private async generateResponse(prompt: string, criticalCount: number): Promise<string> {
-    try {edLLMCall(prompt, 'gpt-4o-mini', false)
+    try {
       const response = await rateLimitedLLMCall(prompt, 'gpt-4o-mini', false)
       return response
     } catch (error) {
       return `Rate limiting active. Current status: ${criticalCount} critical alert(s). Please try again shortly.`
     }
+  }
 
-  async synthesizeSpeech(text: string): Promise<string> {
   async synthesizeSpeech(text: string): Promise<string> {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       return new Promise<string>((resolve) => {
@@ -245,10 +246,8 @@ Instructions:
   }
 
   getMessages(): NovaConversationMessage[] {
+    return this.activeSession?.messages || []
   }
 }
-}
-
-export const novaVoiceService = new NovaVoiceService()
 
 export const novaVoiceService = new NovaVoiceService()
