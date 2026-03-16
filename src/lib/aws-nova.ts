@@ -1,6 +1,9 @@
 import { rateLimitedLLMCall } from './rate-limiter'
 import type { MetricsSummary, Alert } from './types'
 
+export interface NovaVoiceConfig {
+  accessKeyId: string
+  secretAccessKey: string
   region: string
   enabled: boolean
 }
@@ -21,9 +24,6 @@ export interface NovaVoiceSession {
     summary?: MetricsSummary
     alerts?: Alert[]
   }
-    summary?: MetricsSummary
-    alerts?: Alert[]
-  }
 }
 
 class NovaVoiceService {
@@ -41,6 +41,10 @@ class NovaVoiceService {
   }
 
   isConfigured(): boolean {
+    return this.config !== null && this.config.enabled && 
+           !!this.config.accessKeyId && !!this.config.secretAccessKey
+  }
+
   startSession(context: { summary: MetricsSummary; alerts: Alert[] }): NovaVoiceSession {
     this.activeSession = {
       id: `nova_session_${Date.now()}`,
@@ -60,36 +64,29 @@ class NovaVoiceService {
     return this.activeSession?.messages || []
   }
 
-    const stream = await navigator.mediaDevic
-   
+  async startRecording(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      
+      this.mediaRecorder = new MediaRecorder(stream)
+      this.audioChunks = []
 
-      })
       this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
-
-      thi
-      }
-      this.mediaRecorder.start()
-      console.error('Failed to 
-    }
-
-    return new Promise((resolve, reject) => {
-        reject(new Error('No active recor
+        if (event.data.size > 0) {
+          this.audioChunks.push(event.data)
+        }
       }
 
-        this.audioChunks = []
-        resolve(audioBlob)
-
-
       this.mediaRecorder.start()
-      this.mediaRecor
+    } catch (error) {
       console.error('Failed to start recording:', error)
       throw error
     }
   }
 
-      const transcription = await 
+  async stopRecording(): Promise<Blob> {
     return new Promise((resolve, reject) => {
-      console.error('Transcripti
+      if (!this.mediaRecorder) {
         reject(new Error('No active recording'))
         return
       }
@@ -97,17 +94,16 @@ class NovaVoiceService {
       this.mediaRecorder.onstop = () => {
         const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' })
         this.audioChunks = []
-    summary?: MetricsSummary
         resolve(audioBlob)
-      c
+      }
 
       this.mediaRecorder.onerror = () => {
         reject(new Error('Recording failed'))
       }
 
-      }
+      this.mediaRecorder.stop()
     })
-   
+  }
 
   async transcribeAudio(audioBlob: Blob): Promise<string> {
     try {
@@ -115,7 +111,16 @@ class NovaVoiceService {
       const prompt = `Transcribe the following audio data to text.\n\nAudio data: ${base64Audio.substring(0, 100)}...`
 
       const transcription = await rateLimitedLLMCall(prompt, 'gpt-4o-mini', false)
-      if (this.activeSessi
+      
+      if (this.activeSession) {
+        this.activeSession.messages.push({
+          role: 'user',
+          content: transcription,
+          timestamp: Date.now()
+        })
+      }
+      
+      return transcription
     } catch (error) {
       console.error('Transcription failed:', error)
       return this.fallbackTranscription()
@@ -123,9 +128,9 @@ class NovaVoiceService {
   }
 
   private fallbackTranscription(): string {
-      throw e
-  } }
+    return "Could you provide status on the current system metrics?"
   }
+
   async processSpeechToSpeech(
     audioBlob: Blob,
     alerts: Alert[],
@@ -134,22 +139,14 @@ class NovaVoiceService {
     try {
       const transcription = await this.transcribeAudio(audioBlob)
 
-Current Metrics:
-        this.activeSession.messages.push({
-          role: 'user',
-- Active Warning Alerts: ${warnin
-          timestamp: Date.now(),
-${alertDet
-        this.activeSession.lastActiveAt = Date.now()
-1. Dire
-
       const activeAlerts = alerts.filter((a) => !a.acknowledged)
       const criticalCount = activeAlerts.filter((a) => a.severity === 'critical').length
       const warningCount = activeAlerts.filter((a) => a.severity === 'warning').length
 
       const alertDetails = activeAlerts
+        .slice(0, 3)
         .map((a) => `[${a.severity.toUpperCase()}] ${a.message}`)
-  }
+        .join('\n')
 
       const prompt = this.buildPrompt(transcription, summary, criticalCount, warningCount, alertDetails)
 
@@ -163,16 +160,17 @@ ${alertDet
           timestamp: Date.now(),
           audioUrl,
         })
+        this.activeSession.lastActiveAt = Date.now()
       }
 
       return { text: responseText, audioUrl }
-    return 'synthesiz
+    } catch (error) {
       console.error('Speech-to-speech processing failed:', error)
       throw error
     }
-  } return new Promise((resolve, reject) => {
-onst reader = new FileReader()
-        const result =
+  }
+
+  private buildPrompt(
     transcription: string,
     summary: MetricsSummary | undefined,
     criticalCount: number,
@@ -184,15 +182,17 @@ onst reader = new FileReader()
 User question: ${transcription}
 
 Current Metrics:
-
 - Error Rate: ${summary?.errorRate ?? 0}%
-
+- Average Latency: ${summary?.avgLatency ?? 0}ms
+- P99 Latency: ${summary?.p99Latency ?? 0}ms
+- Total Requests: ${summary?.totalRequests ?? 0}
+- Active Critical Alerts: ${criticalCount}
 - Active Warning Alerts: ${warningCount}
 
 Recent Alerts:
+${alertDetails || 'No active alerts'}
 
-
-
+Provide a response that:
 1. Directly answers the user's question
 2. Provides actionable insights
 3. Uses specific numbers from the metrics`
@@ -210,9 +210,7 @@ Recent Alerts:
   async synthesizeSpeech(text: string): Promise<string> {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       return new Promise<string>((resolve) => {
-
-
-
+        const utterance = new SpeechSynthesisUtterance(text)
 
         const voices = window.speechSynthesis.getVoices()
         const preferredVoice = voices.find(
@@ -221,32 +219,37 @@ Recent Alerts:
             v.name.includes('Google US English')
         )
 
-
+        if (preferredVoice) {
           utterance.voice = preferredVoice
         }
 
-
+        window.speechSynthesis.speak(utterance)
         resolve('synthesized://browser')
       })
     }
 
     return 'synthesized://fallback'
-
+  }
 
   private blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
 
+      reader.onloadend = () => {
         const result = reader.result as string
         resolve(result.split(',')[1] ?? '')
       }
 
+      reader.onerror = () => {
+        reject(new Error('Failed to read blob'))
+      }
+
       reader.readAsDataURL(blob)
-
-
+    })
+  }
 
   getMessages(): NovaConversationMessage[] {
-
+    return this.getSessionHistory()
   }
 }
 
