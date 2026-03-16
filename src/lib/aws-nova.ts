@@ -1,19 +1,19 @@
 import { rateLimitedLLMCall } from './rate-limiter'
-import type { MetricsSummary, Alert } from './types'
 
-export interface NovaVoiceConfig {
-  accessKeyId: string
-  secretAccessKey: string
+
   region: string
-  enabled: boolean
+}
+export interface NovaConv
+  region: string
+  audioUrl?: strin
 }
 
-export interface NovaConversationMessage {
-  role: 'user' | 'assistant' | 'system'
+  startedAt: number
+  context: {
   content: string
   timestamp: number
   audioUrl?: string
-}
+ 
 
 export interface NovaVoiceSession {
   id: string
@@ -24,7 +24,7 @@ export interface NovaVoiceSession {
     summary?: MetricsSummary
     alerts?: Alert[]
   }
-}
+ 
 
 class NovaVoiceService {
   private mediaRecorder: MediaRecorder | null = null
@@ -34,16 +34,16 @@ class NovaVoiceService {
 
   setConfig(config: NovaVoiceConfig): void {
     this.config = config
-  }
+
 
   getConfig(): NovaVoiceConfig | null {
     return this.config
-  }
+   
 
   isConfigured(): boolean {
     return this.config !== null && this.config.enabled && 
            !!this.config.accessKeyId && !!this.config.secretAccessKey
-  }
+   
 
   startSession(context: { summary: MetricsSummary; alerts: Alert[] }): NovaVoiceSession {
     this.activeSession = {
@@ -54,15 +54,15 @@ class NovaVoiceService {
       context
     }
     return this.activeSession
-  }
+   
 
-  getActiveSession(): NovaVoiceSession | null {
+          role: 'user',
     return this.activeSession
-  }
+   
 
-  getSessionHistory(): NovaConversationMessage[] {
+      console.error('Transcription failed:', error
     return this.activeSession?.messages || []
-  }
+
 
   async startRecording(): Promise<void> {
     try {
@@ -74,7 +74,7 @@ class NovaVoiceService {
       this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
         if (event.data.size > 0) {
           this.audioChunks.push(event.data)
-        }
+      con
       }
 
       this.mediaRecorder.start()
@@ -82,114 +82,114 @@ class NovaVoiceService {
       console.error('Failed to start recording:', error)
       throw error
     }
-  }
+   
 
-  async stopRecording(): Promise<Blob> {
+  private buildPrompt(
     return new Promise((resolve, reject) => {
-      if (!this.mediaRecorder) {
+    warningCount: number,
         reject(new Error('No active recording'))
         return
       }
 
       this.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' })
-        this.audioChunks = []
-        resolve(audioBlob)
-      }
-
-      this.mediaRecorder.onerror = () => {
-        reject(new Error('Recording failed'))
-      }
-
-      this.mediaRecorder.stop()
-    })
-  }
-
-  async transcribeAudio(audioBlob: Blob): Promise<string> {
-    try {
-      const base64Audio = await this.blobToBase64(audioBlob)
-      const prompt = `Transcribe the following audio data to text.\n\nAudio data: ${base64Audio.substring(0, 100)}...`
-
-      const transcription = await rateLimitedLLMCall(prompt, 'gpt-4o-mini', false)
-      
-      if (this.activeSession) {
-        this.activeSession.messages.push({
-          role: 'user',
-          content: transcription,
-          timestamp: Date.now()
-        })
-      }
-      
-      return transcription
-    } catch (error) {
-      console.error('Transcription failed:', error)
-      return this.fallbackTranscription()
-    }
-  }
-
-  private fallbackTranscription(): string {
-    return "Could you provide status on the current system metrics?"
-  }
-
-  async processSpeechToSpeech(
-    audioBlob: Blob,
-    alerts: Alert[],
-    summary?: MetricsSummary
-  ): Promise<{ text: string; audioUrl: string }> {
-    try {
-      const transcription = await this.transcribeAudio(audioBlob)
-
-      const activeAlerts = alerts.filter((a) => !a.acknowledged)
-      const criticalCount = activeAlerts.filter((a) => a.severity === 'critical').length
-      const warningCount = activeAlerts.filter((a) => a.severity === 'warning').length
-
-      const alertDetails = activeAlerts
-        .slice(0, 3)
-        .map((a) => `[${a.severity.toUpperCase()}] ${a.message}`)
-        .join('\n')
-
-      const prompt = this.buildPrompt(transcription, summary, criticalCount, warningCount, alertDetails)
-
-      const responseText = await this.generateResponse(prompt, criticalCount)
-      const audioUrl = await this.synthesizeSpeech(responseText)
-
-      if (this.activeSession) {
-        this.activeSession.messages.push({
-          role: 'assistant',
-          content: responseText,
-          timestamp: Date.now(),
-          audioUrl,
-        })
-        this.activeSession.lastActiveAt = Date.now()
-      }
-
-      return { text: responseText, audioUrl }
-    } catch (error) {
-      console.error('Speech-to-speech processing failed:', error)
-      throw error
-    }
-  }
-
-  private buildPrompt(
-    transcription: string,
-    summary: MetricsSummary | undefined,
-    criticalCount: number,
-    warningCount: number,
-    alertDetails: string
-  ): string {
-    return `You help engineers monitor their systems.
-
-User question: ${transcription}
-
-Current Metrics:
-- Error Rate: ${summary?.errorRate ?? 0}%
-- Average Latency: ${summary?.avgLatency ?? 0}ms
-- P99 Latency: ${summary?.p99Latency ?? 0}ms
-- Total Requests: ${summary?.totalRequests ?? 0}
 - Active Critical Alerts: ${criticalCount}
-- Active Warning Alerts: ${warningCount}
+        this.audioChunks = []
+${alertDetails || 'No acti
+Provide
 
-Recent Alerts:
+  }
+  private async generateResponse(prompt: stri
+      c
+
+    }
+
+   
+
+        const voices = window.speechSynthesis.getVoices()
+         
+            v.name.includes('Google US English')
+
+
+
+      
+    }
+    return 'synthesized://fallback'
+
+    return new Promise((resolve, 
+
+        co
+      }
+      
+      }
+      reader.readAsDa
+  }
+  getMessages(): NovaConversationMessage[
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ${alertDetails || 'No active alerts'}
 
 Provide a response that:
